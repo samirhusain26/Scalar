@@ -1,0 +1,2597 @@
+{
+  "schema": {
+    "countries": {
+      "population": {
+        "label": "Population",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "M",
+        "tolerance": 0.2
+      },
+      "continent": {
+        "label": "Continent",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      },
+      "gdp_per_capita": {
+        "label": "GDP / Capita",
+        "type": "CURRENCY",
+        "unitPrefix": "$",
+        "unitSuffix": "k",
+        "tolerance": 0.15
+      },
+      "driving_side": {
+        "label": "Driving Side",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      },
+      "area": {
+        "label": "Area (Sq km)",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "km²",
+        "tolerance": 0.2
+      },
+      "id": {
+        "label": "id",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": null
+      },
+      "subregion": {
+        "label": "Sub Region",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": null
+      }
+    },
+    "hollywood": {
+      "release_year": {
+        "label": "Released",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.05
+      },
+      "imdb_rating": {
+        "label": "IMDb Score",
+        "type": "FLOAT",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.1
+      },
+      "genre": {
+        "label": "Genre",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      },
+      "budget": {
+        "label": "Budget",
+        "type": "CURRENCY",
+        "unitPrefix": "$",
+        "unitSuffix": "M",
+        "tolerance": 0.2
+      },
+      "mpaa_rating": {
+        "label": "Rating",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      }
+    },
+    "chemicals": {
+      "atomic_number": {
+        "label": "Atomic #",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      },
+      "phase": {
+        "label": "Phase (Room Temp)",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      },
+      "discovery_year": {
+        "label": "Discovered",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.1
+      },
+      "density": {
+        "label": "Density",
+        "type": "FLOAT",
+        "unitPrefix": "",
+        "unitSuffix": "g/cm³",
+        "tolerance": 0.15
+      },
+      "period": {
+        "label": "Period",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      }
+    },
+    "animals": {
+      "weight": {
+        "label": "Max Weight",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "kg",
+        "tolerance": 0.2
+      },
+      "lifespan": {
+        "label": "Lifespan",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "yrs",
+        "tolerance": 0.2
+      },
+      "diet": {
+        "label": "Diet",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      },
+      "class": {
+        "label": "Class",
+        "type": "STRING",
+        "unitPrefix": "",
+        "unitSuffix": "",
+        "tolerance": 0.0
+      },
+      "gestation": {
+        "label": "Gestation",
+        "type": "INT",
+        "unitPrefix": "",
+        "unitSuffix": "days",
+        "tolerance": 0.15
+      }
+    }
+  },
+  "categories": {
+    "countries": [
+      {
+        "id": "LUX",
+        "name": "Luxembourg",
+        "population": 668606,
+        "continent": "Europe",
+        "gdp_per_capita": 128259.0,
+        "driving_side": "right",
+        "area": 2590,
+        "subregion": "Western Europe"
+      },
+      {
+        "id": "IRL",
+        "name": "Ireland",
+        "population": 5262382,
+        "continent": "Europe",
+        "gdp_per_capita": 103685.0,
+        "driving_side": "left",
+        "area": 70280,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "CHE",
+        "name": "Switzerland",
+        "population": 8849852,
+        "continent": "Europe",
+        "gdp_per_capita": 99995.0,
+        "driving_side": "right",
+        "area": 41291,
+        "subregion": "Western Europe"
+      },
+      {
+        "id": "NOR",
+        "name": "Norway",
+        "population": 5519594,
+        "continent": "Europe",
+        "gdp_per_capita": 87962.0,
+        "driving_side": "right",
+        "area": 624500,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "SGP",
+        "name": "Singapore",
+        "population": 5917648,
+        "continent": "Asia",
+        "gdp_per_capita": 84734.0,
+        "driving_side": "left",
+        "area": 728,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "USA",
+        "name": "United States",
+        "population": 334914895,
+        "continent": "Americas",
+        "gdp_per_capita": 81695.0,
+        "driving_side": "right",
+        "area": 9831510,
+        "subregion": "Northern America"
+      },
+      {
+        "id": "ISL",
+        "name": "Iceland",
+        "population": 393600,
+        "continent": "Europe",
+        "gdp_per_capita": 78811.0,
+        "driving_side": "right",
+        "area": 103000,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "DNK",
+        "name": "Denmark",
+        "population": 5946952,
+        "continent": "Europe",
+        "gdp_per_capita": 67967.0,
+        "driving_side": "right",
+        "area": 42920,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "MAC",
+        "name": "Macao",
+        "population": 704149,
+        "continent": "Asia",
+        "gdp_per_capita": 66835.0,
+        "driving_side": "left",
+        "area": 33,
+        "subregion": "Eastern Asia"
+      },
+      {
+        "id": "AUS",
+        "name": "Australia",
+        "population": 26638544,
+        "continent": "Oceania",
+        "gdp_per_capita": 64712.0,
+        "driving_side": "left",
+        "area": 7741220,
+        "subregion": "Australia and New Zealand"
+      },
+      {
+        "id": "NLD",
+        "name": "Netherlands",
+        "population": 17879488,
+        "continent": "Europe",
+        "gdp_per_capita": 62537.0,
+        "driving_side": "right",
+        "area": 41540,
+        "subregion": "Western Europe"
+      },
+      {
+        "id": "AUT",
+        "name": "Austria",
+        "population": 9132383,
+        "continent": "Europe",
+        "gdp_per_capita": 56506.0,
+        "driving_side": "right",
+        "area": 83879,
+        "subregion": "Western Europe"
+      },
+      {
+        "id": "SWE",
+        "name": "Sweden",
+        "population": 10536632,
+        "continent": "Europe",
+        "gdp_per_capita": 56305.0,
+        "driving_side": "right",
+        "area": 528861,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "FIN",
+        "name": "Finland",
+        "population": 5584264,
+        "continent": "Europe",
+        "gdp_per_capita": 53756.0,
+        "driving_side": "right",
+        "area": 338470,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "BEL",
+        "name": "Belgium",
+        "population": 11822592,
+        "continent": "Europe",
+        "gdp_per_capita": 53475.0,
+        "driving_side": "right",
+        "area": 30530,
+        "subregion": "Western Europe"
+      },
+      {
+        "id": "CAN",
+        "name": "Canada",
+        "population": 40097761,
+        "continent": "Americas",
+        "gdp_per_capita": 53372.0,
+        "driving_side": "right",
+        "area": 15634410,
+        "subregion": "Northern America"
+      },
+      {
+        "id": "DEU",
+        "name": "Germany",
+        "population": 84482267,
+        "continent": "Europe",
+        "gdp_per_capita": 52746.0,
+        "driving_side": "right",
+        "area": 357590,
+        "subregion": "Western Europe"
+      },
+      {
+        "id": "ISR",
+        "name": "Israel",
+        "population": 9756700,
+        "continent": "Asia",
+        "gdp_per_capita": 52262.0,
+        "driving_side": "right",
+        "area": 22070,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "HKG",
+        "name": "Hong Kong",
+        "population": 7536100,
+        "continent": "Asia",
+        "gdp_per_capita": 50697.0,
+        "driving_side": "left",
+        "area": 1110,
+        "subregion": "Eastern Asia"
+      },
+      {
+        "id": "GBR",
+        "name": "United Kingdom",
+        "population": 68350000,
+        "continent": "Europe",
+        "gdp_per_capita": 48867.0,
+        "driving_side": "left",
+        "area": 243610,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "NZL",
+        "name": "New Zealand",
+        "population": 5223100,
+        "continent": "Oceania",
+        "gdp_per_capita": 48528.0,
+        "driving_side": "left",
+        "area": 267710,
+        "subregion": "Australia and New Zealand"
+      },
+      {
+        "id": "AND",
+        "name": "Andorra",
+        "population": 80088,
+        "continent": "Europe",
+        "gdp_per_capita": 46545.0,
+        "driving_side": "right",
+        "area": 470,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "FRA",
+        "name": "France",
+        "population": 68170228,
+        "continent": "Europe",
+        "gdp_per_capita": 44461.0,
+        "driving_side": "right",
+        "area": 549087,
+        "subregion": "Western Europe"
+      },
+      {
+        "id": "SXM",
+        "name": "Sint Maarten (Dutch part)",
+        "population": 41163,
+        "continent": "Americas",
+        "gdp_per_capita": 39433.0,
+        "driving_side": "right",
+        "area": 34,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "ITA",
+        "name": "Italy",
+        "population": 58761146,
+        "continent": "Europe",
+        "gdp_per_capita": 38373.0,
+        "driving_side": "right",
+        "area": 302068,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "MLT",
+        "name": "Malta",
+        "population": 553214,
+        "continent": "Europe",
+        "gdp_per_capita": 37882.0,
+        "driving_side": "left",
+        "area": 320,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "KWT",
+        "name": "Kuwait",
+        "population": 4310108,
+        "continent": "Asia",
+        "gdp_per_capita": 37533.0,
+        "driving_side": "right",
+        "area": 17820,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "PRI",
+        "name": "Puerto Rico",
+        "population": 3205691,
+        "continent": "Americas",
+        "gdp_per_capita": 36779.0,
+        "driving_side": "right",
+        "area": 8870,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "BHS",
+        "name": "Bahamas",
+        "population": 412623,
+        "continent": "Americas",
+        "gdp_per_capita": 34750.0,
+        "driving_side": "left",
+        "area": 13880,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "CYP",
+        "name": "Cyprus",
+        "population": 1260138,
+        "continent": "Asia",
+        "gdp_per_capita": 34701.0,
+        "driving_side": "left",
+        "area": 9250,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "JPN",
+        "name": "Japan",
+        "population": 124516650,
+        "continent": "Asia",
+        "gdp_per_capita": 33834.0,
+        "driving_side": "left",
+        "area": 377974,
+        "subregion": "Eastern Asia"
+      },
+      {
+        "id": "PRK",
+        "name": "South Korea",
+        "population": 51712619,
+        "continent": "Asia",
+        "gdp_per_capita": 33121.0,
+        "driving_side": "right",
+        "area": 100430,
+        "subregion": "Eastern Asia"
+      },
+      {
+        "id": "ESP",
+        "name": "Spain",
+        "population": 48373336,
+        "continent": "Europe",
+        "gdp_per_capita": 32677.0,
+        "driving_side": "right",
+        "area": 505965,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "SVN",
+        "name": "Slovenia",
+        "population": 2120937,
+        "continent": "Europe",
+        "gdp_per_capita": 32164.0,
+        "driving_side": "right",
+        "area": 20480,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "TCA",
+        "name": "Turks and Caicos Islands",
+        "population": 46062,
+        "continent": "Americas",
+        "gdp_per_capita": 30438.0,
+        "driving_side": "left",
+        "area": 950,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "CZE",
+        "name": "Czech Republic",
+        "population": 10873689,
+        "continent": "Europe",
+        "gdp_per_capita": 30427.0,
+        "driving_side": "right",
+        "area": 78871,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "EST",
+        "name": "Estonia",
+        "population": 1366188,
+        "continent": "Europe",
+        "gdp_per_capita": 29824.0,
+        "driving_side": "right",
+        "area": 45340,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "BHR",
+        "name": "Bahrain",
+        "population": 1485509,
+        "continent": "Asia",
+        "gdp_per_capita": 29084.0,
+        "driving_side": "right",
+        "area": 790,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "SAU",
+        "name": "Saudi Arabia",
+        "population": 36947025,
+        "continent": "Asia",
+        "gdp_per_capita": 28895.0,
+        "driving_side": "right",
+        "area": 2149690,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "PRT",
+        "name": "Portugal",
+        "population": 10525347,
+        "continent": "Europe",
+        "gdp_per_capita": 27275.0,
+        "driving_side": "right",
+        "area": 92230,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "LTU",
+        "name": "Lithuania",
+        "population": 2871897,
+        "continent": "Europe",
+        "gdp_per_capita": 27103.0,
+        "driving_side": "right",
+        "area": 65290,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "OMN",
+        "name": "Oman",
+        "population": 4644384,
+        "continent": "Asia",
+        "gdp_per_capita": 23295.0,
+        "driving_side": "right",
+        "area": 309500,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "LVA",
+        "name": "Latvia",
+        "population": 1881750,
+        "continent": "Europe",
+        "gdp_per_capita": 23184.0,
+        "driving_side": "right",
+        "area": 64590,
+        "subregion": "Northern Europe"
+      },
+      {
+        "id": "GRC",
+        "name": "Greece",
+        "population": 10361295,
+        "continent": "Europe",
+        "gdp_per_capita": 22990.0,
+        "driving_side": "right",
+        "area": 131960,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "BRB",
+        "name": "Barbados",
+        "population": 281995,
+        "continent": "Americas",
+        "gdp_per_capita": 22673.0,
+        "driving_side": "left",
+        "area": 430,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "URY",
+        "name": "Uruguay",
+        "population": 3423108,
+        "continent": "Americas",
+        "gdp_per_capita": 22565.0,
+        "driving_side": "right",
+        "area": 176220,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "HUN",
+        "name": "Hungary",
+        "population": 9589872,
+        "continent": "Europe",
+        "gdp_per_capita": 22147.0,
+        "driving_side": "right",
+        "area": 93030,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "POL",
+        "name": "Poland",
+        "population": 36685849,
+        "continent": "Europe",
+        "gdp_per_capita": 22113.0,
+        "driving_side": "right",
+        "area": 312710,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "ATG",
+        "name": "Antigua and Barbuda",
+        "population": 94298,
+        "continent": "Americas",
+        "gdp_per_capita": 21560.0,
+        "driving_side": "left",
+        "area": 440,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "HRV",
+        "name": "Croatia",
+        "population": 3853200,
+        "continent": "Europe",
+        "gdp_per_capita": 21460.0,
+        "driving_side": "right",
+        "area": 88070,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "GUY",
+        "name": "Guyana",
+        "population": 813834,
+        "continent": "Americas",
+        "gdp_per_capita": 20626.0,
+        "driving_side": "left",
+        "area": 214970,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "PAN",
+        "name": "Panama",
+        "population": 4468087,
+        "continent": "Americas",
+        "gdp_per_capita": 18662.0,
+        "driving_side": "right",
+        "area": 75320,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "ROU",
+        "name": "Romania",
+        "population": 19056116,
+        "continent": "Europe",
+        "gdp_per_capita": 18419.0,
+        "driving_side": "right",
+        "area": 238400,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "TTO",
+        "name": "Trinidad and Tobago",
+        "population": 1534937,
+        "continent": "Americas",
+        "gdp_per_capita": 18333.0,
+        "driving_side": "left",
+        "area": 5130,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "SYC",
+        "name": "Seychelles",
+        "population": 119773,
+        "continent": "Africa",
+        "gdp_per_capita": 17879.0,
+        "driving_side": "left",
+        "area": 460,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "CHL",
+        "name": "Chile",
+        "population": 19629590,
+        "continent": "Americas",
+        "gdp_per_capita": 17093.0,
+        "driving_side": "right",
+        "area": 756700,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "CRI",
+        "name": "Costa Rica",
+        "population": 5212173,
+        "continent": "Americas",
+        "gdp_per_capita": 16595.0,
+        "driving_side": "right",
+        "area": 51100,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "BGR",
+        "name": "Bulgaria",
+        "population": 6430370,
+        "continent": "Europe",
+        "gdp_per_capita": 15798.0,
+        "driving_side": "right",
+        "area": 111000,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "PLW",
+        "name": "Palau",
+        "population": 18058,
+        "continent": "Oceania",
+        "gdp_per_capita": 14565.0,
+        "driving_side": "right",
+        "area": 460,
+        "subregion": "Micronesia"
+      },
+      {
+        "id": "MEX",
+        "name": "Mexico",
+        "population": 128455567,
+        "continent": "Americas",
+        "gdp_per_capita": 13926.0,
+        "driving_side": "right",
+        "area": 1964375,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "RUS",
+        "name": "Russia",
+        "population": 143826130,
+        "continent": "Europe",
+        "gdp_per_capita": 13817.0,
+        "driving_side": "right",
+        "area": 17098250,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "ARG",
+        "name": "Argentina",
+        "population": 46654581,
+        "continent": "Americas",
+        "gdp_per_capita": 13731.0,
+        "driving_side": "right",
+        "area": 2780400,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "KAZ",
+        "name": "Kazakhstan",
+        "population": 19900177,
+        "continent": "Asia",
+        "gdp_per_capita": 13137.0,
+        "driving_side": "right",
+        "area": 2724900,
+        "subregion": "Central Asia"
+      },
+      {
+        "id": "TUR",
+        "name": "Turkey",
+        "population": 85326000,
+        "continent": "Asia",
+        "gdp_per_capita": 12986.0,
+        "driving_side": "right",
+        "area": 785350,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "MDV",
+        "name": "Maldives",
+        "population": 521021,
+        "continent": "Asia",
+        "gdp_per_capita": 12667.0,
+        "driving_side": "left",
+        "area": 300,
+        "subregion": "Southern Asia"
+      },
+      {
+        "id": "CHN",
+        "name": "China",
+        "population": 1410710000,
+        "continent": "Asia",
+        "gdp_per_capita": 12614.0,
+        "driving_side": "right",
+        "area": 9562910,
+        "subregion": "Eastern Asia"
+      },
+      {
+        "id": "NRU",
+        "name": "Nauru",
+        "population": 12780,
+        "continent": "Oceania",
+        "gdp_per_capita": 12060.0,
+        "driving_side": "left",
+        "area": 20,
+        "subregion": "Micronesia"
+      },
+      {
+        "id": "MNE",
+        "name": "Montenegro",
+        "population": 616177,
+        "continent": "Europe",
+        "gdp_per_capita": 12017.0,
+        "driving_side": "right",
+        "area": 13810,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "MYS",
+        "name": "Malaysia",
+        "population": 34308525,
+        "continent": "Asia",
+        "gdp_per_capita": 11649.0,
+        "driving_side": "left",
+        "area": 330411,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "MUS",
+        "name": "Mauritius",
+        "population": 1261041,
+        "continent": "Africa",
+        "gdp_per_capita": 11417.0,
+        "driving_side": "left",
+        "area": 2007,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "SRB",
+        "name": "Serbia",
+        "population": 6618026,
+        "continent": "Europe",
+        "gdp_per_capita": 11361.0,
+        "driving_side": "right",
+        "area": 84990,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "DOM",
+        "name": "Dominican Republic",
+        "population": 11332972,
+        "continent": "Americas",
+        "gdp_per_capita": 10716.0,
+        "driving_side": "right",
+        "area": 146839,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "GRD",
+        "name": "Grenada",
+        "population": 126183,
+        "continent": "Americas",
+        "gdp_per_capita": 10464.0,
+        "driving_side": "left",
+        "area": 340,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "BRA",
+        "name": "Brazil",
+        "population": 216422446,
+        "continent": "Americas",
+        "gdp_per_capita": 10044.0,
+        "driving_side": "right",
+        "area": 8515770,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "TKM",
+        "name": "Turkmenistan",
+        "population": 6516100,
+        "continent": "Asia",
+        "gdp_per_capita": 9191.0,
+        "driving_side": "right",
+        "area": 488100,
+        "subregion": "Central Asia"
+      },
+      {
+        "id": "DMA",
+        "name": "Dominica",
+        "population": 73040,
+        "continent": "Americas",
+        "gdp_per_capita": 8954.0,
+        "driving_side": "left",
+        "area": 750,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "ARM",
+        "name": "Armenia",
+        "population": 2777970,
+        "continent": "Asia",
+        "gdp_per_capita": 8716.0,
+        "driving_side": "right",
+        "area": 29740,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "GAB",
+        "name": "Gabon",
+        "population": 2436566,
+        "continent": "Africa",
+        "gdp_per_capita": 8420.0,
+        "driving_side": "right",
+        "area": 267670,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "ALB",
+        "name": "Albania",
+        "population": 2745972,
+        "continent": "Europe",
+        "gdp_per_capita": 8368.0,
+        "driving_side": "right",
+        "area": 28750,
+        "subregion": "Southern Europe"
+      },
+      {
+        "id": "GEO",
+        "name": "Georgia",
+        "population": 3760365,
+        "continent": "Asia",
+        "gdp_per_capita": 8120.0,
+        "driving_side": "right",
+        "area": 69700,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "BLZ",
+        "name": "Belize",
+        "population": 410825,
+        "continent": "Americas",
+        "gdp_per_capita": 7988.0,
+        "driving_side": "right",
+        "area": 22970,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "BLR",
+        "name": "Belarus",
+        "population": 9178298,
+        "continent": "Europe",
+        "gdp_per_capita": 7829.0,
+        "driving_side": "right",
+        "area": 207630,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "PER",
+        "name": "Peru",
+        "population": 34352719,
+        "continent": "Americas",
+        "gdp_per_capita": 7790.0,
+        "driving_side": "right",
+        "area": 1285220,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "LBY",
+        "name": "Libya",
+        "population": 6888388,
+        "continent": "Africa",
+        "gdp_per_capita": 7330.0,
+        "driving_side": "right",
+        "area": 1759540,
+        "subregion": "Northern Africa"
+      },
+      {
+        "id": "BWA",
+        "name": "Botswana",
+        "population": 2675352,
+        "continent": "Africa",
+        "gdp_per_capita": 7250.0,
+        "driving_side": "left",
+        "area": 581730,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "THA",
+        "name": "Thailand",
+        "population": 71801279,
+        "continent": "Asia",
+        "gdp_per_capita": 7172.0,
+        "driving_side": "left",
+        "area": 513120,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "AZE",
+        "name": "Azerbaijan",
+        "population": 10112555,
+        "continent": "Asia",
+        "gdp_per_capita": 7155.0,
+        "driving_side": "right",
+        "area": 86600,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "GNQ",
+        "name": "Equatorial Guinea",
+        "population": 1714671,
+        "continent": "Africa",
+        "gdp_per_capita": 7067.0,
+        "driving_side": "right",
+        "area": 28050,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "COL",
+        "name": "Colombia",
+        "population": 52085168,
+        "continent": "Americas",
+        "gdp_per_capita": 6980.0,
+        "driving_side": "right",
+        "area": 1140619,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "JAM",
+        "name": "Jamaica",
+        "population": 2825544,
+        "continent": "Americas",
+        "gdp_per_capita": 6874.0,
+        "driving_side": "left",
+        "area": 10990,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "MHL",
+        "name": "Marshall Islands",
+        "population": 41996,
+        "continent": "Oceania",
+        "gdp_per_capita": 6763.0,
+        "driving_side": "right",
+        "area": 180,
+        "subregion": "Micronesia"
+      },
+      {
+        "id": "MDA",
+        "name": "Moldova",
+        "population": 2486891,
+        "continent": "Europe",
+        "gdp_per_capita": 6651.0,
+        "driving_side": "right",
+        "area": 33850,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "ECU",
+        "name": "Ecuador",
+        "population": 18190484,
+        "continent": "Americas",
+        "gdp_per_capita": 6533.0,
+        "driving_side": "right",
+        "area": 256370,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "PRY",
+        "name": "Paraguay",
+        "population": 6861524,
+        "continent": "Americas",
+        "gdp_per_capita": 6260.0,
+        "driving_side": "right",
+        "area": 406752,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "ZAF",
+        "name": "South Africa",
+        "population": 60414495,
+        "continent": "Africa",
+        "gdp_per_capita": 6253.0,
+        "driving_side": "left",
+        "area": 1219090,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "SUR",
+        "name": "Suriname",
+        "population": 623236,
+        "continent": "Americas",
+        "gdp_per_capita": 6069.0,
+        "driving_side": "left",
+        "area": 163820,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "FJI",
+        "name": "Fiji",
+        "population": 936375,
+        "continent": "Oceania",
+        "gdp_per_capita": 5868.0,
+        "driving_side": "left",
+        "area": 18270,
+        "subregion": "Melanesia"
+      },
+      {
+        "id": "GTM",
+        "name": "Guatemala",
+        "population": 17602431,
+        "continent": "Americas",
+        "gdp_per_capita": 5798.0,
+        "driving_side": "right",
+        "area": 108890,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "MNG",
+        "name": "Mongolia",
+        "population": 3447157,
+        "continent": "Asia",
+        "gdp_per_capita": 5765.0,
+        "driving_side": "right",
+        "area": 1564116,
+        "subregion": "Eastern Asia"
+      },
+      {
+        "id": "IRQ",
+        "name": "Iraq",
+        "population": 45504560,
+        "continent": "Asia",
+        "gdp_per_capita": 5512.0,
+        "driving_side": "right",
+        "area": 435050,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "TUV",
+        "name": "Tuvalu",
+        "population": 11396,
+        "continent": "Oceania",
+        "gdp_per_capita": 5465.0,
+        "driving_side": "left",
+        "area": 30,
+        "subregion": "Polynesia"
+      },
+      {
+        "id": "SLV",
+        "name": "El Salvador",
+        "population": 6364943,
+        "continent": "Americas",
+        "gdp_per_capita": 5344.0,
+        "driving_side": "right",
+        "area": 21040,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "DZA",
+        "name": "Algeria",
+        "population": 45606480,
+        "continent": "Africa",
+        "gdp_per_capita": 5260.0,
+        "driving_side": "right",
+        "area": 2381741,
+        "subregion": "Northern Africa"
+      },
+      {
+        "id": "UKR",
+        "name": "Ukraine",
+        "population": 37000000,
+        "continent": "Europe",
+        "gdp_per_capita": 5181.0,
+        "driving_side": "right",
+        "area": 603550,
+        "subregion": "Eastern Europe"
+      },
+      {
+        "id": "IDN",
+        "name": "Indonesia",
+        "population": 277534122,
+        "continent": "Asia",
+        "gdp_per_capita": 4941.0,
+        "driving_side": "left",
+        "area": 1916907,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "NAM",
+        "name": "Namibia",
+        "population": 2604172,
+        "continent": "Africa",
+        "gdp_per_capita": 4743.0,
+        "driving_side": "left",
+        "area": 824290,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "IRN",
+        "name": "Iran",
+        "population": 89172767,
+        "continent": "Asia",
+        "gdp_per_capita": 4503.0,
+        "driving_side": "right",
+        "area": 1745150,
+        "subregion": "Southern Asia"
+      },
+      {
+        "id": "JOR",
+        "name": "Jordan",
+        "population": 11337052,
+        "continent": "Asia",
+        "gdp_per_capita": 4482.0,
+        "driving_side": "right",
+        "area": 89318,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "VNM",
+        "name": "Vietnam",
+        "population": 98858950,
+        "continent": "Asia",
+        "gdp_per_capita": 4347.0,
+        "driving_side": "right",
+        "area": 331340,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "CPV",
+        "name": "Cabo Verde",
+        "population": 598682,
+        "continent": "Africa",
+        "gdp_per_capita": 4322.0,
+        "driving_side": "right",
+        "area": 4030,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "WSM",
+        "name": "Samoa",
+        "population": 225681,
+        "continent": "Oceania",
+        "gdp_per_capita": 4139.0,
+        "driving_side": "left",
+        "area": 2840,
+        "subregion": "Polynesia"
+      },
+      {
+        "id": "TUN",
+        "name": "Tunisia",
+        "population": 12458223,
+        "continent": "Africa",
+        "gdp_per_capita": 3895.0,
+        "driving_side": "right",
+        "area": 163610,
+        "subregion": "Northern Africa"
+      },
+      {
+        "id": "LKA",
+        "name": "Sri Lanka",
+        "population": 22037000,
+        "continent": "Asia",
+        "gdp_per_capita": 3828.0,
+        "driving_side": "left",
+        "area": 65610,
+        "subregion": "Southern Asia"
+      },
+      {
+        "id": "SWZ",
+        "name": "Eswatini",
+        "population": 1210822,
+        "continent": "Africa",
+        "gdp_per_capita": 3797.0,
+        "driving_side": "left",
+        "area": 17360,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "PHL",
+        "name": "Philippines",
+        "population": 117337368,
+        "continent": "Asia",
+        "gdp_per_capita": 3726.0,
+        "driving_side": "right",
+        "area": 300000,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "BOL",
+        "name": "Bolivia",
+        "population": 12388571,
+        "continent": "Americas",
+        "gdp_per_capita": 3701.0,
+        "driving_side": "right",
+        "area": 1098580,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "MAR",
+        "name": "Morocco",
+        "population": 37840044,
+        "continent": "Africa",
+        "gdp_per_capita": 3672.0,
+        "driving_side": "right",
+        "area": 446550,
+        "subregion": "Northern Africa"
+      },
+      {
+        "id": "DJI",
+        "name": "Djibouti",
+        "population": 1136455,
+        "continent": "Africa",
+        "gdp_per_capita": 3606.0,
+        "driving_side": "right",
+        "area": 23200,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "EGY",
+        "name": "Egypt",
+        "population": 112716598,
+        "continent": "Africa",
+        "gdp_per_capita": 3513.0,
+        "driving_side": "right",
+        "area": 1001450,
+        "subregion": "Northern Africa"
+      },
+      {
+        "id": "VUT",
+        "name": "Vanuatu",
+        "population": 334506,
+        "continent": "Oceania",
+        "gdp_per_capita": 3367.0,
+        "driving_side": "right",
+        "area": 12190,
+        "subregion": "Melanesia"
+      },
+      {
+        "id": "HND",
+        "name": "Honduras",
+        "population": 10593798,
+        "continent": "Americas",
+        "gdp_per_capita": 3247.0,
+        "driving_side": "right",
+        "area": 112490,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "PNG",
+        "name": "Papua New Guinea",
+        "population": 10329931,
+        "continent": "Oceania",
+        "gdp_per_capita": 2994.0,
+        "driving_side": "left",
+        "area": 462840,
+        "subregion": "Melanesia"
+      },
+      {
+        "id": "STP",
+        "name": "Sao Tome and Principe",
+        "population": 231856,
+        "continent": "Africa",
+        "gdp_per_capita": 2602.0,
+        "driving_side": "right",
+        "area": 960,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "NIC",
+        "name": "Nicaragua",
+        "population": 7046310,
+        "continent": "Americas",
+        "gdp_per_capita": 2530.0,
+        "driving_side": "right",
+        "area": 130370,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "BGD",
+        "name": "Bangladesh",
+        "population": 172954319,
+        "continent": "Asia",
+        "gdp_per_capita": 2529.0,
+        "driving_side": "left",
+        "area": 147570,
+        "subregion": "Southern Asia"
+      },
+      {
+        "id": "UZB",
+        "name": "Uzbekistan",
+        "population": 36412350,
+        "continent": "Asia",
+        "gdp_per_capita": 2496.0,
+        "driving_side": "right",
+        "area": 448924,
+        "subregion": "Central Asia"
+      },
+      {
+        "id": "IND",
+        "name": "India",
+        "population": 1428627663,
+        "continent": "Asia",
+        "gdp_per_capita": 2485.0,
+        "driving_side": "left",
+        "area": 3287260,
+        "subregion": "Southern Asia"
+      },
+      {
+        "id": "AGO",
+        "name": "Angola",
+        "population": 36684202,
+        "continent": "Africa",
+        "gdp_per_capita": 2310.0,
+        "driving_side": "right",
+        "area": 1246700,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "SDN",
+        "name": "Sudan",
+        "population": 48109006,
+        "continent": "Africa",
+        "gdp_per_capita": 2272.0,
+        "driving_side": "right",
+        "area": 1878000,
+        "subregion": "Northern Africa"
+      },
+      {
+        "id": "GHA",
+        "name": "Ghana",
+        "population": 34121985,
+        "continent": "Africa",
+        "gdp_per_capita": 2238.0,
+        "driving_side": "right",
+        "area": 238530,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "SLB",
+        "name": "Solomon Islands",
+        "population": 740424,
+        "continent": "Oceania",
+        "gdp_per_capita": 2203.0,
+        "driving_side": "left",
+        "area": 28900,
+        "subregion": "Melanesia"
+      },
+      {
+        "id": "MRT",
+        "name": "Mauritania",
+        "population": 4862989,
+        "continent": "Africa",
+        "gdp_per_capita": 2149.0,
+        "driving_side": "right",
+        "area": 1030700,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "KIR",
+        "name": "Kiribati",
+        "population": 133515,
+        "continent": "Oceania",
+        "gdp_per_capita": 2090.0,
+        "driving_side": "left",
+        "area": 810,
+        "subregion": "Micronesia"
+      },
+      {
+        "id": "KEN",
+        "name": "Kenya",
+        "population": 55100586,
+        "continent": "Africa",
+        "gdp_per_capita": 1950.0,
+        "driving_side": "left",
+        "area": 580370,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "KHM",
+        "name": "Cambodia",
+        "population": 16944826,
+        "continent": "Asia",
+        "gdp_per_capita": 1875.0,
+        "driving_side": "right",
+        "area": 181040,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "SEN",
+        "name": "Senegal",
+        "population": 17763163,
+        "continent": "Africa",
+        "gdp_per_capita": 1746.0,
+        "driving_side": "right",
+        "area": 196710,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "HTI",
+        "name": "Haiti",
+        "population": 11724763,
+        "continent": "Americas",
+        "gdp_per_capita": 1693.0,
+        "driving_side": "right",
+        "area": 27750,
+        "subregion": "Latin America and the Caribbean"
+      },
+      {
+        "id": "CMR",
+        "name": "Cameroon",
+        "population": 28647293,
+        "continent": "Africa",
+        "gdp_per_capita": 1674.0,
+        "driving_side": "right",
+        "area": 475440,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "GIN",
+        "name": "Guinea",
+        "population": 14190612,
+        "continent": "Africa",
+        "gdp_per_capita": 1664.0,
+        "driving_side": "right",
+        "area": 245860,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "TLS",
+        "name": "Timor-Leste",
+        "population": 1360596,
+        "continent": "Asia",
+        "gdp_per_capita": 1649.0,
+        "driving_side": "left",
+        "area": 14870,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "NGA",
+        "name": "Nigeria",
+        "population": 223804632,
+        "continent": "Africa",
+        "gdp_per_capita": 1621.0,
+        "driving_side": "right",
+        "area": 923770,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "ZWE",
+        "name": "Zimbabwe",
+        "population": 16665409,
+        "continent": "Africa",
+        "gdp_per_capita": 1592.0,
+        "driving_side": "left",
+        "area": 390760,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "COM",
+        "name": "Comoros",
+        "population": 852075,
+        "continent": "Africa",
+        "gdp_per_capita": 1587.0,
+        "driving_side": "right",
+        "area": 1861,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "BEN",
+        "name": "Benin",
+        "population": 13712828,
+        "continent": "Africa",
+        "gdp_per_capita": 1435.0,
+        "driving_side": "right",
+        "area": 114760,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "PAK",
+        "name": "Pakistan",
+        "population": 240485658,
+        "continent": "Asia",
+        "gdp_per_capita": 1407.0,
+        "driving_side": "left",
+        "area": 796100,
+        "subregion": "Southern Asia"
+      },
+      {
+        "id": "ZMB",
+        "name": "Zambia",
+        "population": 20569737,
+        "continent": "Africa",
+        "gdp_per_capita": 1369.0,
+        "driving_side": "left",
+        "area": 752610,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "NPL",
+        "name": "Nepal",
+        "population": 30896590,
+        "continent": "Asia",
+        "gdp_per_capita": 1324.0,
+        "driving_side": "left",
+        "area": 147180,
+        "subregion": "Southern Asia"
+      },
+      {
+        "id": "ETH",
+        "name": "Ethiopia",
+        "population": 126527060,
+        "continent": "Africa",
+        "gdp_per_capita": 1294.0,
+        "driving_side": "right",
+        "area": 1136240,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "TZA",
+        "name": "Tanzania",
+        "population": 67438106,
+        "continent": "Africa",
+        "gdp_per_capita": 1211.0,
+        "driving_side": "left",
+        "area": 947300,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "TJK",
+        "name": "Tajikistan",
+        "population": 10143543,
+        "continent": "Asia",
+        "gdp_per_capita": 1189.0,
+        "driving_side": "right",
+        "area": 141379,
+        "subregion": "Central Asia"
+      },
+      {
+        "id": "MMR",
+        "name": "Myanmar",
+        "population": 54577997,
+        "continent": "Asia",
+        "gdp_per_capita": 1188.0,
+        "driving_side": "right",
+        "area": 676590,
+        "subregion": "South-eastern Asia"
+      },
+      {
+        "id": "UGA",
+        "name": "Uganda",
+        "population": 48582334,
+        "continent": "Africa",
+        "gdp_per_capita": 1014.0,
+        "driving_side": "left",
+        "area": 241550,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "TGO",
+        "name": "Togo",
+        "population": 9053799,
+        "continent": "Africa",
+        "gdp_per_capita": 1013.0,
+        "driving_side": "right",
+        "area": 56790,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "RWA",
+        "name": "Rwanda",
+        "population": 14094683,
+        "continent": "Africa",
+        "gdp_per_capita": 1000.0,
+        "driving_side": "right",
+        "area": 26340,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "MLI",
+        "name": "Mali",
+        "population": 23293698,
+        "continent": "Africa",
+        "gdp_per_capita": 897.0,
+        "driving_side": "right",
+        "area": 1240190,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "LSO",
+        "name": "Lesotho",
+        "population": 2330318,
+        "continent": "Africa",
+        "gdp_per_capita": 878.0,
+        "driving_side": "left",
+        "area": 30360,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "BFA",
+        "name": "Burkina Faso",
+        "population": 23251485,
+        "continent": "Africa",
+        "gdp_per_capita": 874.0,
+        "driving_side": "right",
+        "area": 274220,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "GMB",
+        "name": "Gambia",
+        "population": 2773168,
+        "continent": "Africa",
+        "gdp_per_capita": 844.0,
+        "driving_side": "right",
+        "area": 11300,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "LBR",
+        "name": "Liberia",
+        "population": 5418377,
+        "continent": "Africa",
+        "gdp_per_capita": 800.0,
+        "driving_side": "right",
+        "area": 111370,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "TCD",
+        "name": "Chad",
+        "population": 18278568,
+        "continent": "Africa",
+        "gdp_per_capita": 719.0,
+        "driving_side": "right",
+        "area": 1284000,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "MWI",
+        "name": "Malawi",
+        "population": 20931751,
+        "continent": "Africa",
+        "gdp_per_capita": 673.0,
+        "driving_side": "left",
+        "area": 118480,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "SOM",
+        "name": "Somalia",
+        "population": 18143378,
+        "continent": "Africa",
+        "gdp_per_capita": 644.0,
+        "driving_side": "right",
+        "area": 637660,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "NER",
+        "name": "Niger",
+        "population": 27202843,
+        "continent": "Africa",
+        "gdp_per_capita": 618.0,
+        "driving_side": "right",
+        "area": 1267000,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "MOZ",
+        "name": "Mozambique",
+        "population": 33897354,
+        "continent": "Africa",
+        "gdp_per_capita": 608.0,
+        "driving_side": "left",
+        "area": 799380,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "YEM",
+        "name": "Yemen",
+        "population": 34449825,
+        "continent": "Asia",
+        "gdp_per_capita": 533.0,
+        "driving_side": "right",
+        "area": 527970,
+        "subregion": "Western Asia"
+      },
+      {
+        "id": "MDG",
+        "name": "Madagascar",
+        "population": 30325732,
+        "continent": "Africa",
+        "gdp_per_capita": 529.0,
+        "driving_side": "right",
+        "area": 587295,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "CAF",
+        "name": "Central African Republic",
+        "population": 5742315,
+        "continent": "Africa",
+        "gdp_per_capita": 445.0,
+        "driving_side": "right",
+        "area": 622980,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "SLE",
+        "name": "Sierra Leone",
+        "population": 8791092,
+        "continent": "Africa",
+        "gdp_per_capita": 433.0,
+        "driving_side": "right",
+        "area": 72300,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "BDI",
+        "name": "Burundi",
+        "population": 13238559,
+        "continent": "Africa",
+        "gdp_per_capita": 200.0,
+        "driving_side": "right",
+        "area": 27830,
+        "subregion": "Sub-Saharan Africa"
+      },
+      {
+        "id": "GBR",
+        "name": "United Kingdom",
+        "population": 242900,
+        "continent": "67736802",
+        "gdp_per_capita": null,
+        "driving_side": "38406.53",
+        "area": null,
+        "subregion": "Europe"
+      },
+      {
+        "id": "JPN",
+        "name": "Japan",
+        "population": 377930,
+        "continent": "123294513",
+        "gdp_per_capita": null,
+        "driving_side": "38268.79",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "NZL",
+        "name": "New Zealand",
+        "population": 270467,
+        "continent": "5228100",
+        "gdp_per_capita": null,
+        "driving_side": "38250.12",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "MLT",
+        "name": "Malta",
+        "population": 316,
+        "continent": "535064",
+        "gdp_per_capita": null,
+        "driving_side": "34496.34",
+        "area": null,
+        "subregion": "Europe"
+      },
+      {
+        "id": "KEN",
+        "name": "Kenya",
+        "population": 580367,
+        "continent": "55100586",
+        "gdp_per_capita": null,
+        "driving_side": "34039.238",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "ZMB",
+        "name": "Zambia",
+        "population": 752612,
+        "continent": "20569737",
+        "gdp_per_capita": null,
+        "driving_side": "33424.214",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "CYP",
+        "name": "Cyprus",
+        "population": 9251,
+        "continent": "1260138",
+        "gdp_per_capita": null,
+        "driving_side": "31523.498",
+        "area": null,
+        "subregion": "Europe"
+      },
+      {
+        "id": "SYC",
+        "name": "Seychelles",
+        "population": 452,
+        "continent": "107660",
+        "gdp_per_capita": null,
+        "driving_side": "31055.39",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "TZA",
+        "name": "Tanzania",
+        "population": 945087,
+        "continent": "67438106",
+        "gdp_per_capita": null,
+        "driving_side": "30573.286",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "NPL",
+        "name": "Nepal",
+        "population": 147181,
+        "continent": "30896590",
+        "gdp_per_capita": null,
+        "driving_side": "30135.178",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "MYS",
+        "name": "Malaysia",
+        "population": 330803,
+        "continent": "34308525",
+        "gdp_per_capita": null,
+        "driving_side": "26628.707",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "TTO",
+        "name": "Trinidad and Tobago",
+        "population": 5130,
+        "continent": "1534937",
+        "gdp_per_capita": null,
+        "driving_side": "25773.006",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "LSO",
+        "name": "Lesotho",
+        "population": 30355,
+        "continent": "2330318",
+        "gdp_per_capita": null,
+        "driving_side": "23129.583",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "UGA",
+        "name": "Uganda",
+        "population": 241550,
+        "continent": "48582334",
+        "gdp_per_capita": null,
+        "driving_side": "21220.278",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "MUS",
+        "name": "Mauritius",
+        "population": 2040,
+        "continent": "1300557",
+        "gdp_per_capita": null,
+        "driving_side": "20643.094",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "ZWE",
+        "name": "Zimbabwe",
+        "population": 390757,
+        "continent": "16665409",
+        "gdp_per_capita": null,
+        "driving_side": "17035.294",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "THA",
+        "name": "Thailand",
+        "population": 513120,
+        "continent": "71801279",
+        "gdp_per_capita": null,
+        "driving_side": "16421.072",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "BWA",
+        "name": "Botswana",
+        "population": 582000,
+        "continent": "2675352",
+        "gdp_per_capita": null,
+        "driving_side": "16351.91",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "IDN",
+        "name": "Indonesia",
+        "population": 1904569,
+        "continent": "277534122",
+        "gdp_per_capita": null,
+        "driving_side": "12801.671",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "MWI",
+        "name": "Malawi",
+        "population": 118484,
+        "continent": "20931751",
+        "gdp_per_capita": null,
+        "driving_side": "11900.509",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "BRB",
+        "name": "Barbados",
+        "population": 430,
+        "continent": "281995",
+        "gdp_per_capita": null,
+        "driving_side": "11545.848",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "ZAF",
+        "name": "South Africa",
+        "population": 1221037,
+        "continent": "60414495",
+        "gdp_per_capita": null,
+        "driving_side": "11415.887",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "LKA",
+        "name": "Sri Lanka",
+        "population": 65610,
+        "continent": "21893579",
+        "gdp_per_capita": null,
+        "driving_side": "10705.481",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "LCA",
+        "name": "Saint Lucia",
+        "population": 616,
+        "continent": "180251",
+        "gdp_per_capita": null,
+        "driving_side": "10452.165",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "SWZ",
+        "name": "Eswatini",
+        "population": 17364,
+        "continent": "1210822",
+        "gdp_per_capita": null,
+        "driving_side": "8522.45",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "NAM",
+        "name": "Namibia",
+        "population": 825615,
+        "continent": "2604172",
+        "gdp_per_capita": null,
+        "driving_side": "7979.328",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "IND",
+        "name": "India",
+        "population": 3287590,
+        "continent": "1428627663",
+        "gdp_per_capita": null,
+        "driving_side": "7765.593",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "PAK",
+        "name": "Pakistan",
+        "population": 881912,
+        "continent": "240485658",
+        "gdp_per_capita": null,
+        "driving_side": "5531.723",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "BGD",
+        "name": "Bangladesh",
+        "population": 147570,
+        "continent": "172954319",
+        "gdp_per_capita": null,
+        "driving_side": "4925.721",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "MOZ",
+        "name": "Mozambique",
+        "population": 801590,
+        "continent": "33897354",
+        "gdp_per_capita": null,
+        "driving_side": "1087.836",
+        "area": null,
+        "subregion": "Africa"
+      },
+      {
+        "id": "PNG",
+        "name": "Papua New Guinea",
+        "population": 462840,
+        "continent": "10329931",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "TLS",
+        "name": "Timor-Leste",
+        "population": 14874,
+        "continent": "1360596",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "FJI",
+        "name": "Fiji",
+        "population": 18272,
+        "continent": "936375",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "GUY",
+        "name": "Guyana",
+        "population": 214969,
+        "continent": "813834",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "South America"
+      },
+      {
+        "id": "BTN",
+        "name": "Bhutan",
+        "population": 38394,
+        "continent": "787424",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "SLB",
+        "name": "Solomon Islands",
+        "population": 28896,
+        "continent": "740424",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "MAC",
+        "name": "Macau",
+        "population": 32,
+        "continent": "704149",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "SUR",
+        "name": "Suriname",
+        "population": 163820,
+        "continent": "623236",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "South America"
+      },
+      {
+        "id": "MDV",
+        "name": "Maldives",
+        "population": 300,
+        "continent": "521021",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "BRN",
+        "name": "Brunei",
+        "population": 5765,
+        "continent": "452524",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Asia"
+      },
+      {
+        "id": "BHS",
+        "name": "Bahamas",
+        "population": 13943,
+        "continent": "412623",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "WSM",
+        "name": "Samoa",
+        "population": 2842,
+        "continent": "225681",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "KIR",
+        "name": "Kiribati",
+        "population": 811,
+        "continent": "133515",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "GRD",
+        "name": "Grenada",
+        "population": 344,
+        "continent": "126183",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "JEY",
+        "name": "Jersey",
+        "population": 116,
+        "continent": "111802",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Europe"
+      },
+      {
+        "id": "TON",
+        "name": "Tonga",
+        "population": 747,
+        "continent": "107773",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "VCT",
+        "name": "Saint Vincent and the Grenadines",
+        "population": 389,
+        "continent": "103698",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "VIR",
+        "name": "United States Virgin Islands",
+        "population": 347,
+        "continent": "98750",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "ATG",
+        "name": "Antigua and Barbuda",
+        "population": 442,
+        "continent": "94298",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "IMN",
+        "name": "Isle of Man",
+        "population": 572,
+        "continent": "84710",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Europe"
+      },
+      {
+        "id": "CYM",
+        "name": "Cayman Islands",
+        "population": 264,
+        "continent": "69310",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "BMU",
+        "name": "Bermuda",
+        "population": 54,
+        "continent": "64069",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "GGY",
+        "name": "Guernsey",
+        "population": 78,
+        "continent": "63544",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Europe"
+      },
+      {
+        "id": "KNA",
+        "name": "Saint Kitts and Nevis",
+        "population": 261,
+        "continent": "47755",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "TCA",
+        "name": "Turks and Caicos Islands",
+        "population": 948,
+        "continent": "46062",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "VGB",
+        "name": "British Virgin Islands",
+        "population": 151,
+        "continent": "31538",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "COK",
+        "name": "Cook Islands",
+        "population": 240,
+        "continent": "17044",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "AIA",
+        "name": "Anguilla",
+        "population": 91,
+        "continent": "15899",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "NRU",
+        "name": "Nauru",
+        "population": 21,
+        "continent": "12780",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "TUV",
+        "name": "Tuvalu",
+        "population": 26,
+        "continent": "11396",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "MSR",
+        "name": "Montserrat",
+        "population": 102,
+        "continent": "4386",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "North America"
+      },
+      {
+        "id": "FLK",
+        "name": "Falkland Islands",
+        "population": 12173,
+        "continent": "3791",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "South America"
+      },
+      {
+        "id": "NIU",
+        "name": "Niue",
+        "population": 261,
+        "continent": "1935",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "TKL",
+        "name": "Tokelau",
+        "population": 12,
+        "continent": "1893",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      },
+      {
+        "id": "FSM",
+        "name": "Micronesia",
+        "population": 702,
+        "continent": "115224",
+        "gdp_per_capita": null,
+        "driving_side": "",
+        "area": null,
+        "subregion": "Oceania"
+      }
+    ],
+    "hollywood": [
+      {
+        "id": "tt0133093",
+        "name": "The Matrix",
+        "release_year": 1999,
+        "imdb_rating": 8.7,
+        "genre": "Sci-Fi",
+        "budget": 63.0,
+        "mpaa_rating": "R"
+      },
+      {
+        "id": "tt0120338",
+        "name": "Titanic",
+        "release_year": 1997,
+        "imdb_rating": 7.9,
+        "genre": "Romance",
+        "budget": 200.0,
+        "mpaa_rating": "PG-13"
+      },
+      {
+        "id": "tt0468569",
+        "name": "The Dark Knight",
+        "release_year": 2008,
+        "imdb_rating": 9.0,
+        "genre": "Action",
+        "budget": 185.0,
+        "mpaa_rating": "PG-13"
+      }
+    ],
+    "chemicals": [
+      {
+        "id": "Au",
+        "name": "Gold",
+        "atomic_number": 79,
+        "phase": "Solid",
+        "discovery_year": -3000,
+        "density": 19.3,
+        "period": 6
+      },
+      {
+        "id": "Hg",
+        "name": "Mercury",
+        "atomic_number": 80,
+        "phase": "Liquid",
+        "discovery_year": -1500,
+        "density": 13.5,
+        "period": 6
+      },
+      {
+        "id": "He",
+        "name": "Helium",
+        "atomic_number": 2,
+        "phase": "Gas",
+        "discovery_year": 1868,
+        "density": 0.00017,
+        "period": 1
+      }
+    ],
+    "animals": [
+      {
+        "id": "lion",
+        "name": "Lion",
+        "weight": 190,
+        "lifespan": 14,
+        "diet": "Carnivore",
+        "class": "Mammal",
+        "gestation": 110
+      },
+      {
+        "id": "elephant",
+        "name": "African Elephant",
+        "weight": 6000,
+        "lifespan": 70,
+        "diet": "Herbivore",
+        "class": "Mammal",
+        "gestation": 660
+      },
+      {
+        "id": "eagle",
+        "name": "Bald Eagle",
+        "weight": 6,
+        "lifespan": 20,
+        "diet": "Carnivore",
+        "class": "Bird",
+        "gestation": 35
+      }
+    ]
+  }
+}

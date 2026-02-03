@@ -1,0 +1,10 @@
+credentials.json
+.env
+.DS_Store
+node_modules
+.turbo
+.next
+.idea
+.venv
+.env.local
+
