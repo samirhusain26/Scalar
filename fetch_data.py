@@ -5,7 +5,7 @@ import os
 # --- CONFIGURATION ---
 # --- CONFIGURATION ---
 SHEET_KEY = "1XhZ66tFCbJhcIN5CgObzcVc8J3WkXoz5B0-R4V6O3h0" # Sheet ID from URL
-OUTPUT_FILE = "./assets/data/gameData.json" # Where to save inside your Expo project
+OUTPUT_FILE = "./src/assets/data/gameData.json" # Where to save game data
 CREDENTIALS_FILE = "credentials.json"
 
 # Map the internal category keys to your specific Tab Names
@@ -62,12 +62,25 @@ def main():
             if cat not in full_payload["schema"]:
                 full_payload["schema"][cat] = {}
             
+            # Build proximityConfig object from sheet columns
+            thermal_type = str(row.get('thermal_type', '')).strip().upper()
+            thermal_value = clean_number(row.get('thermal_value', ''))
+            warm_multiplier = clean_number(row.get('heat_multiplier', ''))
+
+            proximity_config = None
+            if thermal_type in ('PERCENT', 'RANGE') and thermal_value is not None:
+                proximity_config = {
+                    "type": thermal_type,
+                    "value": thermal_value,
+                    "warmMultiplier": warm_multiplier if warm_multiplier is not None else 1.0
+                }
+
             full_payload["schema"][cat][row['attribute_key']] = {
                 "label": row['display_label'],
                 "type": row['data_type'],
                 "unitPrefix": row.get('unit_prefix', ''),
                 "unitSuffix": row.get('unit_suffix', ''),
-                "tolerance": clean_number(row.get('tolerance', 0))
+                "proximityConfig": proximity_config
             }
     except Exception as e:
         print(f"⚠️ Warning: Could not process schema_config. {e}")

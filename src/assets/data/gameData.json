@@ -6,49 +6,49 @@
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.2
+        "proximityConfig": { "type": "PERCENT", "value": 0.2, "nearMultiplier": 2.0 }
       },
       "continent": {
         "label": "Continent",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       },
       "gdp_per_capita": {
         "label": "GDP / Capita",
         "type": "CURRENCY",
         "unitPrefix": "$",
         "unitSuffix": "",
-        "tolerance": 0.15
+        "proximityConfig": { "type": "PERCENT", "value": 0.15, "nearMultiplier": 2.0 }
       },
       "driving_side": {
         "label": "Driving Side",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       },
       "area": {
         "label": "Area (Sq km)",
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": " km²",
-        "tolerance": 0.2
+        "proximityConfig": { "type": "PERCENT", "value": 0.2, "nearMultiplier": 2.0 }
       },
       "id": {
         "label": "id",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": null
+        "proximityConfig": null
       },
       "subregion": {
         "label": "Sub Region",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": null
+        "proximityConfig": null
       }
     },
     "hollywood": {
@@ -57,35 +57,35 @@
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.05
+        "proximityConfig": { "type": "RANGE", "value": 5, "nearMultiplier": 3.0 }
       },
       "imdb_rating": {
         "label": "IMDb Score",
         "type": "FLOAT",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.1
+        "proximityConfig": { "type": "RANGE", "value": 1.0, "nearMultiplier": 2.0 }
       },
       "genre": {
         "label": "Genre",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       },
       "budget": {
         "label": "Budget",
         "type": "CURRENCY",
         "unitPrefix": "$",
         "unitSuffix": "",
-        "tolerance": 0.2
+        "proximityConfig": { "type": "PERCENT", "value": 0.2, "nearMultiplier": 2.0 }
       },
       "mpaa_rating": {
         "label": "Rating",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       }
     },
     "chemicals": {
@@ -94,35 +94,35 @@
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       },
       "phase": {
         "label": "Phase (Room Temp)",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       },
       "discovery_year": {
         "label": "Discovered",
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.1
+        "proximityConfig": { "type": "RANGE", "value": 100, "nearMultiplier": 3.0 }
       },
       "density": {
         "label": "Density",
         "type": "FLOAT",
         "unitPrefix": "",
         "unitSuffix": "g/cm³",
-        "tolerance": 0.15
+        "proximityConfig": { "type": "PERCENT", "value": 0.15, "nearMultiplier": 2.0 }
       },
       "period": {
         "label": "Period",
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       }
     },
     "animals": {
@@ -131,35 +131,35 @@
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "kg",
-        "tolerance": 0.2
+        "proximityConfig": { "type": "PERCENT", "value": 0.2, "nearMultiplier": 2.0 }
       },
       "lifespan": {
         "label": "Lifespan",
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "yrs",
-        "tolerance": 0.2
+        "proximityConfig": { "type": "PERCENT", "value": 0.2, "nearMultiplier": 2.0 }
       },
       "diet": {
         "label": "Diet",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       },
       "class": {
         "label": "Class",
         "type": "STRING",
         "unitPrefix": "",
         "unitSuffix": "",
-        "tolerance": 0.0
+        "proximityConfig": null
       },
       "gestation": {
         "label": "Gestation",
         "type": "INT",
         "unitPrefix": "",
         "unitSuffix": "days",
-        "tolerance": 0.15
+        "proximityConfig": { "type": "PERCENT", "value": 0.15, "nearMultiplier": 2.0 }
       }
     }
   },

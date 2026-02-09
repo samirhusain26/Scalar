@@ -8,12 +8,12 @@ interface GridRowProps {
     feedback?: Record<string, Feedback>;
     schema: CategorySchema;
     displayKeys: string[];
-    isBlocked?: boolean; // Keep for compatibility if needed, though requirements specify dashed for empty
+    columnVisibility: Record<string, boolean>;
     className?: string;
 }
 
-export function GridRow({ guess, feedback, schema, displayKeys, className }: GridRowProps) {
-    const renderCellContent = (key: string, _isName: boolean) => {
+export function GridRow({ guess, feedback, schema, displayKeys, columnVisibility, className }: GridRowProps) {
+    const renderCellContent = (key: string) => {
         if (!guess) return { value: undefined, feedback: undefined };
 
         let value = guess[key];
@@ -23,9 +23,7 @@ export function GridRow({ guess, feedback, schema, displayKeys, className }: Gri
         // Format value
         if (fieldDef) {
             if (typeof value === 'number') {
-                if (fieldDef.type === 'CURRENCY') {
-                    value = `${fieldDef.unitPrefix || ''}${formatNumber(value)}${fieldDef.unitSuffix || ''}`;
-                } else if (fieldDef.type === 'INT' || fieldDef.type === 'FLOAT') {
+                if (fieldDef.type === 'CURRENCY' || fieldDef.type === 'INT' || fieldDef.type === 'FLOAT') {
                     value = `${fieldDef.unitPrefix || ''}${formatNumber(value)}${fieldDef.unitSuffix || ''}`;
                 } else if (fieldDef.unitSuffix) {
                     value = `${value}${fieldDef.unitSuffix}`;
@@ -45,11 +43,14 @@ export function GridRow({ guess, feedback, schema, displayKeys, className }: Gri
                     <GridCell isEmpty />
                 </div>
                 {/* Data Columns */}
-                {displayKeys.map((key) => (
-                    <div key={key} className="flex-1 min-w-0">
-                        <GridCell isEmpty />
-                    </div>
-                ))}
+                {displayKeys.map((key) => {
+                    const isVisible = columnVisibility[key];
+                    return (
+                        <div key={key} className={isVisible ? "flex-1 min-w-0" : "flex-none w-8 min-w-0"}>
+                            <GridCell isEmpty={isVisible} isHidden={!isVisible} />
+                        </div>
+                    );
+                })}
             </div>
         );
     }
@@ -61,14 +62,22 @@ export function GridRow({ guess, feedback, schema, displayKeys, className }: Gri
             <div className="flex-[1.5] min-w-0">
                 <GridCell
                     value={guess.name}
-                    // Name usually doesn't have direction/status in the same way, or maybe 'CRITICAL' if it matches?
-                    // For now, pass undefined or check if feedback exists for 'name'
                     feedback={feedback?.['name']}
                     className="font-bold"
                 />
             </div>
             {displayKeys.map((key) => {
-                const { value, feedback: cellFeedback } = renderCellContent(key, false);
+                const isVisible = columnVisibility[key];
+
+                if (!isVisible) {
+                    return (
+                        <div key={key} className="flex-none w-8 min-w-0">
+                            <GridCell isHidden />
+                        </div>
+                    );
+                }
+
+                const { value, feedback: cellFeedback } = renderCellContent(key);
                 return (
                     <div key={key} className="flex-1 min-w-0">
                         <GridCell

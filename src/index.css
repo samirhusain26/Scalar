@@ -2,76 +2,41 @@
 
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  /* Paper / Charcoal Theme */
-  --background: 60 10% 95%;
-  /* #F5F5F0 */
-  --foreground: 210 19% 26%;
-  /* #36454F */
+  /* Editorial Paper / Ink Theme */
+  --background: 60 14% 97%;
+  /* #F9F9F7 */
+  --foreground: 0 0% 10%;
+  /* #1A1A1A */
 
-  --card: 60 10% 95%;
-  --card-foreground: 210 19% 26%;
+  --card: 60 14% 97%;
+  --card-foreground: 0 0% 10%;
 
-  --popover: 60 10% 95%;
-  --popover-foreground: 210 19% 26%;
+  --popover: 60 14% 97%;
+  --popover-foreground: 0 0% 10%;
 
   --primary: 0 0% 0%;
-  /* Black */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 210 20% 90%;
-  /* Light gray accent if needed */
-  --secondary-foreground: 210 19% 26%;
+  --secondary: 0 0% 93%;
+  --secondary-foreground: 0 0% 10%;
 
-  --muted: 210 20% 90%;
-  --muted-foreground: 210 15% 40%;
+  --muted: 0 0% 93%;
+  --muted-foreground: 0 0% 40%;
 
-  --accent: 210 20% 90%;
-  --accent-foreground: 210 19% 26%;
+  --accent: 0 0% 93%;
+  --accent-foreground: 0 0% 10%;
 
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 210 19% 26%;
-  /* Charcoal border for high contrast E-ink feel */
-  --input: 210 19% 26%;
+  --border: 0 0% 10%;
+  /* Ink-dark border */
+  --input: 0 0% 10%;
   --ring: 0 0% 0%;
 
   --radius: 0px;
-  /* Sharp corners as requested */
-}
-
-.dark {
-  /* Inverted Paper/Charcoal (optional, but good to have) */
-  --background: 210 19% 26%;
-  --foreground: 60 10% 95%;
-
-  --card: 210 19% 26%;
-  --card-foreground: 60 10% 95%;
-
-  --popover: 210 19% 26%;
-  --popover-foreground: 60 10% 95%;
-
-  --primary: 0 0% 100%;
-  --primary-foreground: 0 0% 0%;
-
-  --secondary: 210 19% 20%;
-  --secondary-foreground: 0 0% 98%;
-
-  --muted: 210 19% 20%;
-  --muted-foreground: 210 15% 70%;
-
-  --accent: 210 19% 20%;
-  --accent-foreground: 0 0% 98%;
-
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-
-  --border: 60 10% 95%;
-  --input: 60 10% 95%;
-  --ring: 0 0% 90%;
+  /* Sharp corners */
 }
 
 @theme inline {
@@ -94,15 +59,21 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+@utility bg-hidden-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    rgba(26, 26, 26, 0.06) 4px,
+    rgba(26, 26, 26, 0.06) 5px
+  );
+  background-color: #F5F5F3;
 }
 
 @layer base {

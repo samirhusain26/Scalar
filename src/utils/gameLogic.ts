@@ -1,4 +1,4 @@
-import type { Entity, CategorySchema, Feedback, FeedbackDirection, FeedbackStatus, GameData, GameMode } from '../types';
+import type { Entity, CategorySchema, Feedback, FeedbackDirection, FeedbackStatus, GameData, RankInfo } from '../types';
 
 export const getFeedback = (
     target: Entity,
@@ -13,12 +13,12 @@ export const getFeedback = (
         const guessVal = guess[key];
 
         let direction: FeedbackDirection = 'NONE';
-        let status: FeedbackStatus = 'NULL';
+        let status: FeedbackStatus = 'MISS';
 
         if (field.type === 'STRING') {
             // String comparison
             if (String(targetVal).toLowerCase() === String(guessVal).toLowerCase()) {
-                status = 'CRITICAL';
+                status = 'EXACT';
             }
         } else {
             // Numeric comparison (INT, FLOAT, CURRENCY)
@@ -36,12 +36,20 @@ export const getFeedback = (
 
             // Proximity Logic
             if (gNum === tNum) {
-                status = 'CRITICAL';
-            } else if (field.tolerance !== null) {
+                status = 'EXACT';
+            } else if (field.proximityConfig) {
                 const diff = Math.abs(gNum - tNum);
-                const allowance = field.tolerance * tNum;
+                const allowance = field.proximityConfig.type === 'RANGE'
+                    ? field.proximityConfig.value
+                    : field.proximityConfig.value * Math.abs(tNum);
+
                 if (diff <= allowance) {
-                    status = 'THERMAL';
+                    status = 'HOT';
+                } else {
+                    const nearAllowance = allowance * field.proximityConfig.nearMultiplier;
+                    if (diff <= nearAllowance) {
+                        status = 'NEAR';
+                    }
                 }
             }
         }
@@ -56,17 +64,6 @@ export const getFeedback = (
     return result;
 };
 
-export const getGuessesForMode = (mode: GameMode): number => {
-    switch (mode) {
-        case 'EASIER': return 999; // Effectively unlimited
-        case 'EASY': return 15;
-        case 'REGULAR': return 10;
-        case 'HARD': return 5;
-        case 'HARDEST': return 3;
-        default: return 10;
-    }
-};
-
 export const getRandomTarget = (gameData: GameData, category: string): Entity => {
     const entities = gameData.categories[category] || [];
     if (entities.length === 0) {
@@ -78,51 +75,7 @@ export const getRandomTarget = (gameData: GameData, category: string): Entity =>
 };
 
 export const checkWinCondition = (feedback: Record<string, Feedback>): boolean => {
-    return Object.values(feedback).every(f => f.status === 'CRITICAL');
-};
-
-export interface DeepScanCalculationResult {
-    percentile: number;
-    attributeLabel: string;
-}
-
-export const calculateDeepScan = (
-    gameData: GameData,
-    activeCategory: string,
-    attribute: string,
-    targetValue: string | number
-): DeepScanCalculationResult | null => {
-    const currentSchema = gameData.schema[activeCategory];
-    const fieldDef = currentSchema?.[attribute];
-
-    if (!fieldDef || (fieldDef.type !== 'INT' && fieldDef.type !== 'FLOAT' && fieldDef.type !== 'CURRENCY')) {
-        return null;
-    }
-
-    if (typeof targetValue !== 'number') return null;
-
-    const entities = gameData.categories[activeCategory] || [];
-    const numericValues = entities
-        .map(e => e[attribute])
-        .filter(v => typeof v === 'number') as number[];
-
-    if (numericValues.length === 0) return null;
-
-    // Sort ascending to find rank
-    numericValues.sort((a, b) => a - b);
-
-    const total = numericValues.length;
-    const rankIndex = numericValues.indexOf(targetValue);
-
-    if (rankIndex === -1) return null;
-
-    const rankFromTop = total - rankIndex;
-    const percentTop = (rankFromTop / total) * 100;
-
-    return {
-        percentile: percentTop,
-        attributeLabel: fieldDef.label || attribute
-    };
+    return Object.values(feedback).every(f => f.status === 'EXACT');
 };
 
 export const getSuggestions = (
@@ -145,4 +98,32 @@ export const getSuggestions = (
             ))
         )
         .slice(0, 8); // Limit to 8 for better UI
+};
+
+export const calculateRank = (score: number, par: number): RankInfo => {
+    if (score <= par) {
+        return { rank: 'GOLD', label: 'Editorial Choice' };
+    } else if (score <= par + 3) {
+        return { rank: 'SILVER', label: 'Subscriber' };
+    } else {
+        return { rank: 'BRONZE', label: 'Casual Reader' };
+    }
+};
+
+export const getInitialColumnVisibility = (
+    schema: CategorySchema
+): Record<string, boolean> => {
+    const keys = Object.keys(schema).filter(k => k !== 'id' && k !== 'name');
+    const visibility: Record<string, boolean> = {};
+    for (const key of keys) {
+        visibility[key] = false;
+    }
+
+    // Randomly select 2 "Core" attributes to be visible by default
+    const shuffled = [...keys].sort(() => Math.random() - 0.5);
+    for (let i = 0; i < Math.min(2, shuffled.length); i++) {
+        visibility[shuffled[i]] = true;
+    }
+
+    return visibility;
 };
