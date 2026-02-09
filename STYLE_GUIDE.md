@@ -212,20 +212,36 @@ px-2 py-1
 
 ### Header Bar
 
-A horizontal bar spanning the full container width with three sections:
+A responsive bar spanning the full container width. Uses separate mobile and desktop layouts.
 
+**Desktop (md+) — single row with three sections:**
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ [Category ▼]    [____Type your guess..._____]    Moves 3 │ Hints ■■ │ HOW TO PLAY │
 └─────────────────────────────────── gradient underline ───────┘
 ```
 
-- **Left:** Category `<select>` dropdown (charcoal border, uppercase, monospace)
-- **Center:** Game input (bottom-border-only style, see Input section)
-- **Right:** Scoreboard + graphite divider (`h-4 w-px bg-graphite`) + "How to Play" link
+- **Left:** Category `<select>` dropdown (charcoal border, uppercase, monospace, `shrink-0`)
+- **Center:** Game input (absolutely positioned at `left-1/2 -translate-x-1/2`)
+- **Right:** Scoreboard + graphite divider (`h-4 w-px bg-graphite`) + "How to Play" link (`shrink-0`)
+
+**Mobile (< md) — stacked centered rows:**
+```
+┌─────────────────────┐
+│    [Category ▼]     │  ← Row 1: category dropdown
+│  [_Type guess..._]  │  ← Row 2: input
+│  Moves 3 │ ■■ │ HTP │  ← Row 3: score + how to play
+└── gradient underline ─┘
+```
+
+- All rows: `flex flex-col gap-3 items-center`
+- Category: `text-xs` (mobile), `text-sm` (desktop)
+
+**Shared properties:**
 - **Bottom border:** Venn gradient underline (`border-b-venn`) — subtle teal-gold-pink gradient fading at edges
 - Font: All monospace (`font-mono`)
-- Spacing: `mb-6`, `gap-4`, `pb-4`
+- Spacing: `mb-6`, `pb-4`
+- Z-index: `relative z-30`
 
 ### Title / Logo Area
 
@@ -516,6 +532,69 @@ All modals use **Radix Dialog** and share a common responsive pattern:
 - Description: `font-mono text-sm text-charcoal/70 mb-6` — dynamic text based on credits available
 - Buttons: `flex-1` pair with `gap-3`
 
+### Footer
+
+Positioned below the main container, centered:
+
+```
+Built by Samir Husain · Privacy Policy
+```
+
+- Container: `py-4 text-center font-mono flex items-center justify-center gap-2`
+- Links: Same styling as "How to Play" / "Reveal Answer" — `text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest underline underline-offset-2`
+- Separator: `text-charcoal/30 text-[10px]` middle dot (`·`)
+- "Built by Samir Husain" links to personal website (external)
+- "Privacy Policy" opens PrivacyPolicyModal
+
+### Share Challenge Button
+
+Fixed position bottom-right:
+
+```
+┌──────────┐
+│ 📤 Share │  ← fixed bottom-4 right-4 z-50
+└──────────┘
+```
+
+- Position: `fixed bottom-4 right-4 z-50`
+- Style: `flex items-center gap-1.5 border border-charcoal bg-paper-white px-3 py-1.5`
+- Text: `text-[10px] font-bold uppercase tracking-widest text-charcoal`
+- Hover: `hover:bg-charcoal hover:text-paper-white transition-colors`
+- Icon: Share2 from Lucide at 12px
+
+### Privacy Policy Modal (`max-w-2xl`)
+
+```
+┌──────────────────────────────────────┐
+│ ████████████████████████████████  ✕ │
+│ ██    PRIVACY POLICY    █████████  │  ← charcoal bg, white text, serif
+│ ████████████████████████████████████│
+│                                      │
+│  Scalar runs entirely in your        │
+│  browser...                          │
+│                                      │
+│  INFORMATION WE COLLECT              │
+│  ─────────────────────               │
+│  Local Storage...                    │
+│  Analytics (Vercel Analytics)...     │
+│                                      │
+│  INFORMATION WE DO NOT COLLECT       │
+│  ─────────────────────               │
+│  • Names, emails...                  │
+│                                      │
+│  [          Got It          ]        │
+└──────────────────────────────────────┘
+```
+
+- Always centered (no bottom-sheet variant)
+- `w-[95vw] max-w-2xl`
+- Content: `space-y-6 text-sm text-charcoal font-mono`
+- Section headings: same as HowToPlayModal — `font-black uppercase text-xs tracking-widest mb-3 border-b border-charcoal/20 pb-1`
+- Sub-headings: `font-bold text-xs mb-1`
+- Body text: `text-xs text-charcoal/70 leading-relaxed`
+- External links: `underline underline-offset-2 hover:text-charcoal transition-colors`
+- Close button: filled `bg-charcoal text-paper-white` with standard hover invert
+
 ### Venn Background
 
 A full-viewport decorative SVG layer behind all content:
@@ -578,6 +657,7 @@ All icons from **Lucide React**, rendered at small sizes with monochrome charcoa
 | Eye | `<Eye>` | `w-3 h-3` | Hint trigger on ALL cells (reveal exact target value) |
 | Check | `<Check>` | `w-2.5 h-2.5` | Major-hinted value badge |
 | ChevronDown | `<ChevronDown>` | `w-3 h-3` | Folded section expand/collapse toggle |
+| Share2 | `<Share2>` | `12px` | Share challenge button (fixed bottom-right) |
 | X (inline SVG) | Custom SVG | `20x20` | Modal close buttons |
 
 ---

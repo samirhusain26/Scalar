@@ -36,7 +36,7 @@ export function RevealAnswerModal({
     const displayFields = getDisplayColumns(schema);
 
     return (
-        <Dialog.Root open={isOpen}>
+        <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onNewGame()}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(

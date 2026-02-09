@@ -8,7 +8,7 @@ import type { Feedback, SchemaField } from '../types';
  * Distance-based coloring for the GEO_DISTANCE cell (Distance from Target).
  * Green for close, amber for medium, yellow for far, gray for very far.
  */
-export function getGeoDistanceCellClass(distanceKm: number | undefined): string {
+function getGeoDistanceCellClass(distanceKm: number | undefined): string {
     if (distanceKm === undefined) return 'bg-white text-charcoal';
     if (distanceKm < 1000) return 'bg-thermal-green text-white';   // green (includes 0km)
     if (distanceKm < 3000) return 'bg-geo-warm';                   // amber
@@ -16,12 +16,12 @@ export function getGeoDistanceCellClass(distanceKm: number | undefined): string 
     return 'bg-white text-charcoal';                               // white (cold)
 }
 
-export function getCategoryMatchClass(categoryMatch: boolean | undefined): string {
+function getCategoryMatchClass(categoryMatch: boolean | undefined): string {
     if (categoryMatch === true) return 'bg-cat-match';
     return 'bg-white text-charcoal';
 }
 
-export function getStandardStatusClass(status: string | undefined): string {
+function getStandardStatusClass(status: string | undefined): string {
     if (status === 'EXACT') return 'bg-thermal-green text-white';
     if (status === 'HOT') return 'bg-thermal-orange text-white';
     if (status === 'NEAR') return 'bg-amber-100 text-charcoal border-dashed border-amber-400';

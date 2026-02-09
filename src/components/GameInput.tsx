@@ -60,10 +60,11 @@ export function GameInput() {
                 setShowSuggestions(true);
                 return;
             }
+            if (suggestions.length === 0) return;
             setSelectedIndex(prev => (prev + 1) % suggestions.length);
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            if (!showSuggestions) return;
+            if (!showSuggestions || suggestions.length === 0) return;
             setSelectedIndex(prev => (prev - 1 + suggestions.length) % suggestions.length);
         } else if (e.key === 'Enter') {
             e.preventDefault();

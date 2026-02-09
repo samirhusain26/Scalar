@@ -43,16 +43,8 @@
   --color-paper-white: #FAFAF9;
   --color-charcoal: #18181B;
   --color-graphite: #E2E8F0;
-  --color-thermal-gold: #EAB308;
   --color-thermal-orange: #F97316;
-  --color-thermal-teal: #14B8A6;
-  --color-thermal-amber: #F59E0B;
   --color-thermal-green: #22C55E;
-
-  /* Venn logo palette */
-  --color-venn-teal: #14B8A6;
-  --color-venn-pink: #F472B6;
-  --color-venn-gold: #EAB308;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -79,44 +71,10 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Hidden column pattern — 45deg diagonal stripes */
-@utility bg-hidden-pattern {
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 4px,
-    rgba(24, 24, 27, 0.06) 4px,
-    rgba(24, 24, 27, 0.06) 5px
-  );
-  background-color: #F8FAFC;
-}
-
-/* Folded column pattern — -45deg diagonal stripes (darker) */
-@utility bg-folded-pattern {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 3px,
-    rgba(24, 24, 27, 0.08) 3px,
-    rgba(24, 24, 27, 0.08) 4px
-  );
-  background-color: #F1F5F9;
-}
-
 /* Thermal distance gradient utilities */
-@utility bg-geo-hot {
-  background-color: #F97316;
-  color: white;
-}
-
 @utility bg-geo-warm {
   background-color: #F59E0B;
   color: #18181B;
-}
-
-@utility bg-geo-cool {
-  background-color: #14B8A6;
-  color: white;
 }
 
 /* Distance cell — yellow tier (<5000km) */
@@ -125,19 +83,9 @@
   color: #18181B;
 }
 
-@utility bg-geo-cold {
-  background-color: #E2E8F0;
-  color: #18181B;
-}
-
-/* Category match utilities */
+/* Category match utility */
 @utility bg-cat-match {
   background-color: #EAB308;
-  color: #18181B;
-}
-
-@utility bg-cat-miss {
-  background-color: #E2E8F0;
   color: #18181B;
 }
 
@@ -153,11 +101,6 @@
 
 @utility shadow-hard-sm {
   box-shadow: 4px 4px 0px 0px rgba(24, 24, 27, 0.15);
-}
-
-/* Venn-inspired gradient border for the active category tab */
-@utility border-venn-active {
-  border-image: linear-gradient(90deg, #14B8A6, #EAB308, #F472B6) 1;
 }
 
 /* Subtle gradient underline for header separator */

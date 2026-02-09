@@ -29,12 +29,16 @@ export function GameOverModal({
         const text = `Can you beat my score of ${moves} moves? Play Scalar: ${url}`;
 
         try {
-            await navigator.clipboard.writeText(text);
+            if (navigator.share) {
+                await navigator.share({ title: 'Scalar Challenge', text, url });
+            } else {
+                await navigator.clipboard.writeText(text);
+            }
             setChallengeCopied(true);
             trackGameEvent('challenge_shared', { category: activeCategory, moves });
             setTimeout(() => setChallengeCopied(false), 2000);
-        } catch (error) {
-            console.error('Error copying challenge:', error);
+        } catch {
+            // User cancelled share or clipboard denied — ignore
         }
     };
 
@@ -43,7 +47,9 @@ export function GameOverModal({
         <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onReset()}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-                <Dialog.Content className={cn(
+                <Dialog.Content
+                    onInteractOutside={(e) => e.preventDefault()}
+                    className={cn(
                     "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none",
                     "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-md border border-charcoal",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",

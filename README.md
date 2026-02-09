@@ -341,6 +341,9 @@ The Scoreboard in the header displays your current move count and remaining hint
 - **Venn diagram visual identity** — SVG logo with overlapping teal/pink circles and golden intersection, plus animated background orbs.
 - **Reveal answer** — Stuck? Reveal the target entity and all its attributes to learn and move on.
 - **Responsive design** — Card grid layout on desktop, single-column on mobile with bottom-sheet modals.
+- **Share challenge** — Fixed bottom-right button generates shareable challenge URLs. Uses Web Share API if available, falls back to clipboard copy.
+- **Privacy-respecting analytics** — Vercel Analytics tracks page views and game completion events (category, moves, hints used). No cookies, no personal data, daily-reset visitor hash.
+- **Privacy policy** — Transparent privacy policy modal accessible from the footer, explaining all data practices.
 
 ---
 
@@ -354,7 +357,8 @@ The Scoreboard in the header displays your current move count and remaining hint
 | [Tailwind CSS](https://tailwindcss.com/) | 4 | Styling (CSS-first `@theme inline` config) |
 | [Zustand](https://github.com/pmndrs/zustand) | 5 | State Management (with localStorage persistence) |
 | [Radix UI](https://www.radix-ui.com/) | — | Accessible Dialog Primitives |
-| [Lucide React](https://lucide.dev/) | — | Icon Library (Eye, Check, ChevronDown) |
+| [Lucide React](https://lucide.dev/) | — | Icon Library (Eye, Check, ChevronDown, Share2) |
+| [Vercel Analytics](https://vercel.com/analytics) | — | Privacy-respecting usage analytics (no cookies) |
 | [class-variance-authority](https://cva.style/docs) | — | Component Variants |
 | [tailwindcss-animate](https://github.com/jamiebuilds/tailwindcss-animate) | — | Animation Utilities |
 | [Geist Mono](https://vercel.com/font) | — | Body/data monospace font |
@@ -370,8 +374,11 @@ The Scoreboard in the header displays your current move count and remaining hint
 Scalar/
 ├── CLAUDE.md                        # Project context for AI assistants
 ├── README.md                        # This file
+├── GAMEPLAY.md                      # Detailed gameplay logic & scoring documentation
+├── STYLE_GUIDE.md                   # Visual design system & component specifications
 ├── .gitignore
 ├── fetch_data.py                    # Python: CSV -> gameData.json
+├── enrich_hollywood.py              # Python: enrich Hollywood movie data
 ├── package.json                     # npm package (scalar, private)
 ├── package-lock.json
 ├── vite.config.ts                   # Vite config (@ alias -> src/)
@@ -382,9 +389,10 @@ Scalar/
 ├── postcss.config.js                # PostCSS: @tailwindcss/postcss + autoprefixer
 ├── components.json                  # Shadcn CLI config
 ├── index.html                       # HTML entry point
-├── data/                            # Source data (schema configs + enriched CSVs)
+├── data/                            # Source data (schema configs + enriched CSVs + enrichment scripts)
 │   ├── {category}_schema_config.csv # Schema definitions per category
-│   └── {category}_enriched.csv      # Entity data per category
+│   ├── {category}_enriched.csv      # Entity data per category
+│   └── *.py                         # Data enrichment/cleaning scripts per category
 └── src/
     ├── main.tsx                     # Entry point: StrictMode, Geist Mono + Fraunces imports
     ├── App.tsx                      # Root: header bar, category selector, game grid, modals
@@ -400,6 +408,7 @@ Scalar/
     │   ├── formatters.ts            # formatNumber(), formatDistance(), formatPercentageDiffTier(), formatYearDiffTier(), expandConservationStatus(), getDirectionSymbol(), getAlphaDirectionSymbol(), numberToLetter()
     │   ├── geo.ts                   # haversineDistance(): great-circle distance in km
     │   ├── schemaParser.ts          # getDisplayColumns(), getFoldedColumns(), getVisibleCandidateColumns(), getFieldByKey()
+    │   ├── analytics.ts             # trackGameEvent(): Vercel Analytics event tracking wrapper
     │   └── cn.ts                    # cn(): clsx + tailwind-merge utility
     ├── lib/
     │   └── utils.ts                 # cn() duplicate (from Shadcn init)
@@ -412,6 +421,7 @@ Scalar/
         ├── RevealAnswerModal.tsx    # Radix Dialog: shows target entity + all attributes on forfeit
         ├── HowToPlayModal.tsx       # Radix Dialog: gameplay instructions, auto-opens first visit
         ├── MajorHintModal.tsx       # Radix Dialog: confirmation for hint reveal (free with credits, +3 moves without)
+        ├── PrivacyPolicyModal.tsx   # Radix Dialog: privacy policy with Vercel Analytics disclosure
         ├── Scoreboard.tsx           # Header display: moves count, free hint credit indicators
         ├── ScalarLogo.tsx           # Venn diagram SVG logo component (teal/pink circles, golden intersection)
         └── VennBackground.tsx       # Animated decorative background with venn orbs
@@ -569,6 +579,7 @@ getFeedback(target, guess, schema)
 | `getFoldedColumns(schema)` | schemaParser.ts | Fields where `isFolded === true` |
 | `getVisibleCandidateColumns(schema)` | schemaParser.ts | Display fields that are NOT folded |
 | `getFieldByKey(schema, key)` | schemaParser.ts | Lookup by `attributeKey` |
+| `trackGameEvent(name, data)` | analytics.ts | Wrapper for Vercel Analytics `track()` — tracks game completions |
 
 ### Feedback Color System
 
@@ -620,14 +631,20 @@ App
 │   └── "Reveal Answer" button
 ├── GameOverModal                    # "Puzzle Complete" — entity, moves, share + play again
 ├── RevealAnswerModal                # "Answer Revealed" — entity + all attribute values
-└── HowToPlayModal                   # Instructions — auto-opens first visit (localStorage)
+├── HowToPlayModal                   # Instructions — auto-opens first visit (localStorage)
+├── PrivacyPolicyModal               # Privacy policy — analytics disclosure, data practices
+├── Footer (inline in App.tsx)
+│   ├── "Built by Samir Husain" link
+│   └── "Privacy Policy" button
+├── Share Challenge Button           # Fixed bottom-right, generates challenge URL
+└── Analytics                        # Vercel Analytics component (privacy-respecting)
 ```
 
 **Component Details:**
 
 | Component | Description |
 |-----------|-------------|
-| **App.tsx** | Root component. Renders header bar (category selector, GameInput, Scoreboard, How to Play link), GameGrid, answer section, and all modals. Drives category tabs from `gameData.categories` keys. Win effect: adds `invert` class to `<html>` for 500ms. Answer shows `??????` while PLAYING, entity name (truncated to 12 chars) when solved/revealed. |
+| **App.tsx** | Root component. Renders header bar (category selector, GameInput, Scoreboard, How to Play link) with separate mobile (stacked) and desktop (single row) layouts, GameGrid, answer section, all modals, footer ("Built by Samir Husain" + Privacy Policy), and a fixed bottom-right Share challenge button. Integrates Vercel Analytics. Drives category tabs from `gameData.categories` keys. Win effect: adds `invert` class to `<html>` for 500ms. Answer shows `??????` while PLAYING, entity name (truncated to 12 chars) when solved/revealed. |
 | **GameGrid.tsx** | Responsive CSS Grid container: `grid-cols-1` / `md:grid-cols-2` / `xl:grid-cols-3`. Renders GuessCard for each guess in reverse order (most recent first). Manages MajorHintModal state (`pendingMajorHint`). Shows empty-state message when no guesses. |
 | **GuessCard.tsx** | Individual guess card with: header (entity name + `#XX` index), 2-column attribute grid. Features merged Location cell (Continent/Subregion/Hemisphere), HIGHER_LOWER split layout (value + arrow/tier), full-width list rows (Genre/Cast & Crew with per-item match coloring), Olympics merging, conservation status expansion, ALPHA_POSITION letter rendering, year diff tiers, N/A handling, and animal unit suffixes. Eye icon on ALL cells for hint reveal. Uses `getCellColor()` for all color logic. Card styling: `border border-charcoal bg-paper-white`, no rounding, no shadows. |
 | **GameInput.tsx** | Autocomplete with downward-opening tag cloud dropdown (with arrow caret pointing up). Keyboard nav: ArrowUp/Down to navigate, Enter to select, Escape to close. Disabled with "Solved"/"Revealed" placeholder when game is over. Max 8 suggestions, deduplicated by name. Underline-style input (bottom border only, `w-48` mobile / `w-56` desktop). |
@@ -635,6 +652,7 @@ App
 | **RevealAnswerModal.tsx** | Radix Dialog — bottom-sheet on mobile, centered on desktop. Title: "Answer Revealed". Uses `getDisplayColumns()` to show all target entity attributes in a scrollable list. Formats numbers/booleans/strings. "New Game" button resets. |
 | **HowToPlayModal.tsx** | Radix Dialog — auto-opens on first visit (localStorage key: `scalar-htp-seen`). Sections: Goal, How It Works, Feedback Colors (thermal swatches: gold/orange/amber/gray), Direction Indicators, Scoring (Total Moves + credits), Hints (credits + major hints). |
 | **MajorHintModal.tsx** | Centered Radix Dialog. Shows dynamic cost: "Free" if credits available (with count), "+3 moves" otherwise. Cancel / Reveal (Free) / Reveal (+3) buttons. |
+| **PrivacyPolicyModal.tsx** | Centered Radix Dialog (`max-w-2xl`). Sections: Information We Collect (localStorage, Vercel Analytics), Information We Do Not Collect, Third-Party Services, Data Retention, Contact. Matches modal design system with charcoal title banner and "Got It" close button. |
 | **Scoreboard.tsx** | Inline in header. Displays: "Moves" label + count (tabular-nums), divider, "Hints" label + 3 squares (filled if credit available, empty if spent). |
 | **ScalarLogo.tsx** | SVG Venn diagram: two overlapping circles (teal left, pink right) with golden vesica piscis intersection. Configurable size. Rendered behind the title at 50% opacity. |
 | **VennBackground.tsx** | Fixed full-screen SVG with animated decorative orbs: primary Venn pair (top-left), secondary pair (bottom-right), floating accent orbs, and subtle vesica piscis outlines. All very low opacity (3-7%). Gentle CSS animations on circle positions. |
@@ -861,6 +879,21 @@ Note: The thermal colors have evolved from the original gold-based system. The a
 - **GEO_DISTANCE gradient** → green (<1000km) → amber (<3000km) → yellow (<5000km) → white (>=5000km)
 - **DISTANCE_GRADIENT text fields** → green (exact match) / white (miss) — binary, no intermediate distance gradient
 - **Category match** → green (exact) / gold (bucket match) / white (miss)
+
+---
+
+## Privacy & Analytics
+
+Scalar uses **Vercel Analytics** for privacy-respecting usage tracking:
+
+- **No cookies** — visitors are identified via a daily-reset hash that cannot track across sessions or websites
+- **No personal data** — no names, emails, passwords, or precise geolocation collected
+- **Game events tracked**: category played, move count, and whether hints were used (on game completion only)
+- **Page views**: standard anonymized page view tracking (device type, browser, country-level location)
+
+All game state (guesses, moves, hints, active category) is stored in **browser localStorage** only and never transmitted to any server.
+
+A full privacy policy is accessible in-app via the footer "Privacy Policy" link.
 
 ---
 

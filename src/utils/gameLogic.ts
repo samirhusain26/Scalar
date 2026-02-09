@@ -48,12 +48,6 @@ export function getFeedback(
             case 'SET_INTERSECTION':
                 feedback = handleSetIntersection(target, guess, field);
                 break;
-            default:
-                feedback = {
-                    direction: 'NONE',
-                    status: 'MISS',
-                    value: guess[attributeKey] ?? '',
-                };
         }
 
         result[attributeKey] = feedback;
@@ -71,8 +65,14 @@ function handleExactMatch(target: Entity, guess: Entity, field: SchemaField): Fe
     const guessVal = guess[field.attributeKey];
 
     if (field.dataType === 'BOOLEAN') {
-        const tBool = Boolean(targetVal);
-        const gBool = Boolean(guessVal);
+        const toBool = (v: string | number | boolean | undefined): boolean => {
+            if (typeof v === 'boolean') return v;
+            if (typeof v === 'number') return v !== 0;
+            const s = String(v ?? '').toLowerCase().trim();
+            return s === 'true' || s === '1' || s === 'yes';
+        };
+        const tBool = toBool(targetVal);
+        const gBool = toBool(guessVal);
         return {
             direction: 'NONE',
             status: tBool === gBool ? 'EXACT' : 'MISS',
@@ -149,11 +149,9 @@ function handleHigherLower(
         };
     }
 
-    // Percentage diff
-    const percentDiff =
-        tNum !== 0
-            ? Math.round(Math.abs((gNum - tNum) / tNum) * 100)
-            : Math.abs(gNum - tNum);
+    // Percentage diff (use max(|tNum|, 1) as denominator to avoid division-by-zero)
+    const denominator = tNum !== 0 ? Math.abs(tNum) : 1;
+    const percentDiff = Math.round(Math.abs((gNum - tNum) / denominator) * 100);
 
     // Category match (linked column or range-based fallback)
     let catMatch: boolean | undefined;
@@ -174,9 +172,8 @@ function handleHigherLower(
         displayValue = `${arrow} ${tier}`;
     } else if (field.displayFormat === 'RELATIVE_PERCENTAGE') {
         // Relative to guess: ((target - guess) / guess) * 100
-        const relPct = gNum !== 0
-            ? Math.round(((tNum - gNum) / gNum) * 100)
-            : 0;
+        const relDenom = gNum !== 0 ? Math.abs(gNum) : 1;
+        const relPct = Math.round(((tNum - gNum) / relDenom) * 100);
         const sign = relPct > 0 ? '+' : '';
         displayValue = `${arrow} ${sign}${relPct}%`;
     } else if (field.displayFormat === 'CURRENCY') {
@@ -308,9 +305,9 @@ export function getSuggestions(
     return entities
         .filter(
             e =>
-                !guessedIds.has(e.id as string) &&
+                !guessedIds.has(e.id) &&
                 (e.name.toLowerCase().includes(lowerQ) ||
-                    (e.id as string).toLowerCase().includes(lowerQ))
+                    e.id.toLowerCase().includes(lowerQ))
         )
         .filter(
             (entity, index, self) =>
@@ -319,18 +316,3 @@ export function getSuggestions(
         .slice(0, 8);
 }
 
-export function getInitialColumnVisibility(
-    schema: CategorySchema
-): Record<string, boolean> {
-    // All non-folded display columns are visible by default (card layout shows all)
-    const candidates = schema.filter(
-        f => f.displayFormat !== 'HIDDEN' && !f.isFolded
-    );
-
-    const visibility: Record<string, boolean> = {};
-    for (const field of candidates) {
-        visibility[field.attributeKey] = true;
-    }
-
-    return visibility;
-}

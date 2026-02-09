@@ -58,11 +58,16 @@ function App() {
   // Win effect (invert colors)
   useEffect(() => {
     if (gameStatus === 'SOLVED') {
-      const timer = setTimeout(() => {
+      let innerTimer: ReturnType<typeof setTimeout>;
+      const outerTimer = setTimeout(() => {
         document.documentElement.classList.add('invert');
-        setTimeout(() => document.documentElement.classList.remove('invert'), 500);
+        innerTimer = setTimeout(() => document.documentElement.classList.remove('invert'), 500);
       }, 200);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(outerTimer);
+        clearTimeout(innerTimer);
+        document.documentElement.classList.remove('invert');
+      };
     }
   }, [gameStatus]);
 
@@ -221,13 +226,17 @@ function App() {
 
       {/* Share Challenge Button — fixed bottom-right */}
       <button
-        onClick={() => {
+        onClick={async () => {
           const hash = encodeChallenge(activeCategory, targetEntity.id);
           const url = `${window.location.origin}${window.location.pathname}?challenge=${hash}`;
-          if (navigator.share) {
-            navigator.share({ title: 'Scalar Challenge', url });
-          } else {
-            navigator.clipboard.writeText(url);
+          try {
+            if (navigator.share) {
+              await navigator.share({ title: 'Scalar Challenge', url });
+            } else {
+              await navigator.clipboard.writeText(url);
+            }
+          } catch {
+            // User cancelled share or clipboard denied — ignore
           }
         }}
         className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 border border-charcoal bg-paper-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors"

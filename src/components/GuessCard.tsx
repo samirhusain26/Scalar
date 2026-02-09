@@ -69,7 +69,7 @@ export function GuessCard({
             const isYearField = /year|discovered/i.test(field.displayLabel);
             if (isYearField) {
                 if (targetVal === 0) return 'Ancient';
-                if (targetVal >= 1000 && targetVal <= 2029) return String(targetVal);
+                if (targetVal >= 1000 && targetVal <= new Date().getFullYear() + 10) return String(targetVal);
             }
             return formatNumber(targetVal);
         }
@@ -121,7 +121,7 @@ export function GuessCard({
         const isYearField = /year|discovered/i.test(field.displayLabel);
         if (isYearField) {
             if (rawValue === 0) return 'Ancient';
-            if (rawValue >= 1000 && rawValue <= 2029) return String(rawValue);
+            if (rawValue >= 1000 && rawValue <= new Date().getFullYear() + 10) return String(rawValue);
         }
         if (field.displayFormat === 'CURRENCY') return `$${formatNumber(rawValue)}`;
         // Scrabble score: show "14 pts" or "14 pts · 2w" when multi-word

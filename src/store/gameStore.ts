@@ -5,7 +5,6 @@ import {
     getFeedback,
     getRandomTarget,
     checkWinCondition,
-    getInitialColumnVisibility,
 } from '../utils/gameLogic';
 import { trackGameEvent } from '../utils/analytics';
 import gameDataRaw from '../assets/data/gameData.json';
@@ -13,7 +12,7 @@ import gameDataRaw from '../assets/data/gameData.json';
 const gameData = gameDataRaw as unknown as GameData;
 
 // Bump this when schema changes to clear stale localStorage.
-const STORE_VERSION = 11;
+const STORE_VERSION = 12;
 
 const DEFAULT_CATEGORY = 'countries';
 const DEFAULT_CREDITS = 3;
@@ -31,13 +30,10 @@ interface GameState {
     gameStatus: GameStatus;
     moves: number;
     credits: number;
-    columnVisibility: Record<string, boolean>;
     majorHintAttributes: string[];
 
     setActiveCategory: (category: string) => void;
     submitGuess: (guess: Entity) => void;
-    revealColumn: (attributeId: string) => void;
-    revealFoldedAttribute: (attributeId: string) => void;
     revealMajorHint: (attributeIds: string | string[]) => void;
     revealAnswer: () => void;
     resetGame: () => void;
@@ -53,9 +49,6 @@ export const useGameStore = create<GameState>()(
             gameStatus: 'PLAYING',
             moves: 0,
             credits: DEFAULT_CREDITS,
-            columnVisibility: getInitialColumnVisibility(
-                gameData.schemaConfig[DEFAULT_CATEGORY]
-            ),
             majorHintAttributes: [],
 
             setActiveCategory: (category: string) => {
@@ -67,9 +60,6 @@ export const useGameStore = create<GameState>()(
                         gameStatus: 'PLAYING',
                         moves: 0,
                         credits: DEFAULT_CREDITS,
-                        columnVisibility: getInitialColumnVisibility(
-                            gameData.schemaConfig[category]
-                        ),
                         majorHintAttributes: [],
                     });
                 }
@@ -110,43 +100,6 @@ export const useGameStore = create<GameState>()(
                 }
             },
 
-            revealColumn: (attributeId: string) => {
-                const { columnVisibility, gameStatus, moves, credits } = get();
-
-                if (gameStatus !== 'PLAYING') return;
-                if (columnVisibility[attributeId]) return;
-
-                if (credits > 0) {
-                    set({
-                        columnVisibility: {
-                            ...columnVisibility,
-                            [attributeId]: true,
-                        },
-                        credits: credits - 1,
-                    });
-                } else {
-                    set({
-                        columnVisibility: {
-                            ...columnVisibility,
-                            [attributeId]: true,
-                        },
-                        moves: moves + HINT_MOVE_COST,
-                    });
-                }
-            },
-
-            revealFoldedAttribute: (_attributeId: string) => {
-                const { gameStatus, moves, credits } = get();
-
-                if (gameStatus !== 'PLAYING') return;
-
-                if (credits > 0) {
-                    set({ credits: credits - 1 });
-                } else {
-                    set({ moves: moves + HINT_MOVE_COST });
-                }
-            },
-
             revealMajorHint: (attributeIds: string | string[]) => {
                 const { majorHintAttributes, gameStatus, moves, credits } = get();
 
@@ -170,9 +123,10 @@ export const useGameStore = create<GameState>()(
             },
 
             revealAnswer: () => {
-                const { gameStatus } = get();
+                const { gameStatus, activeCategory } = get();
                 if (gameStatus !== 'PLAYING') return;
-                set({ gameStatus: 'REVEALED', moves: Infinity });
+                const entityCount = (gameData.categories[activeCategory] || []).length;
+                set({ gameStatus: 'REVEALED', moves: entityCount });
             },
 
             resetGame: () => {
@@ -183,9 +137,6 @@ export const useGameStore = create<GameState>()(
                     gameStatus: 'PLAYING',
                     moves: 0,
                     credits: DEFAULT_CREDITS,
-                    columnVisibility: getInitialColumnVisibility(
-                        gameData.schemaConfig[activeCategory]
-                    ),
                     majorHintAttributes: [],
                 });
             },
@@ -198,9 +149,6 @@ export const useGameStore = create<GameState>()(
                     gameStatus: 'PLAYING',
                     moves: 0,
                     credits: DEFAULT_CREDITS,
-                    columnVisibility: getInitialColumnVisibility(
-                        gameData.schemaConfig[category]
-                    ),
                     majorHintAttributes: [],
                 });
             },
@@ -218,9 +166,6 @@ export const useGameStore = create<GameState>()(
                         gameStatus: 'PLAYING' as const,
                         moves: 0,
                         credits: DEFAULT_CREDITS,
-                        columnVisibility: getInitialColumnVisibility(
-                            gameData.schemaConfig[DEFAULT_CATEGORY]
-                        ),
                         majorHintAttributes: [],
                     };
                 }

@@ -4,11 +4,14 @@ import type { FeedbackDirection } from '../types';
  * Formats a number with suffixes (k, M, B) for better readability.
  * Pass fieldLabel to suppress suffix for year-like fields (Year, Discovered).
  */
+/** Upper bound for year detection: current year + 10 */
+const MAX_YEAR = new Date().getFullYear() + 10;
+
 export function formatNumber(num: number, digits = 1, fieldLabel?: string): string {
     // Year-like fields: don't apply suffix for values in typical year range
     if (fieldLabel && /year|discovered/i.test(fieldLabel)) {
         if (num === 0) return 'Ancient';
-        if (num >= 1000 && num <= 2029) return String(num);
+        if (num >= 1000 && num <= MAX_YEAR) return String(num);
     }
 
     const lookup = [

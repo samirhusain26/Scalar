@@ -9,7 +9,7 @@ export function Scoreboard() {
             {/* Moves */}
             <div className="flex items-center gap-1">
                 <span className="text-charcoal/50 uppercase text-xs">Moves</span>
-                <span className="text-base tabular-nums">{moves === Infinity ? '∞' : moves}</span>
+                <span className="text-base tabular-nums">{moves}</span>
             </div>
 
             {/* Divider */}
