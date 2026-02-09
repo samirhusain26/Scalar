@@ -85,20 +85,8 @@ function App() {
         <header className="mb-6 border-b-venn pb-4 font-mono relative">
           {/* Mobile layout: stacked rows */}
           <div className="flex flex-col gap-3 md:hidden">
-            {/* Row 1: Category + Score + How to Play */}
-            <div className="flex items-center justify-between">
-              <select
-                value={activeCategory}
-                onChange={(e) => setActiveCategory(e.target.value)}
-                className="text-xs font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none shrink-0"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-
+            {/* Row 1: Score + How to Play */}
+            <div className="flex items-center justify-end">
               <div className="flex items-center gap-3 shrink-0">
                 <Scoreboard />
                 <div className="h-4 w-px bg-graphite" />
@@ -114,6 +102,21 @@ function App() {
             {/* Row 2: Input centered */}
             <div className="flex justify-center">
               <GameInput />
+            </div>
+
+            {/* Row 3: Category dropdown centered */}
+            <div className="flex justify-center">
+              <select
+                value={activeCategory}
+                onChange={(e) => setActiveCategory(e.target.value)}
+                className="text-xs font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

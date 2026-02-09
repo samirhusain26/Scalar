@@ -42,7 +42,13 @@ export function GameInput() {
         setQuery('');
         setShowSuggestions(false);
         setSelectedIndex(-1);
-        inputRef.current?.focus();
+        // Only re-focus input if game is still in progress;
+        // otherwise blur so the win/reveal modal can manage focus on mobile
+        if (useGameStore.getState().gameStatus === 'PLAYING') {
+            inputRef.current?.focus();
+        } else {
+            inputRef.current?.blur();
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
