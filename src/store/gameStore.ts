@@ -5,15 +5,16 @@ import {
     getFeedback,
     getRandomTarget,
     checkWinCondition,
-    getInitialColumnVisibility
+    getInitialColumnVisibility,
 } from '../utils/gameLogic';
 import gameDataRaw from '../assets/data/gameData.json';
 
-// Cast to ensure type safety with our interfaces
 const gameData = gameDataRaw as unknown as GameData;
 
 // Bump this when schema changes to clear stale localStorage.
-const STORE_VERSION = 3;
+const STORE_VERSION = 4;
+
+const DEFAULT_CATEGORY = 'countries';
 
 interface GuessResult {
     guess: Entity;
@@ -29,11 +30,13 @@ interface GameState {
     par: number;
     columnVisibility: Record<string, boolean>;
     majorHintAttributes: string[];
+    revealedFoldedAttributes: string[];
 
     setActiveCategory: (category: string) => void;
     submitGuess: (guess: Entity) => void;
     revealColumn: (attributeId: string) => void;
     revealMajorHint: (attributeId: string) => void;
+    revealFoldedAttribute: (attributeKey: string) => void;
     revealAnswer: () => void;
     resetGame: () => void;
 }
@@ -41,16 +44,17 @@ interface GameState {
 export const useGameStore = create<GameState>()(
     persist(
         (set, get) => ({
-            activeCategory: 'countries',
-            targetEntity: getRandomTarget(gameData, 'countries'),
+            activeCategory: DEFAULT_CATEGORY,
+            targetEntity: getRandomTarget(gameData, DEFAULT_CATEGORY),
             guesses: [],
             gameStatus: 'PLAYING',
             score: 0,
             par: 4,
             columnVisibility: getInitialColumnVisibility(
-                gameData.schema['countries']
+                gameData.schemaConfig[DEFAULT_CATEGORY]
             ),
             majorHintAttributes: [],
+            revealedFoldedAttributes: [],
 
             setActiveCategory: (category: string) => {
                 if (gameData.categories[category]) {
@@ -62,9 +66,10 @@ export const useGameStore = create<GameState>()(
                         score: 0,
                         par: 4,
                         columnVisibility: getInitialColumnVisibility(
-                            gameData.schema[category]
+                            gameData.schemaConfig[category]
                         ),
                         majorHintAttributes: [],
+                        revealedFoldedAttributes: [],
                     });
                 }
             },
@@ -74,7 +79,7 @@ export const useGameStore = create<GameState>()(
 
                 if (gameStatus !== 'PLAYING') return;
 
-                const currentSchema = gameData.schema[activeCategory];
+                const currentSchema = gameData.schemaConfig[activeCategory];
                 if (!currentSchema) {
                     console.error('Missing schema for category:', activeCategory);
                     return;
@@ -99,7 +104,7 @@ export const useGameStore = create<GameState>()(
                 const { columnVisibility, gameStatus, score } = get();
 
                 if (gameStatus !== 'PLAYING') return;
-                if (columnVisibility[attributeId]) return; // already visible
+                if (columnVisibility[attributeId]) return;
 
                 set({
                     columnVisibility: {
@@ -114,11 +119,23 @@ export const useGameStore = create<GameState>()(
                 const { majorHintAttributes, gameStatus, score } = get();
 
                 if (gameStatus !== 'PLAYING') return;
-                if (majorHintAttributes.includes(attributeId)) return; // already revealed
+                if (majorHintAttributes.includes(attributeId)) return;
 
                 set({
                     majorHintAttributes: [...majorHintAttributes, attributeId],
                     score: score + 5,
+                });
+            },
+
+            revealFoldedAttribute: (attributeKey: string) => {
+                const { revealedFoldedAttributes, gameStatus, score } = get();
+
+                if (gameStatus !== 'PLAYING') return;
+                if (revealedFoldedAttributes.includes(attributeKey)) return;
+
+                set({
+                    revealedFoldedAttributes: [...revealedFoldedAttributes, attributeKey],
+                    score: score + 2,
                 });
             },
 
@@ -137,9 +154,10 @@ export const useGameStore = create<GameState>()(
                     score: 0,
                     par: 4,
                     columnVisibility: getInitialColumnVisibility(
-                        gameData.schema[activeCategory]
+                        gameData.schemaConfig[activeCategory]
                     ),
                     majorHintAttributes: [],
+                    revealedFoldedAttributes: [],
                 });
             },
         }),
@@ -150,16 +168,17 @@ export const useGameStore = create<GameState>()(
             migrate: (_persistedState, version) => {
                 if (version < STORE_VERSION) {
                     return {
-                        activeCategory: 'countries',
-                        targetEntity: getRandomTarget(gameData, 'countries'),
+                        activeCategory: DEFAULT_CATEGORY,
+                        targetEntity: getRandomTarget(gameData, DEFAULT_CATEGORY),
                         guesses: [],
                         gameStatus: 'PLAYING' as const,
                         score: 0,
                         par: 4,
                         columnVisibility: getInitialColumnVisibility(
-                            gameData.schema['countries']
+                            gameData.schemaConfig[DEFAULT_CATEGORY]
                         ),
                         majorHintAttributes: [],
+                        revealedFoldedAttributes: [],
                     };
                 }
                 return _persistedState as GameState;

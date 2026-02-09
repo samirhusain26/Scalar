@@ -1,0 +1,24 @@
+category,attribute_key,display_label,data_type,logic_type,display_format,is_folded,is_virtual,linked_category_col,ui_color_logic
+countries,id,ID,STRING,EXACT_MATCH,HIDDEN,False,False,,
+countries,name,Country Name,STRING,TARGET,HIDDEN,False,False,,
+countries,Latitude,Latitude,FLOAT,NONE,HIDDEN,False,False,,
+countries,Longitude,Longitude,FLOAT,NONE,HIDDEN,False,False,,
+countries,continent,Continent,STRING,CATEGORY_MATCH,TEXT,False,False,,DISTANCE_GRADIENT
+countries,subregion,Subregion,STRING,CATEGORY_MATCH,TEXT,False,False,,DISTANCE_GRADIENT
+countries,hemisphere,Hemisphere,STRING,CATEGORY_MATCH,TEXT,False,False,,DISTANCE_GRADIENT
+countries,distance_km,Distance,FLOAT,GEO_DISTANCE,DISTANCE,False,True,,
+countries,area,Area (sq km),INT,HIGHER_LOWER,PERCENTAGE_DIFF,False,False,area_cat,
+countries,population,Population,INT,HIGHER_LOWER,PERCENTAGE_DIFF,False,False,population_cat,
+countries,gdp_per_capita,GDP / Capita,INT,HIGHER_LOWER,PERCENTAGE_DIFF,False,False,gdp_per_capita_cat,
+countries,Armed Forces size,Armed Forces,INT,HIGHER_LOWER,PERCENTAGE_DIFF,False,False,armed_forces_cat,
+countries,is_landlocked,Landlocked?,BOOLEAN,EXACT_MATCH,TEXT,True,False,,
+countries,timezone_count,Timezones,INT,HIGHER_LOWER,NUMBER,True,False,timezone_cat,
+countries,pop_density,Pop. Density,FLOAT,HIGHER_LOWER,NUMBER,True,False,pop_density_cat,
+countries,olympics_hosted_count,Olympics Hosted,INT,HIGHER_LOWER,NUMBER,True,False,,
+countries,olympics_latest_year,Last Olympics,INT,HIGHER_LOWER,NUMBER,True,False,,
+countries,area_cat,Area Cat,STRING,NONE,HIDDEN,False,False,,
+countries,population_cat,Pop Cat,STRING,NONE,HIDDEN,False,False,,
+countries,gdp_per_capita_cat,GDP/Cap Cat,STRING,NONE,HIDDEN,False,False,,
+countries,armed_forces_cat,Army Cat,STRING,NONE,HIDDEN,False,False,,
+countries,timezone_cat,Timezone Cat,STRING,NONE,HIDDEN,False,False,,
+countries,pop_density_cat,Density Cat,STRING,NONE,HIDDEN,False,False,,

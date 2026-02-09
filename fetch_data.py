@@ -1,143 +1,190 @@
-import gspread
+import csv
 import json
 import os
 
 # --- CONFIGURATION ---
-# --- CONFIGURATION ---
-SHEET_KEY = "1XhZ66tFCbJhcIN5CgObzcVc8J3WkXoz5B0-R4V6O3h0" # Sheet ID from URL
-OUTPUT_FILE = "./src/assets/data/gameData.json" # Where to save game data
-CREDENTIALS_FILE = "credentials.json"
+OUTPUT_FILE = "./src/assets/data/gameData.json"
+DATA_DIR = "./data"
 
-# Map the internal category keys to your specific Tab Names
-TAB_MAP = {
-    "countries": "Data_countries",
-    "hollywood": "Data_hollywood",
-    "chemicals": "Data_chemicals",
-    "animals": "Data_animals"
+# Map category keys to their CSV files
+CATEGORY_MAP = {
+    "countries": {
+        "schema": "countries_schema_config.csv",
+        "data": "countries_enriched.csv",
+    },
+    "hollywood": {
+        "schema": "hollywood_schema_config.csv",
+        "data": "hollywood_enriched.csv",
+    },
+    "chemicals": {
+        "schema": "chemicals_schema_config.csv",
+        "data": "chemicals_enriched.csv",
+    },
+    "animals": {
+        "schema": "animals_schema_config.csv",
+        "data": "animals_enriched.csv",
+    },
 }
 
-def clean_number(value, is_int=False):
-    """Parses numeric values, handling commas and currency symbols."""
-    if value == "" or value is None:
+
+def clean_value(value, data_type):
+    """Parse a CSV value based on its declared data_type."""
+    if value is None or value == "" or value == "-1":
         return None
-    
-    # Convert to string, strip whitespace, remove $, commas, and k/M suffixes if accidentally added
-    s_val = str(value).strip().replace("$", "").replace(",", "").replace("k", "").replace("M", "")
-    
-    try:
-        if is_int:
-            return int(float(s_val)) # Handle "1990.0" as 1990
-        return float(s_val)
-    except ValueError:
-        return None # Return None if data is bad (e.g. "Unknown")
 
-def main():
-    print(f"🔌 Connecting to Google Sheet via ID: '{SHEET_KEY}'...")
-    
-    try:
-        gc = gspread.service_account(filename=CREDENTIALS_FILE)
-        sh = gc.open_by_key(SHEET_KEY)
-    except Exception as e:
-        import traceback
-        print(f"❌ Error: Could not connect to Google Sheet.")
-        print(f"Make sure you have shared the sheet with client_email from credentials.json")
-        print(f"Details: {e}")
-        traceback.print_exc()
-        return
+    s = str(value).strip()
 
-    full_payload = {
-        "schema": {},
-        "categories": {}
-    }
-
-    # --- PART A: FETCH SCHEMA CONFIG ---
-    print("📋 Fetching Schema Rules...")
-    try:
-        ws_schema = sh.worksheet("schema_config")
-        schema_rows = ws_schema.get_all_records()
-        
-        # Transform schema into a lookup object for the App
-        for row in schema_rows:
-            cat = row['category']
-            if cat not in full_payload["schema"]:
-                full_payload["schema"][cat] = {}
-            
-            # Build proximityConfig object from sheet columns
-            thermal_type = str(row.get('thermal_type', '')).strip().upper()
-            thermal_value = clean_number(row.get('thermal_value', ''))
-            warm_multiplier = clean_number(row.get('heat_multiplier', ''))
-
-            proximity_config = None
-            if thermal_type in ('PERCENT', 'RANGE') and thermal_value is not None:
-                proximity_config = {
-                    "type": thermal_type,
-                    "value": thermal_value,
-                    "warmMultiplier": warm_multiplier if warm_multiplier is not None else 1.0
-                }
-
-            full_payload["schema"][cat][row['attribute_key']] = {
-                "label": row['display_label'],
-                "type": row['data_type'],
-                "unitPrefix": row.get('unit_prefix', ''),
-                "unitSuffix": row.get('unit_suffix', ''),
-                "proximityConfig": proximity_config
-            }
-    except Exception as e:
-        print(f"⚠️ Warning: Could not process schema_config. {e}")
-
-    # --- PART B: FETCH CATEGORY DATA ---
-    for cat_key, tab_name in TAB_MAP.items():
-        print(f"📥 Fetching {cat_key} from '{tab_name}'...")
-        
+    if data_type == "INT":
+        s = s.replace("$", "").replace(",", "")
         try:
-            ws = sh.worksheet(tab_name)
-            raw_records = ws.get_all_records()
-            
-            clean_records = []
-            
-            # Get type rules for this category to clean data correctly
-            cat_schema = full_payload["schema"].get(cat_key, {})
-            
-            for i, item in enumerate(raw_records):
-                clean_item = {}
-                # Always keep ID and Name strings
-                clean_item['id'] = str(item.get('id', '')).strip()
-                clean_item['name'] = str(item.get('name', '')).strip()
-                
-                # If row has no ID or Name, skip it (empty row)
-                if not clean_item['id'] or not clean_item['name']:
+            return int(float(s))
+        except (ValueError, TypeError):
+            return None
+
+    if data_type == "FLOAT":
+        s = s.replace("$", "").replace(",", "")
+        try:
+            return round(float(s), 6)
+        except (ValueError, TypeError):
+            return None
+
+    if data_type == "CURRENCY":
+        s = s.replace("$", "").replace(",", "")
+        try:
+            return round(float(s), 2)
+        except (ValueError, TypeError):
+            return None
+
+    if data_type == "BOOLEAN":
+        return s.lower() in ("true", "1", "yes")
+
+    # STRING, LIST, etc.
+    return s
+
+
+def parse_schema_config(csv_path):
+    """Read a schema_config CSV and return a list of SchemaField objects."""
+    schema = []
+    with open(csv_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            field = {
+                "attributeKey": row["attribute_key"].strip(),
+                "displayLabel": row["display_label"].strip(),
+                "dataType": row["data_type"].strip(),
+                "logicType": row["logic_type"].strip(),
+                "displayFormat": row["display_format"].strip(),
+                "isFolded": row["is_folded"].strip().lower() == "true",
+                "isVirtual": row["is_virtual"].strip().lower() == "true",
+            }
+
+            linked = row.get("linked_category_col", "").strip()
+            if linked:
+                field["linkedCategoryCol"] = linked
+
+            ui_color = row.get("ui_color_logic", "").strip()
+            if ui_color:
+                field["uiColorLogic"] = ui_color
+
+            schema.append(field)
+    return schema
+
+
+def parse_entity_data(csv_path, schema):
+    """Read an enriched CSV and return entity records with all columns."""
+    # Build a lookup: column_name -> data_type from schema
+    type_lookup = {}
+    for field in schema:
+        type_lookup[field["attributeKey"]] = field["dataType"]
+
+    # Find the TARGET column (entity name) — defaults to "name" if not found
+    name_col = "name"
+    for field in schema:
+        if field["logicType"] == "TARGET":
+            name_col = field["attributeKey"]
+            break
+
+    entities = []
+    with open(csv_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+
+        # Find the actual id column name (case-insensitive), or None if absent
+        id_col = None
+        if reader.fieldnames:
+            for fn in reader.fieldnames:
+                if fn.strip().lower() == "id":
+                    id_col = fn.strip()
+                    break
+
+        for row in reader:
+            entity = {}
+
+            # Always keep id and name as strings
+            entity_name = row.get(name_col, "").strip()
+            entity_id = row.get(id_col, "").strip() if id_col else entity_name
+
+            if not entity_id or not entity_name:
+                continue
+
+            entity["id"] = entity_id
+            entity["name"] = entity_name
+
+            # Process all columns from the CSV
+            skip_cols = {name_col}
+            if id_col:
+                skip_cols.add(id_col)
+            for col, raw_val in row.items():
+                if col in skip_cols:
                     continue
 
-                # Process fields based on the Schema we just fetched
-                for attr, rules in cat_schema.items():
-                    raw_val = item.get(attr)
-                    
-                    if rules['type'] in ['INT', 'FLOAT', 'CURRENCY']:
-                        # It's a number, clean it
-                        is_int = (rules['type'] == 'INT')
-                        clean_item[attr] = clean_number(raw_val, is_int)
-                    else:
-                        # It's a string
-                        clean_item[attr] = str(raw_val).strip()
+                # Use schema data type if known, otherwise keep as string
+                data_type = type_lookup.get(col, "STRING")
+                cleaned = clean_value(raw_val, data_type)
 
-                clean_records.append(clean_item)
-            
-            full_payload["categories"][cat_key] = clean_records
-            print(f"   ✅ Loaded {len(clean_records)} items for {cat_key}")
+                if cleaned is not None:
+                    entity[col] = cleaned
 
-        except gspread.WorksheetNotFound:
-            print(f"   ⚠️ Tab '{tab_name}' not found. Skipping.")
-        except Exception as e:
-            print(f"   ❌ Error processing {tab_name}: {e}")
+            entities.append(entity)
 
-    # --- PART C: SAVE TO FILE ---
-    # Ensure directory exists
+    return entities
+
+
+def main():
+    payload = {
+        "schemaConfig": {},
+        "categories": {},
+    }
+
+    for cat_key, files in CATEGORY_MAP.items():
+        schema_path = os.path.join(DATA_DIR, files["schema"])
+        data_path = os.path.join(DATA_DIR, files["data"])
+
+        if not os.path.exists(schema_path):
+            print(f"  Warning: Schema config not found: {schema_path}. Skipping {cat_key}.")
+            continue
+        if not os.path.exists(data_path):
+            print(f"  Warning: Data file not found: {data_path}. Skipping {cat_key}.")
+            continue
+
+        print(f"Processing {cat_key}...")
+
+        # Parse schema
+        schema = parse_schema_config(schema_path)
+        payload["schemaConfig"][cat_key] = schema
+        print(f"  Schema: {len(schema)} fields")
+
+        # Parse entity data
+        entities = parse_entity_data(data_path, schema)
+        payload["categories"][cat_key] = entities
+        print(f"  Entities: {len(entities)} records")
+
+    # Write output
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(full_payload, f, indent=2, ensure_ascii=False)
-    
-    print(f"\n🎉 Done! Data saved to: {OUTPUT_FILE}")
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+
+    print(f"\nDone! Data saved to: {OUTPUT_FILE}")
+
 
 if __name__ == "__main__":
     main()

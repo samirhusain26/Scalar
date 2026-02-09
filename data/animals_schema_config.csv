@@ -1,0 +1,19 @@
+category,attribute_key,display_label,data_type,logic_type,display_format,is_folded,is_virtual,linked_category_col
+animals,Animal,Animal,STRING,TARGET,HIDDEN,False,False,
+animals,class,Class,STRING,EXACT_MATCH,TEXT,False,False,
+animals,skin_type,Skin Type,STRING,EXACT_MATCH,TEXT,False,False,
+animals,diet,Diet,STRING,EXACT_MATCH,TEXT,False,False,
+animals,weight_kg,Weight,FLOAT,HIGHER_LOWER,RELATIVE_PERCENTAGE,False,False,weight_class
+animals,height_cm,Height (cm),FLOAT,HIGHER_LOWER,RELATIVE_PERCENTAGE,False,False,height_class
+animals,speed_kmh,Top Speed,FLOAT,HIGHER_LOWER,NUMBER,False,False,speed_class
+animals,lifespan_years,Lifespan,FLOAT,HIGHER_LOWER,NUMBER,False,False,lifespan_class
+animals,daily_sleep_hours,Daily Sleep,FLOAT,HIGHER_LOWER,NUMBER,True,False,sleep_class
+animals,gestation_days,Gestation,FLOAT,HIGHER_LOWER,NUMBER,True,False,
+animals,activity_cycle,Activity,STRING,EXACT_MATCH,TEXT,True,False,
+animals,conservation_status,Status,STRING,EXACT_MATCH,TEXT,True,False,
+animals,weight_class,Weight Class,STRING,NONE,HIDDEN,False,False,
+animals,height_class,Height Class,STRING,NONE,HIDDEN,False,False,
+animals,speed_class,Speed Class,STRING,NONE,HIDDEN,False,False,
+animals,lifespan_class,Lifespan Class,STRING,NONE,HIDDEN,False,False,
+animals,sleep_class,Sleep Class,STRING,NONE,HIDDEN,False,False,
+animals,body_size,Body Size,STRING,NONE,HIDDEN,False,False,

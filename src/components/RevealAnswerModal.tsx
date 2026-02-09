@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { cn } from '../utils/cn';
 import type { Entity, CategorySchema } from '../types';
 import { formatNumber } from '../utils/formatters';
+import { getDisplayColumns } from '../utils/schemaParser';
 
 interface RevealAnswerModalProps {
     isOpen: boolean;
@@ -10,25 +11,13 @@ interface RevealAnswerModalProps {
     onNewGame: () => void;
 }
 
-function formatValue(value: string | number, key: string, schema: CategorySchema): string {
-    const field = schema[key];
-    if (!field) return String(value);
-
-    if (typeof value === 'number') {
-        const prefix = field.unitPrefix || '';
-        const suffix = field.unitSuffix || '';
-        return `${prefix}${formatNumber(value)}${suffix}`;
-    }
-    return String(value);
-}
-
 export function RevealAnswerModal({
     isOpen,
     targetEntity,
     schema,
     onNewGame,
 }: RevealAnswerModalProps) {
-    const attributeKeys = Object.keys(schema).filter(k => k !== 'id' && k !== 'name');
+    const displayFields = getDisplayColumns(schema);
 
     return (
         <Dialog.Root open={isOpen}>
@@ -56,35 +45,37 @@ export function RevealAnswerModal({
 
                         {/* Entity Name */}
                         <div className="flex flex-col items-center gap-2">
-                            {typeof targetEntity.image === 'string' && targetEntity.image && (
-                                <img
-                                    src={targetEntity.image}
-                                    alt={targetEntity.name}
-                                    className="w-16 h-16 object-contain border border-charcoal/20"
-                                />
-                            )}
                             <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
                         </div>
 
                         {/* Attribute Details */}
-                        <div className="w-full border border-charcoal/20">
-                            {attributeKeys.map((key, i) => {
-                                const field = schema[key];
-                                const value = targetEntity[key];
+                        <div className="w-full border border-charcoal/20 max-h-60 overflow-y-auto">
+                            {displayFields.map((field, i) => {
+                                const value = targetEntity[field.attributeKey];
                                 if (value === undefined || value === null) return null;
+
+                                let displayVal: string;
+                                if (typeof value === 'number') {
+                                    displayVal = formatNumber(value);
+                                } else if (typeof value === 'boolean') {
+                                    displayVal = value ? 'Yes' : 'No';
+                                } else {
+                                    displayVal = String(value);
+                                }
+
                                 return (
                                     <div
-                                        key={key}
+                                        key={field.attributeKey}
                                         className={cn(
                                             "flex justify-between items-center px-4 py-2.5 font-mono text-sm",
-                                            i < attributeKeys.length - 1 && "border-b border-charcoal/10"
+                                            i < displayFields.length - 1 && "border-b border-charcoal/10"
                                         )}
                                     >
                                         <span className="font-bold uppercase text-charcoal/60 text-xs tracking-wide">
-                                            {field?.label || key}
+                                            {field.displayLabel}
                                         </span>
                                         <span className="font-bold text-charcoal">
-                                            {formatValue(value, key, schema)}
+                                            {displayVal}
                                         </span>
                                     </div>
                                 );

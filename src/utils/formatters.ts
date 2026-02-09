@@ -1,8 +1,7 @@
+import type { FeedbackDirection } from '../types';
+
 /**
  * Formats a number with suffixes (k, M, B) for better readability.
- * @param num The number to format.
- * @param digits The number of digits after the decimal point (default: 1).
- * @returns The formatted string.
  */
 export function formatNumber(num: number, digits = 1): string {
     const lookup = [
@@ -21,4 +20,28 @@ export function formatNumber(num: number, digits = 1): string {
         return absNum >= item.value;
     });
     return item ? sign + (absNum / item.value).toFixed(digits).replace(rx, "$1") + item.symbol : "0";
+}
+
+/** Format distance in km for display */
+export function formatDistance(km: number): string {
+    if (km === 0) return '0 km';
+    if (km < 1000) return `${Math.round(km).toLocaleString()} km`;
+    return `${formatNumber(km)} km`;
+}
+
+/** Format percentage diff into display tiers */
+export function formatPercentageDiffTier(percentDiff: number): string {
+    if (percentDiff === 0) return 'Exact';
+    if (percentDiff <= 15) return '~10%';
+    if (percentDiff <= 37) return '~25%';
+    if (percentDiff <= 75) return '~50%';
+    if (percentDiff <= 150) return '~100%';
+    return '200%+';
+}
+
+/** Get arrow symbol for direction */
+export function getDirectionSymbol(direction: FeedbackDirection): string {
+    if (direction === 'UP') return '↑';
+    if (direction === 'DOWN') return '↓';
+    return '';
 }

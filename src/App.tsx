@@ -8,7 +8,6 @@ import { Scoreboard } from './components/Scoreboard';
 import { useGameStore } from './store/gameStore';
 import gameDataRaw from './assets/data/gameData.json';
 import type { GameData } from './types';
-import { cn } from './utils/cn';
 
 const gameData = gameDataRaw as unknown as GameData;
 const CATEGORIES = Object.keys(gameData.categories);
@@ -36,7 +35,7 @@ function App() {
     localStorage.setItem(HTP_STORAGE_KEY, '1');
   };
 
-  // Implement the "Win Effect" (invert colors)
+  // Win effect (invert colors)
   useEffect(() => {
     if (gameStatus === 'SOLVED') {
       const timer = setTimeout(() => {
@@ -66,33 +65,23 @@ function App() {
       {/* Desktop Container */}
       <div className="w-full max-w-6xl lg:p-8 lg:bg-paper-white transition-all duration-300 min-h-[80vh] flex flex-col relative overflow-hidden">
 
-        {/* Category Selector */}
-        <div className="flex flex-col gap-4 mb-6">
-          <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-            {CATEGORIES.map(cat => (
+        {/* Header / Top Bar */}
+        <header className="mb-6 flex justify-between items-center border-b border-charcoal pb-4 font-mono">
+          {/* LEFT: CATEGORY TABS */}
+          <div className="flex-1 flex items-center justify-start gap-2">
+            {CATEGORIES.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={cn(
-                  "px-3 py-1 text-xs md:text-sm font-bold uppercase border transition-all duration-200",
-                  activeCategory === cat
-                    ? "bg-charcoal text-paper-white border-charcoal"
-                    : "bg-transparent text-charcoal border-transparent hover:border-gray-300"
-                )}
+                onClick={() => cat !== activeCategory && setActiveCategory(cat)}
+                className={`text-xs sm:text-sm font-bold uppercase tracking-wide transition-colors ${
+                  cat === activeCategory
+                    ? 'text-charcoal border-b-2 border-charcoal pb-0.5'
+                    : 'text-charcoal/40 hover:text-charcoal/70 pb-0.5'
+                }`}
               >
                 {cat}
               </button>
             ))}
-          </div>
-        </div>
-
-        {/* Header / Top Bar */}
-        <header className="mb-6 flex justify-between items-center border-b border-charcoal pb-4 font-mono">
-          {/* LEFT: CATEGORY */}
-          <div className="flex-1 flex items-center justify-start">
-            <span className="text-sm sm:text-base font-bold text-charcoal uppercase">
-              {activeCategory}
-            </span>
           </div>
 
           {/* CENTER: TARGET */}
@@ -101,7 +90,7 @@ function App() {
               ANSWER
             </span>
             <div className="text-xl tracking-widest font-black text-charcoal">
-              {gameStatus !== 'PLAYING' ? targetEntity.name.substring(0, 8).toUpperCase() : '??????'}
+              {gameStatus !== 'PLAYING' ? targetEntity.name.substring(0, 12).toUpperCase() : '??????'}
             </div>
             {gameStatus === 'PLAYING' && (
               <button
@@ -123,7 +112,7 @@ function App() {
         <main className="flex-1 flex flex-col w-full">
           <GameGrid />
 
-          <div className="flex-1" /> {/* Spacer */}
+          <div className="flex-1" />
 
           <GameInput />
 
@@ -140,7 +129,7 @@ function App() {
           <RevealAnswerModal
             isOpen={gameStatus === 'REVEALED'}
             targetEntity={targetEntity}
-            schema={gameData.schema[activeCategory] || {}}
+            schema={gameData.schemaConfig[activeCategory] || []}
             onNewGame={resetGame}
           />
 
