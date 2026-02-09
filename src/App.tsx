@@ -6,6 +6,7 @@ import { GameInput } from './components/GameInput';
 import { GameOverModal } from './components/GameOverModal';
 import { RevealAnswerModal } from './components/RevealAnswerModal';
 import { HowToPlayModal } from './components/HowToPlayModal';
+import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { Scoreboard } from './components/Scoreboard';
 import { ScalarLogo } from './components/ScalarLogo';
 import { VennBackground } from './components/VennBackground';
@@ -31,6 +32,7 @@ function App() {
   const [showHowToPlay, setShowHowToPlay] = useState(() => {
     return !localStorage.getItem(HTP_STORAGE_KEY);
   });
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
 
   const handleCloseHowToPlay = () => {
     setShowHowToPlay(false);
@@ -190,7 +192,31 @@ function App() {
             isOpen={showHowToPlay}
             onClose={handleCloseHowToPlay}
           />
+
+          <PrivacyPolicyModal
+            isOpen={showPrivacyPolicy}
+            onClose={() => setShowPrivacyPolicy(false)}
+          />
         </main>
+
+        {/* Footer */}
+        <footer className="py-4 text-center font-mono flex items-center justify-center gap-2">
+          <a
+            href="https://www.samirhusain.info"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+          >
+            Built by Samir Husain
+          </a>
+          <span className="text-charcoal/30 text-[10px]">&middot;</span>
+          <button
+            onClick={() => setShowPrivacyPolicy(true)}
+            className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+          >
+            Privacy Policy
+          </button>
+        </footer>
 
       </div>
 
