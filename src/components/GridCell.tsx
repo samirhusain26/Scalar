@@ -12,23 +12,23 @@ interface GridCellProps {
     className?: string;
 }
 
-function getDistanceGradientClass(distanceKm: number | undefined): string {
+export function getDistanceGradientClass(distanceKm: number | undefined): string {
     if (distanceKm === undefined) return 'bg-gray-200 text-charcoal';
-    if (distanceKm === 0) return 'bg-green-600 text-white';
+    if (distanceKm === 0) return 'bg-thermal-gold text-charcoal';
     if (distanceKm < 1000) return 'bg-geo-hot';
     if (distanceKm < 3000) return 'bg-geo-warm';
     if (distanceKm < 5000) return 'bg-geo-cool';
     return 'bg-geo-cold';
 }
 
-function getCategoryMatchClass(categoryMatch: boolean | undefined): string {
+export function getCategoryMatchClass(categoryMatch: boolean | undefined): string {
     if (categoryMatch === true) return 'bg-cat-match';
     return 'bg-cat-miss';
 }
 
-function getStandardStatusClass(status: string | undefined): string {
-    if (status === 'EXACT') return 'bg-green-600 text-white border-green-700';
-    if (status === 'HOT') return 'bg-yellow-200 text-charcoal';
+export function getStandardStatusClass(status: string | undefined): string {
+    if (status === 'EXACT') return 'bg-thermal-gold text-charcoal border-thermal-gold';
+    if (status === 'HOT') return 'bg-thermal-orange text-white';
     if (status === 'NEAR') return 'bg-amber-100 text-charcoal border-dashed border-amber-400';
     return 'bg-gray-200 text-charcoal';
 }
@@ -79,11 +79,11 @@ export function GridCell({
 
     if (uiColorLogic === 'DISTANCE_GRADIENT') {
         colorClass = feedback?.status === 'EXACT'
-            ? 'bg-green-600 text-white'
+            ? 'bg-thermal-gold text-charcoal'
             : getDistanceGradientClass(feedback?.distanceKm);
     } else if (uiColorLogic === 'CATEGORY_MATCH' || feedback?.categoryMatch !== undefined) {
         colorClass = feedback?.status === 'EXACT'
-            ? 'bg-green-600 text-white border-green-700'
+            ? 'bg-thermal-gold text-charcoal border-thermal-gold'
             : getCategoryMatchClass(feedback?.categoryMatch);
     } else {
         colorClass = getStandardStatusClass(status);
@@ -93,7 +93,7 @@ export function GridCell({
     const displayValue = feedback?.displayValue ?? value;
 
     const cellClasses = cn(
-        "relative flex items-center justify-center w-full h-full px-1 py-0.5 font-mono text-sm border border-charcoal",
+        "relative flex items-center justify-center w-full h-full px-1 py-0.5 font-mono text-sm border border-graphite",
         colorClass,
         // Directional borders (only for HIGHER_LOWER / numeric)
         direction === 'UP' && "!border-t-[4px] !border-t-black",

@@ -33,7 +33,7 @@ Scalar/                              # Git root
 │   ├── animals_schema_config.csv    # Animals schema definition
 │   └── animals_enriched.csv         # Animals entity data
 └── src/                             # React/TypeScript source
-    ├── main.tsx                     # Entry point: StrictMode, imports Geist Mono font + index.css
+    ├── main.tsx                     # Entry point: StrictMode, imports Geist Mono + Fraunces fonts + index.css
     ├── App.tsx                      # Root component: header, category selector, scoreboard, grid, input, modals
     ├── App.css                      # Unused Vite boilerplate (safe to delete)
     ├── index.css                    # Tailwind v4 config + CSS custom properties + custom utilities
@@ -72,7 +72,8 @@ Scalar/                              # Git root
 - **Zustand 5** for state management with localStorage persistence
 - **Shadcn/UI** (Radix UI primitives) for base components
 - **Lucide React** for icons (Plus, Eye, Check, Lock, Trophy, Medal, Award, etc.)
-- **Geist Mono** font everywhere (monospace aesthetic)
+- **Fraunces Variable** serif font for display headings (via `@fontsource-variable/fraunces`)
+- **Geist Mono** for data, clues, and body text (monospace aesthetic)
 
 ## Key Commands
 All commands run from repo root:
@@ -124,9 +125,9 @@ python fetch_data.py
 ### UIColorLogic (how cell background is determined)
 | Logic | Coloring |
 |-------|----------|
-| `DISTANCE_GRADIENT` | Color based on haversine distance: green (0km), red (<1000km), yellow (<3000km), blue (<5000km), gray (>=5000km) |
-| `CATEGORY_MATCH` | Green if linked category matches, gray if miss |
-| `STANDARD` | Traditional EXACT/HOT/NEAR/MISS colors |
+| `DISTANCE_GRADIENT` | Color based on haversine distance: gold (0km), orange (<1000km), amber (<3000km), teal (<5000km), gray (>=5000km) |
+| `CATEGORY_MATCH` | Gold if linked category matches, gray if miss |
+| `STANDARD` | Thermal EXACT/HOT/NEAR/MISS colors (gold/orange/amber/gray) |
 | `NONE` | No special coloring |
 
 ### SchemaField Interface
@@ -214,10 +215,10 @@ interface Feedback {
 - **Hidden state**: `bg-hidden-pattern` (45deg diagonal striped pattern)
 - **Folded state**: `bg-folded-pattern` (-45deg diagonal striped pattern, darker)
 - **Empty state**: `border-dashed border-charcoal`
-- **Color logic dispatch**:
-  - `DISTANCE_GRADIENT`: green (0km), `bg-geo-hot` (<1000km), `bg-geo-warm` (<3000km), `bg-geo-cool` (<5000km), `bg-geo-cold` (>=5000km)
-  - `CATEGORY_MATCH` / `categoryMatch`: `bg-cat-match` (green) or `bg-cat-miss` (gray)
-  - Standard: EXACT = `bg-green-600 text-white`, HOT = `bg-yellow-200`, NEAR = `bg-amber-100 border-dashed border-amber-400`, MISS = `bg-gray-200`
+- **Color logic dispatch** (Thermal palette):
+  - `DISTANCE_GRADIENT`: gold (0km), `bg-geo-hot` orange (<1000km), `bg-geo-warm` amber (<3000km), `bg-geo-cool` teal (<5000km), `bg-geo-cold` gray (>=5000km)
+  - `CATEGORY_MATCH` / `categoryMatch`: `bg-cat-match` (gold) or `bg-cat-miss` (gray)
+  - Standard: EXACT = `bg-thermal-gold text-charcoal`, HOT = `bg-thermal-orange text-white`, NEAR = `bg-amber-100 border-dashed border-amber-400`, MISS = `bg-gray-200`
 - Direction borders: UP = `border-t-[4px] border-t-black`, DOWN = `border-b-[4px] border-b-black`
 - Displays `feedback.displayValue` if present, falls back to raw `value`
 
@@ -358,28 +359,46 @@ getFeedback(target, guess, schema)
 - Revealed headers show inverted styling with Check icon
 
 ## Design System Rules
-- **Minimalist Digital Paper / Editorial** aesthetic - high contrast, monochrome-leaning, clean and minimalist
-- Background: `#F9F9F7` (paper-white), Foreground/Borders: `#1A1A1A` (charcoal)
+- **"Thermal E-Paper / Scientific Journal"** aesthetic — *The New York Times* data journalism meets a high-end e-reader
+- Background: `#FAFAF9` (paper-white), Foreground: `#18181B` (charcoal/jet black), Structural borders: `#E2E8F0` (graphite)
 - **Sharp corners** (`--radius: 0px`), thin borders (`border` / 1px)
-- **Geist Mono** for ALL text
-- Feedback colors (standard): EXACT = green, HOT = yellow, NEAR = muted amber with dashed border, MISS = gray
-- Distance gradient: green (0km) -> red (<1000km) -> yellow (<3000km) -> blue (<5000km) -> gray (>=5000km)
-- Category match: green (match), gray (miss)
-- Direction indicators: UP = top border (4px), DOWN = bottom border (4px)
+- **Typography**: Fraunces Variable serif (`font-serif-display`) for headings/titles, Geist Mono for data/clues/body
+- **Logo**: "Histogram S" — 3 horizontal bars forming an S, + "CALAR" in light serif weight
+- **Thermal feedback colors**: EXACT = gold (#EAB308), HOT = orange (#F97316), NEAR = muted amber with dashed border, MISS = gray
+- **Thermal distance gradient**: gold (0km) -> orange (<1000km) -> amber (<3000km) -> teal (<5000km) -> gray (>=5000km)
+- Category match: gold (match), gray (miss)
+- Direction indicators: UP = top border (4px black), DOWN = bottom border (4px black)
 - Hidden cells: 45deg diagonal striped pattern via `bg-hidden-pattern` utility
 - Folded cells: -45deg diagonal striped pattern via `bg-folded-pattern` utility
-- When adding Shadcn/UI components: remove rounding, use thin borders to match theme
+- **Shadows**: Hard-edge "paper cut" shadows (`shadow-hard`, `shadow-hard-sm`) — no soft blurs
+- **Buttons**: Invert on hover (outline -> filled, filled -> outline)
+- **Input**: Underline-style (bottom border only, no box)
+- When adding Shadcn/UI components: remove rounding, use thin borders, use `border-graphite` for structural borders
 
 ## CSS Custom Utilities (index.css)
 ```
-bg-hidden-pattern  — 45deg diagonal stripes on #F5F5F3 background
-bg-folded-pattern  — -45deg diagonal stripes on #EDEDED background (darker)
-bg-geo-hot         — #FF6B6B (red), white text
-bg-geo-warm        — #FFD93D (yellow), charcoal text
-bg-geo-cool        — #B8D4E3 (blue), charcoal text
-bg-geo-cold        — #E5E7EB (gray), charcoal text
-bg-cat-match       — #16a34a (green), white text
-bg-cat-miss        — #E5E7EB (gray), charcoal text
+bg-hidden-pattern   — 45deg diagonal stripes on #F8FAFC background
+bg-folded-pattern   — -45deg diagonal stripes on #F1F5F9 background (darker)
+bg-geo-hot          — #F97316 (Solar Orange), white text
+bg-geo-warm         — #F59E0B (Amber), charcoal text
+bg-geo-cool         — #14B8A6 (Glacial Teal), white text
+bg-geo-cold         — #E2E8F0 (Graphite gray), charcoal text
+bg-cat-match        — #EAB308 (Success Gold), charcoal text
+bg-cat-miss         — #E2E8F0 (Graphite gray), charcoal text
+font-serif-display  — Fraunces Variable serif font family
+shadow-hard         — 6px 6px hard-edge shadow (modals)
+shadow-hard-sm      — 4px 4px hard-edge shadow (popups)
+```
+
+## Tailwind Color Tokens (defined in `@theme inline`)
+```
+paper-white      — #FAFAF9 (canvas background)
+charcoal         — #18181B (primary text/ink)
+graphite         — #E2E8F0 (structural borders)
+thermal-gold     — #EAB308 (exact match / win)
+thermal-orange   — #F97316 (hot / close)
+thermal-teal     — #14B8A6 (cool / far)
+thermal-amber    — #F59E0B (warm / medium)
 ```
 
 ## TypeScript Conventions
@@ -537,8 +556,10 @@ python fetch_data.py
 
 ### Adding a new UI component
 1. Use Shadcn CLI or create manually in `src/components/`
-2. Match editorial theme: sharp corners, `border border-charcoal`, Geist Mono font
-3. Use `cn()` from `@/utils/cn` for conditional class merging
+2. Match editorial theme: sharp corners, `border border-graphite` for structural borders, `border border-charcoal` for interactive elements
+3. Use `font-serif-display` for display headings, Geist Mono (default) for data
+4. Use `shadow-hard` or `shadow-hard-sm` for elevated elements (no soft shadows)
+5. Use `cn()` from `@/utils/cn` for conditional class merging
 
 ### Modifying theme
 1. Edit CSS custom properties in `src/index.css` `:root` block

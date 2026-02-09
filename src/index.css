@@ -3,45 +3,55 @@
 @plugin "tailwindcss-animate";
 
 :root {
-  /* Editorial Paper / Ink Theme */
-  --background: 60 14% 97%;
-  /* #F9F9F7 */
-  --foreground: 0 0% 10%;
-  /* #1A1A1A */
+  /* Thermal E-Paper / Scientific Journal Theme */
+  --background: 40 33% 98%;
+  /* #FAFAF9 */
+  --foreground: 240 6% 10%;
+  /* #18181B */
 
-  --card: 60 14% 97%;
-  --card-foreground: 0 0% 10%;
+  --card: 40 33% 98%;
+  --card-foreground: 240 6% 10%;
 
-  --popover: 60 14% 97%;
-  --popover-foreground: 0 0% 10%;
+  --popover: 40 33% 98%;
+  --popover-foreground: 240 6% 10%;
 
-  --primary: 0 0% 0%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 240 6% 10%;
+  --primary-foreground: 40 33% 98%;
 
-  --secondary: 0 0% 93%;
-  --secondary-foreground: 0 0% 10%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 240 6% 10%;
 
-  --muted: 0 0% 93%;
-  --muted-foreground: 0 0% 40%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
 
-  --accent: 0 0% 93%;
-  --accent-foreground: 0 0% 10%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 240 6% 10%;
 
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 0 0% 10%;
-  /* Ink-dark border */
-  --input: 0 0% 10%;
-  --ring: 0 0% 0%;
+  --border: 214 32% 91%;
+  /* Graphite — light structural border */
+  --input: 214 32% 91%;
+  --ring: 240 6% 10%;
 
   --radius: 0px;
   /* Sharp corners */
 }
 
 @theme inline {
-  --color-paper-white: #F9F9F7;
-  --color-charcoal: #1A1A1A;
+  --color-paper-white: #FAFAF9;
+  --color-charcoal: #18181B;
+  --color-graphite: #E2E8F0;
+  --color-thermal-gold: #EAB308;
+  --color-thermal-orange: #F97316;
+  --color-thermal-teal: #14B8A6;
+  --color-thermal-amber: #F59E0B;
+
+  /* Venn logo palette */
+  --color-venn-teal: #14B8A6;
+  --color-venn-pink: #F472B6;
+  --color-venn-gold: #EAB308;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -68,58 +78,86 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Hidden column pattern — 45deg diagonal stripes */
 @utility bg-hidden-pattern {
   background-image: repeating-linear-gradient(
     45deg,
     transparent,
     transparent 4px,
-    rgba(26, 26, 26, 0.06) 4px,
-    rgba(26, 26, 26, 0.06) 5px
+    rgba(24, 24, 27, 0.06) 4px,
+    rgba(24, 24, 27, 0.06) 5px
   );
-  background-color: #F5F5F3;
+  background-color: #F8FAFC;
 }
 
+/* Folded column pattern — -45deg diagonal stripes (darker) */
 @utility bg-folded-pattern {
   background-image: repeating-linear-gradient(
     -45deg,
     transparent,
     transparent 3px,
-    rgba(26, 26, 26, 0.08) 3px,
-    rgba(26, 26, 26, 0.08) 4px
+    rgba(24, 24, 27, 0.08) 3px,
+    rgba(24, 24, 27, 0.08) 4px
   );
-  background-color: #EDEDED;
+  background-color: #F1F5F9;
 }
 
-/* Distance gradient utilities */
+/* Thermal distance gradient utilities */
 @utility bg-geo-hot {
-  background-color: #FF6B6B;
+  background-color: #F97316;
   color: white;
 }
 
 @utility bg-geo-warm {
-  background-color: #FFD93D;
-  color: #1A1A1A;
+  background-color: #F59E0B;
+  color: #18181B;
 }
 
 @utility bg-geo-cool {
-  background-color: #B8D4E3;
-  color: #1A1A1A;
+  background-color: #14B8A6;
+  color: white;
 }
 
 @utility bg-geo-cold {
-  background-color: #E5E7EB;
-  color: #1A1A1A;
+  background-color: #E2E8F0;
+  color: #18181B;
 }
 
 /* Category match utilities */
 @utility bg-cat-match {
-  background-color: #16a34a;
-  color: white;
+  background-color: #EAB308;
+  color: #18181B;
 }
 
 @utility bg-cat-miss {
-  background-color: #E5E7EB;
-  color: #1A1A1A;
+  background-color: #E2E8F0;
+  color: #18181B;
+}
+
+/* Serif display font utility */
+@utility font-serif-display {
+  font-family: 'Fraunces Variable', Georgia, serif;
+}
+
+/* Hard-edge "paper cut" shadow utilities */
+@utility shadow-hard {
+  box-shadow: 6px 6px 0px 0px rgba(24, 24, 27, 0.15);
+}
+
+@utility shadow-hard-sm {
+  box-shadow: 4px 4px 0px 0px rgba(24, 24, 27, 0.15);
+}
+
+/* Venn-inspired gradient border for the active category tab */
+@utility border-venn-active {
+  border-image: linear-gradient(90deg, #14B8A6, #EAB308, #F472B6) 1;
+}
+
+/* Subtle gradient underline for header separator */
+@utility border-b-venn {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-image: linear-gradient(90deg, transparent, #14B8A660, #EAB30850, #F472B660, transparent) 1;
 }
 
 @layer base {

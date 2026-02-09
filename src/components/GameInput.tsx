@@ -108,7 +108,8 @@ export function GameInput() {
                         placeholder={isDisabled ? (gameStatus === 'REVEALED' ? 'Revealed' : 'Solved') : "Type your guess..."}
                         className={cn(
                             "font-mono uppercase text-lg shadow-none",
-                            "focus-visible:ring-0 focus-visible:ring-offset-0",
+                            "border-0 border-b-2 border-b-charcoal rounded-none bg-transparent px-0",
+                            "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-b-charcoal",
                             isDisabled && "cursor-not-allowed opacity-50"
                         )}
                         autoComplete="off"
@@ -128,7 +129,7 @@ export function GameInput() {
                         <div
                             className="absolute bottom-full left-0 right-0 mb-3 z-50 flex flex-col items-start"
                         >
-                            <div ref={listRef} className="bg-paper-white border border-charcoal p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)] flex flex-wrap gap-2 max-w-full">
+                            <div ref={listRef} className="bg-paper-white border border-charcoal p-3 shadow-hard-sm flex flex-wrap gap-2 max-w-full">
                                 {suggestions.map((entity, index) => (
                                     <button
                                         key={entity.id}
@@ -156,7 +157,7 @@ export function GameInput() {
                 {/* No Matches State */}
                 {showSuggestions && query && suggestions.length === 0 && !isDisabled && (
                     <div className="absolute bottom-full left-0 right-0 mb-2 z-50 flex justify-center">
-                        <div className="bg-paper-white border border-charcoal p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]">
+                        <div className="bg-paper-white border border-charcoal p-3 shadow-hard-sm">
                             <span className="font-mono text-gray-400 italic font-bold text-sm">No match found</span>
                         </div>
                     </div>

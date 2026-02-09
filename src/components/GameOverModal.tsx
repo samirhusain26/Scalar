@@ -14,7 +14,7 @@ interface GameOverModalProps {
 }
 
 const RANK_STYLES: Record<Rank, { color: string; bg: string }> = {
-    GOLD: { color: 'text-amber-600', bg: 'bg-amber-50 border-amber-300' },
+    GOLD: { color: 'text-thermal-gold', bg: 'bg-amber-50 border-thermal-gold' },
     SILVER: { color: 'text-gray-500', bg: 'bg-gray-50 border-gray-300' },
     BRONZE: { color: 'text-orange-700', bg: 'bg-orange-50 border-orange-300' },
 };
@@ -81,7 +81,7 @@ export function GameOverModal({
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(
-                    "fixed z-50 bg-paper-white shadow-2xl p-6 focus:outline-none transition-all duration-200",
+                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none transition-all duration-200",
                     // Mobile: Bottom Sheet
                     "bottom-0 left-0 right-0 w-full border-t border-charcoal pb-10",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
@@ -97,7 +97,7 @@ export function GameOverModal({
 
                     <div className="flex flex-col items-center text-center space-y-6">
                         {/* Heading */}
-                        <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white">
+                        <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white font-serif-display">
                             Puzzle Complete
                         </Dialog.Title>
 
@@ -134,13 +134,13 @@ export function GameOverModal({
                         <div className="flex w-full gap-4 pt-4">
                             <button
                                 onClick={handleShare}
-                                className="flex-1 px-4 py-3 border border-charcoal font-bold hover:bg-charcoal/10 transition-colors uppercase text-sm tracking-wide"
+                                className="flex-1 px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
                             >
                                 Share Result
                             </button>
                             <button
                                 onClick={onReset}
-                                className="flex-1 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-charcoal/90 transition-colors uppercase text-sm tracking-wide"
+                                className="flex-1 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
                             >
                                 Play Again
                             </button>

@@ -61,7 +61,7 @@ export function GridHeader({
         <>
             <div className="flex w-full space-x-2 mb-1">
                 {/* Name column header */}
-                <div className="flex-[1.5] text-center font-bold font-mono text-sm uppercase text-charcoal bg-gray-100 border-b border-charcoal/50 pb-1 select-none">
+                <div className="flex-[1.5] text-center font-bold font-mono text-sm uppercase text-charcoal bg-gray-100 border-b border-graphite pb-1 select-none">
                     NAME
                 </div>
 
@@ -79,7 +79,7 @@ export function GridHeader({
                             <div
                                 key={key}
                                 className={cn(
-                                    "flex-none w-8 flex items-center justify-center border-b border-charcoal/50 bg-gray-100",
+                                    "flex-none w-8 flex items-center justify-center border-b border-graphite bg-gray-100",
                                     isPlaying
                                         ? "cursor-pointer hover:bg-charcoal/10"
                                         : "opacity-40 pointer-events-none"
@@ -133,7 +133,7 @@ export function GridHeader({
                     return (
                         <div
                             key={key}
-                            className="flex-1 text-center font-bold font-mono text-xs sm:text-sm uppercase flex items-center justify-center gap-1 select-none border-b pb-1 text-charcoal border-charcoal/50 bg-gray-100 cursor-default"
+                            className="flex-1 text-center font-bold font-mono text-xs sm:text-sm uppercase flex items-center justify-center gap-1 select-none border-b pb-1 text-charcoal border-graphite bg-gray-100 cursor-default"
                         >
                             <span className="truncate">{field.displayLabel}</span>
                             {isNumericHigherLower && isPlaying && (

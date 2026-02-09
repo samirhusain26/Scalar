@@ -24,7 +24,7 @@ export function RevealAnswerModal({
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(
-                    "fixed z-50 bg-paper-white shadow-2xl p-6 focus:outline-none transition-all duration-200",
+                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none transition-all duration-200",
                     "bottom-0 left-0 right-0 w-full border-t border-charcoal pb-10",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                     "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
@@ -35,7 +35,7 @@ export function RevealAnswerModal({
                     "md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95"
                 )}>
                     <div className="flex flex-col items-center text-center space-y-6">
-                        <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white">
+                        <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white font-serif-display">
                             Answer Revealed
                         </Dialog.Title>
 
@@ -86,7 +86,7 @@ export function RevealAnswerModal({
                         <div className="flex w-full pt-4">
                             <button
                                 onClick={onNewGame}
-                                className="flex-1 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-charcoal/90 transition-colors uppercase text-sm tracking-wide"
+                                className="flex-1 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
                             >
                                 New Game
                             </button>

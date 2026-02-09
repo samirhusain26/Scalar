@@ -21,7 +21,7 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(
-                    "fixed z-50 bg-paper-white shadow-2xl p-6 focus:outline-none transition-all duration-200 overflow-y-auto max-h-[85vh]",
+                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none transition-all duration-200 overflow-y-auto max-h-[85vh]",
                     // Mobile: Bottom Sheet
                     "bottom-0 left-0 right-0 w-full border-t border-charcoal pb-10",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
@@ -34,7 +34,7 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
                     "md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95"
                 )}>
                     {/* Title */}
-                    <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white text-center mb-6">
+                    <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white text-center mb-6 font-serif-display">
                         How to Play
                     </Dialog.Title>
 
@@ -63,7 +63,7 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
                                 <li>Type a guess into the input field and press Enter.</li>
                                 <li>Each attribute of your guess is compared to the target and color-coded.</li>
                                 <li>Use the feedback to narrow down your next guess.</li>
-                                <li>Keep guessing until every cell turns green!</li>
+                                <li>Keep guessing until every cell turns gold!</li>
                             </ol>
                         </section>
 
@@ -73,8 +73,8 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
                                 Feedback Colors
                             </h3>
                             <div className="space-y-2">
-                                <FeedbackSwatch color="bg-green-600" label="Exact &mdash; you matched this attribute perfectly." />
-                                <FeedbackSwatch color="bg-yellow-200" label="Hot &mdash; you're very close to the target value." />
+                                <FeedbackSwatch color="bg-thermal-gold" label="Exact &mdash; you matched this attribute perfectly." />
+                                <FeedbackSwatch color="bg-thermal-orange" label="Hot &mdash; you're very close to the target value." />
                                 <FeedbackSwatch color="bg-amber-100 border-dashed !border-amber-400" label="Near &mdash; in the right ballpark, but not quite." />
                                 <FeedbackSwatch color="bg-gray-200" label="Miss &mdash; far from the target value." />
                             </div>
@@ -125,7 +125,7 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
                             </h3>
                             <div className="space-y-1.5">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-amber-600 font-black">GOLD</span>
+                                    <span className="text-thermal-gold font-black">GOLD</span>
                                     <span>&mdash; Editorial Choice (at or under par)</span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="w-full mt-6 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-charcoal/90 transition-colors uppercase text-sm tracking-wide"
+                        className="w-full mt-6 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
                     >
                         Got It
                     </button>

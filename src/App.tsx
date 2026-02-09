@@ -5,6 +5,8 @@ import { GameOverModal } from './components/GameOverModal';
 import { RevealAnswerModal } from './components/RevealAnswerModal';
 import { HowToPlayModal } from './components/HowToPlayModal';
 import { Scoreboard } from './components/Scoreboard';
+import { ScalarLogo } from './components/ScalarLogo';
+import { VennBackground } from './components/VennBackground';
 import { useGameStore } from './store/gameStore';
 import gameDataRaw from './assets/data/gameData.json';
 import type { GameData } from './types';
@@ -47,26 +49,22 @@ function App() {
   }, [gameStatus]);
 
   return (
-    <div className="min-h-screen bg-paper-white flex flex-col items-center justify-center p-4 font-mono">
+    <div className="min-h-screen bg-paper-white flex flex-col items-center justify-center p-4 font-mono relative">
+      <VennBackground />
+
       {/* HEADER TITLE */}
-      <h1 className="text-4xl md:text-6xl font-black text-charcoal tracking-tighter mb-1 uppercase select-none">
-        SCALAR
-      </h1>
-      <p className="text-xs md:text-sm text-charcoal/50 font-bold uppercase tracking-widest mb-1">
-        Daily Logic
-      </p>
-      <button
-        onClick={() => setShowHowToPlay(true)}
-        className="text-[10px] md:text-xs text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest mb-6 transition-colors underline underline-offset-2"
-      >
-        How to Play
-      </button>
+      <div className="relative flex items-center justify-center mb-1" style={{ height: '120px' }}>
+        <ScalarLogo size={160} className="absolute opacity-50" />
+        <h1 className="relative text-4xl md:text-6xl text-charcoal tracking-[0.12em] uppercase select-none font-serif-display font-light">
+          SCALAR
+        </h1>
+      </div>
 
       {/* Desktop Container */}
       <div className="w-full max-w-6xl lg:p-8 lg:bg-paper-white transition-all duration-300 min-h-[80vh] flex flex-col relative overflow-hidden">
 
         {/* Header / Top Bar */}
-        <header className="mb-6 flex justify-between items-center border-b border-charcoal pb-4 font-mono">
+        <header className="mb-6 flex justify-between items-center border-b-venn pb-4 font-mono">
           {/* LEFT: CATEGORY TABS */}
           <div className="flex-1 flex items-center justify-start gap-2">
             {CATEGORIES.map((cat) => (
@@ -102,9 +100,16 @@ function App() {
             )}
           </div>
 
-          {/* RIGHT: SCORE */}
-          <div className="flex-1 flex items-center justify-end">
+          {/* RIGHT: SCORE + HOW TO PLAY */}
+          <div className="flex-1 flex items-center justify-end gap-3">
             <Scoreboard />
+            <div className="h-4 w-px bg-graphite" />
+            <button
+              onClick={() => setShowHowToPlay(true)}
+              className="text-[10px] md:text-xs text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+            >
+              How to Play
+            </button>
           </div>
         </header>
 
