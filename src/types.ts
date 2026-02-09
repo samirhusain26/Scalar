@@ -20,7 +20,8 @@ export type DisplayFormat =
     | 'RELATIVE_PERCENTAGE'
     | 'NUMBER'
     | 'CURRENCY'
-    | 'LIST';
+    | 'LIST'
+    | 'ALPHA_POSITION';
 
 // --- UI Color Logic (how the cell background is determined) ---
 export type UIColorLogic =
@@ -70,15 +71,10 @@ export interface Feedback {
     distanceKm?: number;
     percentageDiff?: number;
     categoryMatch?: boolean;
+    /** For SET_INTERSECTION: individual items from the guess with match status */
+    matchedItems?: { text: string; isMatch: boolean }[];
 }
 
 // --- Game Status ---
 export type GameStatus = 'PLAYING' | 'SOLVED' | 'REVEALED';
 
-// --- Scoring / Ranks ---
-export type Rank = 'GOLD' | 'SILVER' | 'BRONZE';
-
-export interface RankInfo {
-    rank: Rank;
-    label: string;
-}

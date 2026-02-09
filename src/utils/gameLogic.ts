@@ -6,10 +6,9 @@ import type {
     FeedbackDirection,
     FeedbackStatus,
     GameData,
-    RankInfo,
 } from '../types';
 import { haversineDistance } from './geo';
-import { formatDistance, formatNumber, formatPercentageDiffTier, getDirectionSymbol } from './formatters';
+import { formatDistance, formatNumber, formatPercentageDiffTier, getDirectionSymbol, numberToLetter } from './formatters';
 
 // ---------------------------------------------------------------------------
 // Feedback Engine — dispatches by logicType
@@ -156,12 +155,15 @@ function handleHigherLower(
             ? Math.round(Math.abs((gNum - tNum) / tNum) * 100)
             : Math.abs(gNum - tNum);
 
-    // Category match (linked column)
+    // Category match (linked column or range-based fallback)
     let catMatch: boolean | undefined;
     if (field.linkedCategoryCol) {
         const tCat = String(target[field.linkedCategoryCol] ?? '').toLowerCase();
         const gCat = String(guess[field.linkedCategoryCol] ?? '').toLowerCase();
         catMatch = tCat === gCat;
+    } else {
+        // No linked category — use percentage-based range (within 25% = near)
+        catMatch = percentDiff <= 25;
     }
 
     // Build display value based on display format
@@ -179,8 +181,15 @@ function handleHigherLower(
         displayValue = `${arrow} ${sign}${relPct}%`;
     } else if (field.displayFormat === 'CURRENCY') {
         displayValue = `${arrow} $${formatNumber(gNum)}`;
+    } else if (field.displayFormat === 'ALPHA_POSITION') {
+        displayValue = numberToLetter(gNum);
     } else {
-        displayValue = `${arrow} ${gNum}`;
+        const isYearField = /year|discovered/i.test(field.displayLabel);
+        if (isYearField && gNum === 0) {
+            displayValue = `${arrow} Ancient`.trim();
+        } else {
+            displayValue = `${arrow} ${gNum}`;
+        }
     }
 
     // Determine status from category match
@@ -217,31 +226,42 @@ function handleSetIntersection(
     guess: Entity,
     field: SchemaField
 ): Feedback {
-    const tList = String(target[field.attributeKey] ?? '')
+    const tRaw = String(target[field.attributeKey] ?? '')
         .split(',')
-        .map(s => s.trim().toLowerCase())
+        .map(s => s.trim())
         .filter(Boolean);
-    const gList = String(guess[field.attributeKey] ?? '')
+    const gRaw = String(guess[field.attributeKey] ?? '')
         .split(',')
-        .map(s => s.trim().toLowerCase())
+        .map(s => s.trim())
         .filter(Boolean);
 
-    const intersection = gList.filter(item => tList.includes(item));
-    const union = [...new Set([...tList, ...gList])];
+    const tLower = tRaw.map(s => s.toLowerCase());
+
+    // Find matched items preserving original case from the guess
+    const matched = gRaw.filter(item => tLower.includes(item.toLowerCase()));
+
+    const allLower = [...new Set([...tLower, ...gRaw.map(s => s.toLowerCase())])];
 
     let status: FeedbackStatus = 'MISS';
-    if (union.length > 0) {
-        const ratio = intersection.length / union.length;
+    if (allLower.length > 0) {
+        const ratio = matched.length / allLower.length;
         if (ratio === 1) status = 'EXACT';
         else if (ratio > 0.5) status = 'HOT';
         else if (ratio > 0) status = 'NEAR';
     }
 
+    // Build per-item match info for UI rendering
+    const matchedItemsList = gRaw.map(item => ({
+        text: item,
+        isMatch: tLower.includes(item.toLowerCase()),
+    }));
+
     return {
         direction: 'NONE',
         status,
         value: guess[field.attributeKey] ?? '',
-        displayValue: `${intersection.length}/${tList.length}`,
+        displayValue: matched.length > 0 ? matched.join(', ') : 'No match',
+        matchedItems: matchedItemsList,
     };
 }
 
@@ -299,33 +319,17 @@ export function getSuggestions(
         .slice(0, 8);
 }
 
-export function calculateRank(score: number, par: number): RankInfo {
-    if (score <= par) {
-        return { rank: 'GOLD', label: 'Editorial Choice' };
-    } else if (score <= par + 3) {
-        return { rank: 'SILVER', label: 'Subscriber' };
-    } else {
-        return { rank: 'BRONZE', label: 'Casual Reader' };
-    }
-}
-
 export function getInitialColumnVisibility(
     schema: CategorySchema
 ): Record<string, boolean> {
-    // Only non-folded display columns are candidates for random visibility
+    // All non-folded display columns are visible by default (card layout shows all)
     const candidates = schema.filter(
         f => f.displayFormat !== 'HIDDEN' && !f.isFolded
     );
 
     const visibility: Record<string, boolean> = {};
     for (const field of candidates) {
-        visibility[field.attributeKey] = false;
-    }
-
-    // Randomly select 2 columns to be visible
-    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < Math.min(2, shuffled.length); i++) {
-        visibility[shuffled[i].attributeKey] = true;
+        visibility[field.attributeKey] = true;
     }
 
     return visibility;

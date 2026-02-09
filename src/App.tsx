@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
+import { Share2 } from 'lucide-react';
 import { GameGrid } from './components/GameGrid';
 import { GameInput } from './components/GameInput';
 import { GameOverModal } from './components/GameOverModal';
@@ -8,6 +10,7 @@ import { Scoreboard } from './components/Scoreboard';
 import { ScalarLogo } from './components/ScalarLogo';
 import { VennBackground } from './components/VennBackground';
 import { useGameStore } from './store/gameStore';
+import { decodeChallenge, encodeChallenge } from './utils/challengeUtils';
 import gameDataRaw from './assets/data/gameData.json';
 import type { GameData } from './types';
 
@@ -20,14 +23,11 @@ function App() {
   const gameStatus = useGameStore(state => state.gameStatus);
   const resetGame = useGameStore(state => state.resetGame);
   const revealAnswer = useGameStore(state => state.revealAnswer);
+  const startChallengeGame = useGameStore(state => state.startChallengeGame);
   const targetEntity = useGameStore(state => state.targetEntity);
   const activeCategory = useGameStore(state => state.activeCategory);
   const setActiveCategory = useGameStore(state => state.setActiveCategory);
-  const guesses = useGameStore(state => state.guesses);
-  const score = useGameStore(state => state.score);
-  const par = useGameStore(state => state.par);
-  const columnVisibility = useGameStore(state => state.columnVisibility);
-
+  const moves = useGameStore(state => state.moves);
   const [showHowToPlay, setShowHowToPlay] = useState(() => {
     return !localStorage.getItem(HTP_STORAGE_KEY);
   });
@@ -36,6 +36,22 @@ function App() {
     setShowHowToPlay(false);
     localStorage.setItem(HTP_STORAGE_KEY, '1');
   };
+
+  // Challenge URL detection
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const challengeHash = params.get('challenge');
+    if (challengeHash) {
+      const result = decodeChallenge(challengeHash);
+      if (result) {
+        startChallengeGame(result.category, result.entity);
+      }
+      // Clean up URL to prevent re-triggering on refresh
+      const url = new URL(window.location.href);
+      url.searchParams.delete('challenge');
+      window.history.replaceState({}, '', url.pathname);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Win effect (invert colors)
   useEffect(() => {
@@ -64,26 +80,47 @@ function App() {
       <div className="w-full max-w-6xl lg:p-8 lg:bg-paper-white transition-all duration-300 min-h-[80vh] flex flex-col relative overflow-hidden">
 
         {/* Header / Top Bar */}
-        <header className="mb-6 flex justify-between items-center border-b-venn pb-4 font-mono">
-          {/* LEFT: CATEGORY TABS */}
-          <div className="flex-1 flex items-center justify-start gap-2">
+        <header className="mb-6 flex items-center justify-between border-b-venn pb-4 font-mono relative">
+          {/* LEFT: CATEGORY DROPDOWN */}
+          <select
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+            className="text-xs sm:text-sm font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none shrink-0"
+          >
             {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => cat !== activeCategory && setActiveCategory(cat)}
-                className={`text-xs sm:text-sm font-bold uppercase tracking-wide transition-colors ${
-                  cat === activeCategory
-                    ? 'text-charcoal border-b-2 border-charcoal pb-0.5'
-                    : 'text-charcoal/40 hover:text-charcoal/70 pb-0.5'
-                }`}
-              >
+              <option key={cat} value={cat}>
                 {cat}
-              </button>
+              </option>
             ))}
+          </select>
+
+          {/* CENTER: GUESS INPUT */}
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <GameInput />
           </div>
 
-          {/* CENTER: TARGET */}
-          <div className="flex-1 flex flex-col items-center justify-center">
+          {/* RIGHT: SCORE + HOW TO PLAY */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Scoreboard />
+            <div className="h-4 w-px bg-graphite" />
+            <button
+              onClick={() => setShowHowToPlay(true)}
+              className="text-[10px] md:text-xs text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+            >
+              How to Play
+            </button>
+          </div>
+        </header>
+
+        {/* Main Game Area */}
+        <main className="flex-1 flex flex-col w-full">
+
+          <GameGrid />
+
+          <div className="flex-1" />
+
+          {/* ANSWER */}
+          <div className="flex flex-col items-center justify-center py-6 border-t border-graphite mt-6">
             <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal/60 mb-1">
               ANSWER
             </span>
@@ -100,34 +137,11 @@ function App() {
             )}
           </div>
 
-          {/* RIGHT: SCORE + HOW TO PLAY */}
-          <div className="flex-1 flex items-center justify-end gap-3">
-            <Scoreboard />
-            <div className="h-4 w-px bg-graphite" />
-            <button
-              onClick={() => setShowHowToPlay(true)}
-              className="text-[10px] md:text-xs text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
-            >
-              How to Play
-            </button>
-          </div>
-        </header>
-
-        {/* Main Game Area */}
-        <main className="flex-1 flex flex-col w-full">
-          <GameGrid />
-
-          <div className="flex-1" />
-
-          <GameInput />
-
           <GameOverModal
             isOpen={gameStatus === 'SOLVED'}
             targetEntity={targetEntity}
-            guesses={guesses}
-            score={score}
-            par={par}
-            columnVisibility={columnVisibility}
+            moves={moves}
+            activeCategory={activeCategory}
             onReset={resetGame}
           />
 
@@ -145,6 +159,25 @@ function App() {
         </main>
 
       </div>
+
+      <Analytics debug={import.meta.env.DEV} />
+
+      {/* Share Challenge Button — fixed bottom-right */}
+      <button
+        onClick={() => {
+          const hash = encodeChallenge(activeCategory, targetEntity.id);
+          const url = `${window.location.origin}${window.location.pathname}?challenge=${hash}`;
+          if (navigator.share) {
+            navigator.share({ title: 'Scalar Challenge', url });
+          } else {
+            navigator.clipboard.writeText(url);
+          }
+        }}
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 border border-charcoal bg-paper-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors"
+      >
+        <Share2 size={12} />
+        Share
+      </button>
     </div>
   );
 }

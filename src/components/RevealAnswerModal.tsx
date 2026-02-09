@@ -1,7 +1,10 @@
+import { useEffect, useRef } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { cn } from '../utils/cn';
+import { trackGameEvent } from '../utils/analytics';
+import { useGameStore } from '../store/gameStore';
 import type { Entity, CategorySchema } from '../types';
-import { formatNumber } from '../utils/formatters';
+import { formatNumber, numberToLetter } from '../utils/formatters';
 import { getDisplayColumns } from '../utils/schemaParser';
 
 interface RevealAnswerModalProps {
@@ -17,6 +20,19 @@ export function RevealAnswerModal({
     schema,
     onNewGame,
 }: RevealAnswerModalProps) {
+    const activeCategory = useGameStore(state => state.activeCategory);
+    const hasFiredRef = useRef(false);
+
+    useEffect(() => {
+        if (isOpen && !hasFiredRef.current) {
+            hasFiredRef.current = true;
+            trackGameEvent('game_forfeit', { category: activeCategory });
+        }
+        if (!isOpen) {
+            hasFiredRef.current = false;
+        }
+    }, [isOpen, activeCategory]);
+
     const displayFields = getDisplayColumns(schema);
 
     return (
@@ -24,15 +40,11 @@ export function RevealAnswerModal({
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(
-                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none transition-all duration-200",
-                    "bottom-0 left-0 right-0 w-full border-t border-charcoal pb-10",
+                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none",
+                    "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-md border border-charcoal",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
-                    "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-                    "md:top-1/2 md:left-1/2 md:bottom-auto md:right-auto md:w-full md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2",
-                    "md:border md:pb-6",
-                    "md:data-[state=open]:slide-in-from-top-[48%] md:data-[state=open]:slide-in-from-left-1/2",
-                    "md:data-[state=closed]:slide-out-to-top-[48%] md:data-[state=closed]:slide-out-to-left-1/2",
-                    "md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95"
+                    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                    "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                 )}>
                     <div className="flex flex-col items-center text-center space-y-6">
                         <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white font-serif-display">
@@ -55,7 +67,9 @@ export function RevealAnswerModal({
                                 if (value === undefined || value === null) return null;
 
                                 let displayVal: string;
-                                if (typeof value === 'number') {
+                                if (field.displayFormat === 'ALPHA_POSITION' && typeof value === 'number') {
+                                    displayVal = numberToLetter(value);
+                                } else if (typeof value === 'number') {
                                     displayVal = formatNumber(value);
                                 } else if (typeof value === 'boolean') {
                                     displayVal = value ? 'Yes' : 'No';

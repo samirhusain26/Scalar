@@ -19,7 +19,6 @@ export function GameInput() {
     const submitGuess = useGameStore(state => state.submitGuess);
     const guesses = useGameStore(state => state.guesses);
     const gameStatus = useGameStore(state => state.gameStatus);
-    const score = useGameStore(state => state.score);
 
     const isGameActive = gameStatus === 'PLAYING';
     const isDisabled = !isGameActive;
@@ -85,14 +84,8 @@ export function GameInput() {
     }, [selectedIndex]);
 
     return (
-        <div className="w-full max-w-2xl mx-auto mt-4 relative z-40 px-4">
+        <div className="w-48 sm:w-56 relative z-40">
             <div className="relative group">
-                {/* Status Label */}
-                <div className="absolute -top-6 left-0 text-xs font-mono font-bold text-charcoal/60 mb-1 flex justify-between w-full">
-                    <span>{activeCategory.toUpperCase()}</span>
-                    <span>Strokes: {score}</span>
-                </div>
-
                 <div className="relative w-full">
                     <Input
                         ref={inputRef}
@@ -107,7 +100,7 @@ export function GameInput() {
                         disabled={isDisabled}
                         placeholder={isDisabled ? (gameStatus === 'REVEALED' ? 'Revealed' : 'Solved') : "Type your guess..."}
                         className={cn(
-                            "font-mono uppercase text-lg shadow-none",
+                            "font-mono uppercase text-sm shadow-none h-8",
                             "border-0 border-b-2 border-b-charcoal rounded-none bg-transparent px-0",
                             "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-b-charcoal",
                             isDisabled && "cursor-not-allowed opacity-50"
@@ -118,7 +111,7 @@ export function GameInput() {
                     />
                 </div>
 
-                {/* Suggestion Dropdown - Opening upward */}
+                {/* Suggestion Dropdown - Opening downward */}
                 {showSuggestions && query && suggestions.length > 0 && !isDisabled && (
                     <>
                         <div
@@ -127,8 +120,9 @@ export function GameInput() {
                         />
 
                         <div
-                            className="absolute bottom-full left-0 right-0 mb-3 z-50 flex flex-col items-start"
+                            className="absolute top-full left-0 right-0 mt-3 z-50 flex flex-col items-start"
                         >
+                            <div className="w-4 h-4 bg-paper-white border-l border-t border-charcoal transform rotate-45 translate-x-8 translate-y-[10px] z-50"></div>
                             <div ref={listRef} className="bg-paper-white border border-charcoal p-3 shadow-hard-sm flex flex-wrap gap-2 max-w-full">
                                 {suggestions.map((entity, index) => (
                                     <button
@@ -149,14 +143,13 @@ export function GameInput() {
                                     </button>
                                 ))}
                             </div>
-                            <div className="w-4 h-4 bg-paper-white border-r border-b border-charcoal transform rotate-45 translate-x-8 translate-y-[-10px] z-50"></div>
                         </div>
                     </>
                 )}
 
                 {/* No Matches State */}
                 {showSuggestions && query && suggestions.length === 0 && !isDisabled && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 z-50 flex justify-center">
+                    <div className="absolute top-full left-0 right-0 mt-2 z-50 flex justify-center">
                         <div className="bg-paper-white border border-charcoal p-3 shadow-hard-sm">
                             <span className="font-mono text-gray-400 italic font-bold text-sm">No match found</span>
                         </div>
@@ -164,12 +157,6 @@ export function GameInput() {
                 )}
             </div>
 
-            {/* Helper Text */}
-            {!isDisabled && (
-                <div className="mt-2 text-[10px] font-mono text-gray-400 text-right hidden sm:block">
-                    Use arrow keys to navigate, Enter to select
-                </div>
-            )}
         </div>
     );
 }

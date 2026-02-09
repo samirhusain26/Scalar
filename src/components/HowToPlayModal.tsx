@@ -1,4 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import { Eye, ChevronDown } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 interface HowToPlayModalProps {
@@ -6,12 +7,12 @@ interface HowToPlayModalProps {
     onClose: () => void;
 }
 
-function FeedbackSwatch({ color, label }: { color: string; label: string }) {
+/** Mini swatch block used in the color legend */
+function Swatch({ className, children }: { className: string; children: React.ReactNode }) {
     return (
-        <div className="flex items-center gap-2">
-            <div className={cn('w-5 h-5 border border-charcoal/30 shrink-0', color)} />
-            <span>{label}</span>
-        </div>
+        <span className={cn('inline-flex items-center px-2 py-0.5 text-[11px] font-bold font-mono border border-charcoal/20 whitespace-nowrap', className)}>
+            {children}
+        </span>
     );
 }
 
@@ -21,17 +22,11 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(
-                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none transition-all duration-200 overflow-y-auto max-h-[85vh]",
-                    // Mobile: Bottom Sheet
-                    "bottom-0 left-0 right-0 w-full border-t border-charcoal pb-10",
+                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none overflow-y-auto max-h-[85vh]",
+                    "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-2xl border border-charcoal",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
-                    "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-                    // Desktop: Centered Modal
-                    "md:top-1/2 md:left-1/2 md:bottom-auto md:right-auto md:w-full md:max-w-lg md:-translate-x-1/2 md:-translate-y-1/2",
-                    "md:border md:pb-6",
-                    "md:data-[state=open]:slide-in-from-top-[48%] md:data-[state=open]:slide-in-from-left-1/2",
-                    "md:data-[state=closed]:slide-out-to-top-[48%] md:data-[state=closed]:slide-out-to-left-1/2",
-                    "md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95"
+                    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                    "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                 )}>
                     {/* Title */}
                     <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white text-center mb-6 font-serif-display">
@@ -42,111 +37,168 @@ export function HowToPlayModal({ isOpen, onClose }: HowToPlayModalProps) {
                         Learn how to play Scalar
                     </Dialog.Description>
 
-                    <div className="space-y-5 text-sm text-charcoal font-mono">
-                        {/* Goal */}
-                        <section>
-                            <h3 className="font-black uppercase text-xs tracking-widest mb-2 border-b border-charcoal/20 pb-1">
-                                Goal
-                            </h3>
-                            <p className="leading-relaxed">
-                                Guess the hidden entity by deducing its attributes. Each round picks a mystery target from the active category &mdash; countries, hollywood, chemicals, or animals.
-                            </p>
-                        </section>
+                    <div className="space-y-6 text-sm text-charcoal font-mono">
 
-                        {/* How It Works */}
-                        <section>
-                            <h3 className="font-black uppercase text-xs tracking-widest mb-2 border-b border-charcoal/20 pb-1">
-                                How It Works
-                            </h3>
-                            <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
-                                <li>Pick a <strong>category</strong> from the tabs at the top.</li>
-                                <li>Type a guess into the input field and press Enter.</li>
-                                <li>Each attribute of your guess is compared to the target and color-coded.</li>
-                                <li>Use the feedback to narrow down your next guess.</li>
-                                <li>Keep guessing until every cell turns gold!</li>
-                            </ol>
-                        </section>
+                        {/* ── Goal ── */}
+                        <p className="text-center leading-relaxed">
+                            A mystery target is chosen from the active category.<br />
+                            Guess entities and use the feedback to deduce the answer.
+                        </p>
 
-                        {/* Feedback Colors */}
+                        {/* ── Example Card ── */}
                         <section>
-                            <h3 className="font-black uppercase text-xs tracking-widest mb-2 border-b border-charcoal/20 pb-1">
-                                Feedback Colors
+                            <h3 className="font-black uppercase text-xs tracking-widest mb-3 border-b border-charcoal/20 pb-1">
+                                Reading a Guess Card
                             </h3>
-                            <div className="space-y-2">
-                                <FeedbackSwatch color="bg-thermal-gold" label="Exact &mdash; you matched this attribute perfectly." />
-                                <FeedbackSwatch color="bg-thermal-orange" label="Hot &mdash; you're very close to the target value." />
-                                <FeedbackSwatch color="bg-amber-100 border-dashed !border-amber-400" label="Near &mdash; in the right ballpark, but not quite." />
-                                <FeedbackSwatch color="bg-gray-200" label="Miss &mdash; far from the target value." />
-                            </div>
-                        </section>
+                            <p className="text-xs text-charcoal/60 mb-2">Each guess shows your entity's attributes compared to the target:</p>
 
-                        {/* Direction Arrows */}
-                        <section>
-                            <h3 className="font-black uppercase text-xs tracking-widest mb-2 border-b border-charcoal/20 pb-1">
-                                Direction Indicators
-                            </h3>
-                            <p className="leading-relaxed mb-2">
-                                For numeric attributes, a thick border on the cell tells you which way to adjust:
-                            </p>
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 border-t-[4px] border-t-black bg-gray-200 border border-charcoal/30 shrink-0" />
-                                    <span><strong>Top border</strong> &mdash; the target is higher.</span>
+                            {/* Mini example card */}
+                            <div className="border border-charcoal bg-paper-white max-w-md mx-auto">
+                                {/* Card header */}
+                                <div className="flex items-center justify-between px-3 py-1.5 border-b border-charcoal">
+                                    <span className="font-bold text-xs uppercase">Brazil</span>
+                                    <span className="text-xs text-charcoal/50">#01</span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 border-b-[4px] border-b-black bg-gray-200 border border-charcoal/30 shrink-0" />
-                                    <span><strong>Bottom border</strong> &mdash; the target is lower.</span>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Scoring */}
-                        <section>
-                            <h3 className="font-black uppercase text-xs tracking-widest mb-2 border-b border-charcoal/20 pb-1">
-                                Scoring
-                            </h3>
-                            <p className="leading-relaxed mb-2">
-                                Scoring works like golf &mdash; lower is better.
-                            </p>
-                            <ul className="space-y-1.5 leading-relaxed">
-                                <li><strong>+1 stroke</strong> for each guess submitted.</li>
-                                <li><strong>+1 stroke</strong> for revealing a hidden column.</li>
-                                <li><strong>+5 strokes</strong> for using a major hint.</li>
-                            </ul>
-                            <p className="leading-relaxed mt-2">
-                                <strong>Par is 4.</strong> Try to solve each puzzle at or under par for the best rank.
-                            </p>
-                        </section>
-
-                        {/* Ranks */}
-                        <section>
-                            <h3 className="font-black uppercase text-xs tracking-widest mb-2 border-b border-charcoal/20 pb-1">
-                                Ranks
-                            </h3>
-                            <div className="space-y-1.5">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-thermal-gold font-black">GOLD</span>
-                                    <span>&mdash; Editorial Choice (at or under par)</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-gray-500 font-black">SILVER</span>
-                                    <span>&mdash; Subscriber (up to 3 over par)</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-orange-700 font-black">BRONZE</span>
-                                    <span>&mdash; Casual Reader (more than 3 over par)</span>
+                                {/* Mini attribute grid */}
+                                <div className="grid grid-cols-2 gap-px bg-charcoal text-[11px]">
+                                    {/* Location - miss */}
+                                    <div className="col-span-2 px-2 py-1.5 bg-white">
+                                        <div className="text-[9px] uppercase opacity-50 tracking-wider">Location</div>
+                                        <div className="font-bold">
+                                            <span className="opacity-50">Southern</span>
+                                            <span className="mx-1 opacity-30">•</span>
+                                            <span className="opacity-50">Americas</span>
+                                            <span className="mx-1 opacity-30">•</span>
+                                            <span className="opacity-50">South America</span>
+                                        </div>
+                                    </div>
+                                    {/* Distance - miss */}
+                                    <div className="px-2 py-1.5 bg-white">
+                                        <div className="text-[9px] uppercase opacity-50 tracking-wider">Distance</div>
+                                        <div className="font-bold">17,362 km</div>
+                                    </div>
+                                    {/* Population - HIGHER_LOWER with arrow */}
+                                    <div className="px-2 py-1.5 bg-thermal-orange text-white">
+                                        <div className="text-[9px] uppercase opacity-70 tracking-wider">Population</div>
+                                        <div className="flex justify-between items-baseline">
+                                            <span className="font-bold">213M</span>
+                                            <span className="text-[10px] opacity-80">↓ ~50%</span>
+                                        </div>
+                                    </div>
+                                    {/* Landlocked - exact */}
+                                    <div className="px-2 py-1.5 bg-thermal-green text-white">
+                                        <div className="text-[9px] uppercase opacity-70 tracking-wider">Landlocked?</div>
+                                        <div className="font-bold">No</div>
+                                    </div>
+                                    {/* Area - miss */}
+                                    <div className="px-2 py-1.5 bg-white">
+                                        <div className="text-[9px] uppercase opacity-50 tracking-wider">Area</div>
+                                        <div className="flex justify-between items-baseline">
+                                            <span className="font-bold">8.5M</span>
+                                            <span className="text-[10px] opacity-70">↑ ~100%</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </section>
 
-                        {/* Hints */}
+                        {/* ── Color Legend ── */}
                         <section>
-                            <h3 className="font-black uppercase text-xs tracking-widest mb-2 border-b border-charcoal/20 pb-1">
-                                Hints
+                            <h3 className="font-black uppercase text-xs tracking-widest mb-3 border-b border-charcoal/20 pb-1">
+                                Cell Colors
                             </h3>
-                            <p className="leading-relaxed">
-                                Some columns start hidden. Click a hidden column header to reveal it (+1 stroke). You can also request a major hint on numeric columns for a descriptive range clue (+5 strokes). Use hints strategically to stay under par.
-                            </p>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                <div className="flex items-center gap-2">
+                                    <Swatch className="bg-thermal-green text-white">Exact</Swatch>
+                                    <span className="text-xs">Perfect match</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Swatch className="bg-thermal-orange text-white">Hot</Swatch>
+                                    <span className="text-xs">Very close</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Swatch className="bg-amber-100 border-dashed !border-amber-400">Near</Swatch>
+                                    <span className="text-xs">Right ballpark</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Swatch className="bg-white">Miss</Swatch>
+                                    <span className="text-xs">Far off</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ── Arrows ── */}
+                        <section>
+                            <h3 className="font-black uppercase text-xs tracking-widest mb-3 border-b border-charcoal/20 pb-1">
+                                Direction Arrows
+                            </h3>
+                            <p className="text-xs text-charcoal/60 mb-2">Numeric cells show an arrow and a proximity tier telling you how far off you are:</p>
+                            <div className="flex flex-wrap gap-3">
+                                <div className="flex items-center gap-2 border border-charcoal/20 px-3 py-1.5">
+                                    <span className="text-base font-bold">↑</span>
+                                    <span className="text-xs">Target is <strong>higher</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2 border border-charcoal/20 px-3 py-1.5">
+                                    <span className="text-base font-bold">↓</span>
+                                    <span className="text-xs">Target is <strong>lower</strong></span>
+                                </div>
+                                <div className="flex items-center gap-2 border border-charcoal/20 px-3 py-1.5">
+                                    <span className="text-xs font-mono opacity-70">~25%</span>
+                                    <span className="text-xs">How far off (tier)</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ── Scoring + Hints (merged for brevity) ── */}
+                        <section>
+                            <h3 className="font-black uppercase text-xs tracking-widest mb-3 border-b border-charcoal/20 pb-1">
+                                Scoring &amp; Hints
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Scoring */}
+                                <div>
+                                    <p className="text-xs text-charcoal/60 mb-1.5">Lower moves = better score</p>
+                                    <ul className="space-y-1 text-xs leading-relaxed">
+                                        <li><strong>+1 move</strong> per guess</li>
+                                        <li><strong>+3 moves</strong> per hint (after free credits)</li>
+                                        <li><strong>Reveal Answer</strong> = forfeit (score &infin;)</li>
+                                    </ul>
+                                </div>
+
+                                {/* Hints */}
+                                <div>
+                                    <p className="text-xs text-charcoal/60 mb-1.5">3 free hint credits per game</p>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div className="flex items-center gap-1">
+                                            {[0, 1, 2].map(i => (
+                                                <div
+                                                    key={i}
+                                                    className={`w-2.5 h-2.5 border border-charcoal ${i < 2 ? 'bg-charcoal' : 'bg-transparent'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                        <span className="text-[10px] text-charcoal/50">2 credits left</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-charcoal/70">
+                                        <Eye className="w-3 h-3 opacity-50" />
+                                        <span>Tap the eye icon on any cell to reveal the target value</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ── More Clues ── */}
+                        <section>
+                            <h3 className="font-black uppercase text-xs tracking-widest mb-3 border-b border-charcoal/20 pb-1">
+                                More Clues
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-charcoal/70">
+                                <div className="flex items-center gap-1 border border-charcoal/20 px-2 py-1 text-[10px] uppercase tracking-wider text-charcoal/50">
+                                    <span>More clues</span>
+                                    <ChevronDown className="w-3 h-3" />
+                                </div>
+                                <span>Each card has extra attributes in a collapsible section — free to expand.</span>
+                            </div>
                         </section>
                     </div>
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-df = pd.read_csv("data/chemicals.csv")
+df = pd.read_csv("data/chemicals_enriched.csv")
 
 # =============================================================================
 # 1. DATA CLEANING
@@ -79,6 +79,22 @@ df["group"] = pd.to_numeric(df["group"], errors="coerce").fillna(-1).astype(int)
 # --- is_radioactive already exists, ensure consistent ---
 df["is_radioactive"] = df["is_radioactive"].astype(str).str.upper().map({"TRUE": True, "FALSE": False}).fillna(False)
 df["is_synthetic"] = df["is_synthetic"].astype(str).str.upper().map({"TRUE": True, "FALSE": False}).fillna(False)
+
+# =============================================================================
+# 2b. FUN/META: symbol_match
+# =============================================================================
+# "Direct" if Symbol (Id) equals the first N letters of the Name (case-insensitive),
+# "Mismatch" otherwise (e.g., Fe vs Iron -> Mismatch, He vs Helium -> Direct)
+
+def classify_symbol_match(row):
+    symbol = str(row["Id"]).strip()
+    name = str(row["Name"]).strip()
+    n = len(symbol)
+    if name[:n].lower() == symbol.lower():
+        return "Direct"
+    return "Mismatch"
+
+df["symbol_match"] = df.apply(classify_symbol_match, axis=1)
 
 # =============================================================================
 # 3. RANGE CALCULATIONS (categorical columns, 3-7 categories each)
@@ -179,8 +195,8 @@ df["year_discovered_range"] = df["YearDiscovered"].apply(classify_year)
 # =============================================================================
 # OUTPUT
 # =============================================================================
-df.to_csv("data/chemicals.csv", index=False)
-print(f"Wrote {len(df)} rows to data/chemicals.csv")
+df.to_csv("data/chemicals_enriched.csv", index=False)
+print(f"Wrote {len(df)} rows to data/chemicals_enriched.csv")
 
 # Quick summary
 print("\n--- Range distributions ---")
@@ -189,6 +205,6 @@ for col in ["atomic_mass_range", "density_range", "melting_point_range", "boilin
     print(df[col].value_counts().to_string())
 
 print("\n--- Enrichment distributions ---")
-for col in ["rarity_category", "conductivity_type"]:
+for col in ["rarity_category", "conductivity_type", "symbol_match"]:
     print(f"\n{col}:")
     print(df[col].value_counts().to_string())

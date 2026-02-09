@@ -47,6 +47,7 @@
   --color-thermal-orange: #F97316;
   --color-thermal-teal: #14B8A6;
   --color-thermal-amber: #F59E0B;
+  --color-thermal-green: #22C55E;
 
   /* Venn logo palette */
   --color-venn-teal: #14B8A6;
@@ -118,6 +119,12 @@
   color: white;
 }
 
+/* Distance cell — yellow tier (<5000km) */
+@utility bg-geo-yellow {
+  background-color: #FACC15;
+  color: #18181B;
+}
+
 @utility bg-geo-cold {
   background-color: #E2E8F0;
   color: #18181B;
@@ -158,6 +165,15 @@
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-image: linear-gradient(90deg, transparent, #14B8A660, #EAB30850, #F472B660, transparent) 1;
+}
+
+@keyframes subtle-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(234, 179, 8, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(234, 179, 8, 0.5); }
+}
+
+@utility animate-glow {
+  animation: subtle-glow 2s ease-in-out infinite;
 }
 
 @layer base {

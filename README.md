@@ -1,6 +1,6 @@
 # SCALAR
 
-> A deductive logic game where players guess entities based on attribute feedback — featuring golf-style scoring, geographic distance, set intersection, and a minimalist editorial aesthetic.
+> A deductive logic game where players guess entities based on attribute feedback — featuring a Total Moves scoring system, geographic distance, set intersection, and a minimalist thermal e-paper aesthetic.
 
 ![Scalar Game](https://img.shields.io/badge/Version-0.0.0-blue)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
@@ -17,7 +17,7 @@
   - [How to Play](#how-to-play)
   - [Feedback System](#feedback-system)
   - [Categories & Attributes](#categories--attributes)
-  - [Column Visibility, Folded Clues & Major Hints](#column-visibility-folded-clues--major-hints)
+  - [Folded Clues & Major Hints](#folded-clues--major-hints)
   - [Scoring](#scoring)
   - [Winning, Forfeiting & Sharing](#winning-forfeiting--sharing)
 - [Features](#features)
@@ -27,6 +27,7 @@
   - [Core Type Definitions](#core-type-definitions)
   - [State Management](#state-management)
   - [Game Logic — Feedback Engine](#game-logic--feedback-engine)
+  - [Feedback Color System](#feedback-color-system)
   - [Component Hierarchy](#component-hierarchy)
 - [Data Pipeline](#data-pipeline)
 - [Getting Started](#getting-started)
@@ -35,6 +36,7 @@
   - [Development](#development)
   - [Production Build](#production-build)
 - [Extending the Game](#extending-the-game)
+- [Design System](#design-system)
 - [License](#license)
 
 ---
@@ -43,9 +45,9 @@
 
 **Scalar** is a deductive logic game inspired by games like Wordle, but instead of guessing words, players guess **entities** (countries, movies, chemical elements, animals) based on a feedback loop of attribute comparisons. Each guess reveals feedback via five different logic systems — higher/lower arrows, proximity tiers, geographic distance gradients, category matching, and set intersection — enabling players to narrow down the target entity through logical deduction.
 
-The game uses a **golf-style scoring system** — every action costs strokes, and players aim for the lowest score possible. Only some columns are visible at the start; revealing hidden columns, unlocking folded clues, and using major hints all add to your stroke count.
+The game uses a **Total Moves scoring system** — every guess costs +1 move, and players start with 3 free hint credits. Once credits are spent, hints cost additional moves. The goal is to solve the puzzle in as few total moves as possible.
 
-The web version features a responsive design with a high-contrast, minimalist **editorial / paper** aesthetic, powered by the Geist Mono typeface.
+The web version features a responsive card-based layout with a high-contrast, minimalist **"Thermal E-Paper / Scientific Journal"** aesthetic — charcoal ink on paper-white canvas, sharp corners, monospaced typography, and thermal feedback colors (green, orange, amber, white).
 
 ---
 
@@ -53,21 +55,21 @@ The web version features a responsive design with a high-contrast, minimalist **
 
 ### Objective
 
-A hidden target entity is selected at random from the active category. Identify the target by submitting guesses and interpreting the feedback on each attribute. Every action costs strokes — find the answer with the fewest strokes to earn the best rank.
+A hidden target entity is selected at random from the active category. Identify the target by submitting guesses and interpreting the feedback on each attribute. Every action costs moves — find the answer with the fewest total moves.
 
 ### How to Play
 
 1. **Select a category** — Countries, Hollywood, Chemicals, or Animals. Each has its own attribute schema with unique feedback logic.
-2. **Survey the grid** — Only 2 random columns are visible at the start. Hidden columns show a hatched pattern; folded clues show a locked pattern. Decide whether to reveal more information (at a cost) or start guessing.
-3. **Submit a guess** — Type in the input field. An autocomplete menu surfaces up to 8 matching entities. Arrow keys to navigate, Enter to confirm. Each guess costs **+1 stroke**.
-4. **Read the feedback** — A new row populates the grid with color-coded feedback per attribute:
-   - **Arrows** (↑/↓) indicate direction for numeric fields
-   - **Colors** indicate proximity — green for exact, yellow/red for close, gray for far
+2. **Submit a guess** — Type in the input field. An autocomplete dropdown surfaces up to 8 matching entities. Arrow keys to navigate, Enter to confirm. Each guess costs **+1 move**.
+3. **Read the feedback** — A new card appears in the grid with color-coded feedback per attribute:
+   - **Arrows** (↑/↓) and tier text indicate direction and distance for numeric fields
+   - **Thermal colors** indicate proximity — green for exact, orange for hot, amber for near, white for miss
    - **Distance** shows geographic distance in km (Countries category)
-   - **Overlap** shows set intersection ratios for list fields (e.g., Genre "2/3")
-5. **Use hints strategically** — Reveal hidden columns (+1 stroke), unlock folded clues (+2 strokes), or use major hints to see exact target values (+5 strokes).
-6. **Solve** — Match every attribute exactly. Your final stroke count determines your rank.
-7. **Give up** — If stuck, click "Reveal Answer" in the header to see the target entity and all its attributes. This ends the game as a forfeit with no rank awarded.
+   - **Overlap** shows set intersection with per-item match coloring for list fields (e.g., Genre, Cast & Crew)
+4. **Expand "More clues"** — Each card has a collapsible section with additional folded attributes. Tap the chevron to expand and see more feedback at no cost.
+5. **Use hints strategically** — Tap the Eye icon on any attribute to reveal the exact target value (free with credits, else +3 moves).
+6. **Solve** — Match every attribute exactly. Your final move count is your score.
+7. **Give up** — If stuck, click "Reveal Answer" at the bottom to see the target entity and all its attributes. This ends the game as a forfeit with no score.
 
 ### Feedback System
 
@@ -79,20 +81,21 @@ Scalar uses five distinct feedback logic types, each suited to a different kind 
 
 **EXACT_MATCH** — Binary equality for strings and booleans.
 - Compares values case-insensitively
-- Returns EXACT (green) or MISS (gray)
-- Used for: Driving Side, Diet, Landlocked?, Radioactive, Conservation Status
+- Returns EXACT (green) or MISS (white)
+- Used for: Driving Side, Diet, Landlocked?, Radioactive, Conservation Status, Activity
 
 **CATEGORY_MATCH** — String equality with optional distance-based coloring.
 - Compares category strings case-insensitively
-- When paired with `DISTANCE_GRADIENT` coloring, cells are colored by geographic distance between guess and target (red = close, blue = far)
+- When paired with `DISTANCE_GRADIENT` coloring, cells show green for exact text match, white for miss (binary coloring, no intermediate gradient)
 - Returns EXACT or MISS
 - Used for: Continent, Subregion, Hemisphere, Production Co., Phase, MPAA Rating
 
 **HIGHER_LOWER** — Numeric comparison with direction arrows and percentage difference.
-- Shows ↑ (target is higher) or ↓ (target is lower) direction arrows
-- Displays percentage difference in tiers (~10%, ~25%, ~50%, ~100%, 200%+)
-- Status determined by **linked category column**: HOT (yellow) if the guess and target share the same category bucket, MISS (gray) otherwise
-- Alternate display formats: relative percentage (e.g., "+34%"), currency ("↑ $1.2B"), or raw number
+- Shows ↑ (target is higher) or ↓ (target is lower) as text arrows in a split cell layout (value left, arrow+tier right)
+- Displays percentage difference in tiers (~10%, ~25%, ~50%, ~100%) or multiplier tiers for large diffs (2x+, 5x+, 10x+, 50x+, 100x+)
+- Year fields use absolute year difference tiers (±2 yrs, ±5 yrs, ±10 yrs, ±25 yrs, ±50 yrs, 50+ yrs) instead of percentages
+- Status determined by **linked category column**: HOT (orange) if the guess and target share the same category bucket, MISS (white) otherwise
+- Alternate display formats: relative percentage (e.g., "+34%"), currency ("↑ $1.2B"), alpha position (A-Z letters), or raw number
 - Used for: Population, Area, GDP, Atomic #, Release Year, IMDb Rating, Weight, Lifespan
 
 **GEO_DISTANCE** — Haversine great-circle distance between geographic coordinates.
@@ -107,26 +110,34 @@ Scalar uses five distinct feedback logic types, each suited to a different kind 
 - Displays "X/Y" where X = matching items, Y = target item count
 - Used for: Genre, Cast & Crew in Hollywood
 
-#### Status Colors
+#### Status Colors (Thermal Palette)
 
-| Status | Standard Color | Meaning |
-|--------|---------------|---------|
-| **EXACT** | Green | Exact match. This attribute matches the target. |
-| **HOT** | Yellow | Close. Within the inner proximity range or category match. |
-| **NEAR** | Amber (dashed border) | Nearby. Outside HOT but within the extended range. |
-| **MISS** | Gray | No match. Outside all proximity ranges. |
+| Status | Color | Hex | Meaning |
+|--------|-------|-----|---------|
+| **EXACT** | Green | `#22C55E` | Exact match. This attribute matches the target. |
+| **HOT** | Orange | `#F97316` | Close. Within the inner proximity range or category match. |
+| **NEAR** | Muted Amber | `#FEF3C7` | Nearby. Outside HOT but within the extended range. Dashed border. |
+| **MISS** | White | `#FFFFFF` | No match. Outside all proximity ranges. |
 
-#### Distance Gradient Colors (Countries)
+#### GEO_DISTANCE Colors (Distance Cell)
 
-For fields with distance-gradient coloring (Continent, Subregion, Hemisphere), the cell background reflects geographic distance rather than standard status colors:
+For the Distance field in Countries (computed via Haversine formula):
 
 | Distance | Color | Hex |
 |----------|-------|-----|
-| 0 km | Green | Standard green |
-| < 1,000 km | Red | #FF6B6B |
-| < 3,000 km | Yellow | #FFD93D |
-| < 5,000 km | Blue | #B8D4E3 |
-| >= 5,000 km | Gray | #E5E7EB |
+| < 1,000 km (includes 0 km) | Green | `#22C55E` |
+| < 3,000 km | Amber | `#F59E0B` |
+| < 5,000 km | Yellow | `#FACC15` |
+| >= 5,000 km | White | — |
+
+#### Location Text Colors (DISTANCE_GRADIENT)
+
+For text fields with distance-gradient coloring (Continent, Subregion, Hemisphere), coloring is binary:
+
+| Condition | Color | Hex |
+|-----------|-------|-----|
+| Exact text match | Green | `#22C55E` |
+| No match | White | — |
 
 #### Category Match Colors (Linked Columns)
 
@@ -134,20 +145,23 @@ For HIGHER_LOWER fields with a linked category column, the cell background indic
 
 | Match | Color | Hex |
 |-------|-------|-----|
-| Same category | Green | #16a34a |
-| Different category | Gray | #E5E7EB |
+| Exact match | Green | `#22C55E` |
+| Same category | Gold | `#EAB308` |
+| Different category | White | — |
 
 #### Direction Indicators (Numeric Fields Only)
 
-Numeric cells display a **directional border** indicating which way to adjust:
+Numeric cells display **text arrows** indicating which way to adjust, shown in the secondary text alongside the tier:
 
-| Indicator | Visual | Meaning |
+| Indicator | Symbol | Meaning |
 |-----------|--------|---------|
-| **UP** | Thick top border (4px) | Target is **higher** than your guess. |
-| **DOWN** | Thick bottom border (4px) | Target is **lower** than your guess. |
-| **EQUAL** | No thick border | Exact match. |
+| **UP** | ↑ | Target is **higher** than your guess. |
+| **DOWN** | ↓ | Target is **lower** than your guess. |
+| **EQUAL** | (none) | Exact match. |
 
-Direction is independent of status. A HOT cell with an UP border means you are close but still need to go higher.
+For ALPHA_POSITION fields, horizontal arrows (←/→) indicate earlier/later in the alphabet.
+
+Direction is independent of status. A HOT cell with ↑ means you are close but still need to go higher.
 
 #### Percentage Difference Tiers
 
@@ -160,7 +174,23 @@ For HIGHER_LOWER fields with PERCENTAGE_DIFF display format, the percentage diff
 | 16–37% | ~25% |
 | 38–75% | ~50% |
 | 76–150% | ~100% |
-| 150%+ | 200%+ |
+| 150%+ (< 5x) | 2x+ |
+| 5x – 10x | 5x+ |
+| 10x – 50x | 10x+ |
+| 50x – 100x | 50x+ |
+| 100x+ | 100x+ |
+
+For **year fields** (Release Year, Discovered), absolute year difference tiers are used instead:
+
+| Year Diff | Displayed Tier |
+|-----------|----------------|
+| 0 | Exact |
+| 1–2 years | ±2 yrs |
+| 3–5 years | ±5 yrs |
+| 6–10 years | ±10 yrs |
+| 11–25 years | ±25 yrs |
+| 26–50 years | ±50 yrs |
+| 50+ years | 50+ yrs |
 
 ### Categories & Attributes
 
@@ -177,7 +207,7 @@ Each category defines its own schema with specific logic types, display formats,
 | Population | Higher/Lower | % Diff Tier | Linked to population category |
 | GDP / Capita | Higher/Lower | % Diff Tier | Linked to GDP category |
 | Armed Forces | Higher/Lower | % Diff Tier | Linked to armed forces category |
-| Landlocked? | Exact Match | Yes/No | *Folded* (+2 to unlock) |
+| Landlocked? | Exact Match | Yes/No | *Folded* (expandable) |
 | Timezones | Higher/Lower | Number | *Folded*, linked to timezone category |
 | Pop. Density | Higher/Lower | Number | *Folded*, linked to density category |
 | Olympics Hosted | Higher/Lower | Number | *Folded* |
@@ -233,103 +263,102 @@ Each category defines its own schema with specific logic types, display formats,
 | Activity | Exact Match | Text | *Folded* (Diurnal, Nocturnal, etc.) |
 | Status | Exact Match | Text | *Folded* (conservation status) |
 
-### Column Visibility, Folded Clues & Major Hints
+### Folded Clues & Major Hints
 
-Not all information is available from the start. The game uses a three-tier information reveal system:
+The game uses a two-tier information reveal system beyond the standard visible attributes:
 
-#### Hidden Columns (Regular)
-- 2 random non-folded columns are visible at game start; the rest are hidden behind a hatched pattern
-- Hidden column headers show a **+** icon in a narrow collapsed width
-- Click to reveal the column and all its data for past and future guesses
-- **Cost: +1 stroke**
+#### Folded Clues (Expandable)
+- Schema fields marked as "folded" are placed in a collapsible **"More clues"** section at the bottom of each guess card
+- Tap the chevron toggle to expand/collapse — **no move penalty** to view
+- Folded fields render with full feedback coloring, direction borders, and all logic types when expanded
+- Each card tracks its own expanded/collapsed state independently (default: collapsed)
 
-#### Folded Clues (Locked)
-- Schema fields marked as "folded" start locked with a darker diagonal pattern
-- Folded column headers display at full width with a **lock** icon + the attribute label
-- Click to open a confirmation dialog, then unlock to reveal all data for past and future guesses
-- **Cost: +2 strokes**
-- Folded columns are separate from column visibility — they have their own reveal tracking
-
-#### Major Hints
-- Visible HIGHER_LOWER column headers show an **eye** icon
-- Click to reveal the **exact target value** for that attribute in the column header
+#### Hints (Eye Icon)
+- **All cells** show a small **Eye** icon in the top-right corner (opacity-40, visible on hover)
+- Click to reveal the **exact target value** for that attribute, displayed as an inverted badge (charcoal background, paper-white text, Check icon)
 - A confirmation dialog warns about the cost before proceeding
-- **Cost: +5 strokes**
-- Revealed headers display the value with a checkmark icon and inverted styling
+- **Cost:** Free if credits are available (consumes 1 credit), otherwise **+3 moves**
+- The Location cell (merged Continent/Subregion/Hemisphere) reveals all 3 attributes at once for a single credit/cost
+- Once revealed, the badge appears on that cell across all guess cards
 
 ### Scoring
 
-Scalar uses a **golf-style scoring system** where lower is better:
+Scalar uses a **Total Moves** scoring system where lower is better:
 
-| Action | Stroke Cost |
-|--------|-------------|
+| Action | Move Cost |
+|--------|-----------|
 | Submit a guess | +1 |
-| Reveal a hidden column | +1 |
-| Unlock a folded clue | +2 |
-| Use a major hint | +5 |
+| Reveal a hidden column | Free (with credit) or +3 |
+| Reveal a folded attribute | Free (with credit) or +3 |
+| Use a hint (Eye icon) | Free (with credit) or +3 |
 
-**Par** is set to **4** strokes. Your final rank is determined by how your score compares to par:
+#### Free Hint Credits
+- Players start each game with **3 free hint credits**
+- Credits are consumed (one at a time) when revealing columns, folded attributes, or using Eye icon hints (0 move cost)
+- Once credits are spent, the same actions cost **+3 moves** each
+- Credits are displayed in the Scoreboard as 3 filled/empty squares
+- Credits reset to 3 on new game or category change
 
-| Rank | Condition | Label |
-|------|-----------|-------|
-| GOLD | Score <= Par | Editorial Choice |
-| SILVER | Score <= Par + 3 | Subscriber |
-| BRONZE | Score > Par + 3 | Casual Reader |
-
-The Scoreboard in the header displays your current strokes, par offset (E for even, +X over, -X under), and rank badge in real time.
+The Scoreboard in the header displays your current move count and remaining hint credits in real time.
 
 ### Winning, Forfeiting & Sharing
 
-**Win condition:** All attributes in a single guess return EXACT status — every field is an exact match. On win:
-- The display briefly inverts (screen flash effect)
-- A "Puzzle Complete" modal shows the target entity, your score, par, and rank
+**Win condition:** All feedback fields in a single guess return EXACT status — every attribute is an exact match. On win:
+- The display briefly inverts (screen flash effect via `invert` class on `<html>`)
+- A "Puzzle Complete" modal shows the target entity name and total moves
 
-**Reveal answer (forfeit):** Players can choose to reveal the answer at any time by clicking "Reveal Answer" in the header:
-- A "Answer Revealed" modal shows the target entity with all its attribute values in a scrollable list
+**Reveal answer (forfeit):** Players can choose to reveal the answer at any time by clicking "Reveal Answer" at the bottom:
+- An "Answer Revealed" modal shows the target entity with all its attribute values in a scrollable list
 - The game transitions to the REVEALED state (distinct from SOLVED)
-- No rank is awarded — this is a forfeit, not a win
+- No score is retained — this is a forfeit
 - A "New Game" button starts a fresh round
 
 **Sharing results:**
-- The **Share** button generates an emoji grid representation of your game
-- Green squares for EXACT, yellow for HOT, black for hidden columns
-- Includes score, par, and rank in the shared text
-- Uses Web Share API if available, falls back to clipboard
+- The **Share Result** button generates an emoji grid representation of your game
+- Green squares for EXACT, yellow for HOT/NEAR, black for MISS
+- Includes total move count in the shared text
+- Uses Web Share API if available, falls back to clipboard copy
 
 ---
 
 ## Features
 
 - **Five feedback logic types** — Higher/Lower, Exact Match, Category Match, Geographic Distance, and Set Intersection provide rich, varied feedback across categories.
-- **Golf-style scoring** — Every action costs strokes. Balance information gathering against score impact.
-- **Three-tier hint system** — Hidden columns (+1), folded clues (+2), and major hints (+5) give you strategic options at different costs.
-- **Geographic distance** — Countries category uses Haversine distance with gradient coloring (red to blue) for geographic proximity.
+- **Total Moves scoring** — Every action costs moves. Balance information gathering against move count to minimize your total.
+- **Free hint credits** — Start with 3 free credits per game. Use them to reveal attributes at no move cost.
+- **Hints** — Tap the Eye icon on any attribute to reveal the exact target value. Free with credits, +3 moves without.
+- **Card-based responsive layout** — Each guess renders as an individual data card with header, attribute grid, and expandable folded section. Responsive CSS Grid: 1 column (mobile), 2 columns (tablet), 3 columns (desktop).
+- **Geographic distance** — Countries category uses Haversine distance with thermal gradient coloring (green → amber → yellow → white) for geographic proximity.
 - **Set intersection** — Hollywood category uses overlap ratios for multi-value fields like Genre and Cast.
-- **Linked category matching** — Numeric fields can reference category columns, turning HOT when your guess falls in the same bucket as the target.
+- **Linked category matching** — Numeric fields can reference category columns, turning HOT (orange) when your guess falls in the same bucket as the target.
 - **Data-driven architecture** — Categories, schemas, and entities loaded from JSON. Adding a new category requires zero code changes.
 - **4 categories** — Countries, Hollywood movies, Chemical elements, Animals — each with unique attribute schemas and logic configurations.
-- **Autocomplete input** — Fuzzy-matching search with keyboard navigation and up to 8 suggestions.
+- **Autocomplete input** — Fuzzy-matching search with keyboard navigation, tag-cloud dropdown, and up to 8 suggestions.
 - **Persistent state** — Game progress saved to localStorage automatically. Refresh and pick up where you left off.
 - **Share results** — Share your result via native share sheet or clipboard with an emoji grid summary.
-- **Editorial aesthetic** — Monospaced Geist Mono typography, high-contrast "charcoal on paper" palette, sharp corners, and a screen-inversion effect on win.
+- **Merged Location cell** — Countries category merges Continent, Subregion, and Hemisphere into a single "Location" row with per-attribute match coloring.
+- **Thermal e-paper aesthetic** — Monospaced Geist Mono typography, Fraunces Variable serif for headings, high-contrast "charcoal on paper" palette, sharp corners, hard-edge shadows, and a screen-inversion effect on win.
+- **Venn diagram visual identity** — SVG logo with overlapping teal/pink circles and golden intersection, plus animated background orbs.
 - **Reveal answer** — Stuck? Reveal the target entity and all its attributes to learn and move on.
-- **Responsive design** — Centered layout on desktop, full-width touch-optimized layout on mobile with bottom-sheet modals.
+- **Responsive design** — Card grid layout on desktop, single-column on mobile with bottom-sheet modals.
 
 ---
 
 ## Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| [React 19](https://react.dev/) | UI Framework |
-| [Vite 7](https://vitejs.dev/) | Build Tool & Dev Server |
-| [TypeScript ~5.9](https://www.typescriptlang.org/) | Type Safety (strict mode) |
-| [Tailwind CSS v4](https://tailwindcss.com/) | Styling (CSS-first config) |
-| [Zustand 5](https://github.com/pmndrs/zustand) | State Management (with localStorage persistence) |
-| [Radix UI](https://www.radix-ui.com/) | Accessible Dialog Primitives |
-| [Lucide React](https://lucide.dev/) | Icon Library |
-| [class-variance-authority](https://cva.style/docs) | Component Variants |
-| [Geist Mono](https://vercel.com/font) | Typography |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| [React](https://react.dev/) | 19 | UI Framework |
+| [Vite](https://vitejs.dev/) | 7 | Build Tool & Dev Server |
+| [TypeScript](https://www.typescriptlang.org/) | ~5.9 | Type Safety (strict mode) |
+| [Tailwind CSS](https://tailwindcss.com/) | 4 | Styling (CSS-first `@theme inline` config) |
+| [Zustand](https://github.com/pmndrs/zustand) | 5 | State Management (with localStorage persistence) |
+| [Radix UI](https://www.radix-ui.com/) | — | Accessible Dialog Primitives |
+| [Lucide React](https://lucide.dev/) | — | Icon Library (Eye, Check, ChevronDown) |
+| [class-variance-authority](https://cva.style/docs) | — | Component Variants |
+| [tailwindcss-animate](https://github.com/jamiebuilds/tailwindcss-animate) | — | Animation Utilities |
+| [Geist Mono](https://vercel.com/font) | — | Body/data monospace font |
+| [Fraunces Variable](https://fonts.google.com/specimen/Fraunces) | — | Serif display font for headings |
 
 ---
 
@@ -339,49 +368,53 @@ The Scoreboard in the header displays your current strokes, par offset (E for ev
 
 ```
 Scalar/
+├── CLAUDE.md                        # Project context for AI assistants
+├── README.md                        # This file
+├── .gitignore
 ├── fetch_data.py                    # Python: CSV -> gameData.json
+├── package.json                     # npm package (scalar, private)
+├── package-lock.json
+├── vite.config.ts                   # Vite config (@ alias -> src/)
+├── tsconfig.json                    # Root TS config (references app/node)
+├── tsconfig.app.json                # App TS config (ES2022, strict)
+├── tsconfig.node.json               # Node TS config (ES2023)
+├── eslint.config.js                 # ESLint flat config (v9)
+├── postcss.config.js                # PostCSS: @tailwindcss/postcss + autoprefixer
+├── components.json                  # Shadcn CLI config
+├── index.html                       # HTML entry point
 ├── data/                            # Source data (schema configs + enriched CSVs)
 │   ├── {category}_schema_config.csv # Schema definitions per category
 │   └── {category}_enriched.csv      # Entity data per category
-├── package.json
-├── vite.config.ts                   # Vite config (@ alias -> src/)
-├── tsconfig.json                    # Root TS config
-├── tsconfig.app.json                # App TS config (ES2022, strict)
-├── eslint.config.js                 # ESLint flat config (v9)
-├── postcss.config.js                # PostCSS + Tailwind v4
-├── components.json                  # Shadcn CLI config
-├── index.html
-├── src/
-│   ├── assets/data/
-│   │   └── gameData.json            # Game data (auto-generated by fetch_data.py)
-│   ├── components/
-│   │   ├── ui/                      # Shadcn/Radix UI primitives (button, card, dialog, input)
-│   │   ├── GameGrid.tsx             # Main grid component
-│   │   ├── GridHeader.tsx           # Column headers (hidden/folded/visible/hinted states)
-│   │   ├── GridRow.tsx              # Single row of guess feedback
-│   │   ├── GridCell.tsx             # Individual cell with status/direction/gradient/hidden/folded
-│   │   ├── GameInput.tsx            # Autocomplete input with tag cloud suggestions
-│   │   ├── GameOverModal.tsx        # Win modal with share & play again
-│   │   ├── HowToPlayModal.tsx       # Instructions modal (auto-opens first visit)
-│   │   ├── MajorHintModal.tsx       # Confirmation dialog for major hints (+5)
-│   │   ├── FoldedHintModal.tsx      # Confirmation dialog for folded clues (+2)
-│   │   ├── RevealAnswerModal.tsx    # Reveal answer modal (forfeit/give up)
-│   │   └── Scoreboard.tsx           # Strokes, par, rank display
-│   ├── store/
-│   │   └── gameStore.ts             # Zustand store with localStorage persistence
-│   ├── utils/
-│   │   ├── gameLogic.ts             # Feedback engine (dispatch by logicType) + game utilities
-│   │   ├── formatters.ts            # Number, distance, percentage formatting
-│   │   ├── geo.ts                   # Haversine distance calculation
-│   │   ├── schemaParser.ts          # Schema query utilities
-│   │   └── cn.ts                    # Tailwind class name merger
-│   ├── lib/
-│   │   └── utils.ts                 # cn() duplicate (from Shadcn init)
-│   ├── App.tsx                      # Main application component
-│   ├── index.css                    # Tailwind v4 + theme + custom utilities
-│   ├── main.tsx                     # React entry point
-│   └── types.ts                     # TypeScript interfaces
-└── public/
+└── src/
+    ├── main.tsx                     # Entry point: StrictMode, Geist Mono + Fraunces imports
+    ├── App.tsx                      # Root: header bar, category selector, game grid, modals
+    ├── index.css                    # Tailwind v4 @theme config + CSS custom utilities
+    ├── types.ts                     # All shared types/interfaces
+    ├── assets/data/
+    │   └── gameData.json            # Static game data (auto-generated by fetch_data.py)
+    ├── store/
+    │   └── gameStore.ts             # Zustand store: state + actions, localStorage persistence (v11)
+    ├── utils/
+    │   ├── gameLogic.ts             # Feedback engine (dispatch by logicType) + game utilities
+    │   ├── feedbackColors.ts        # Cell color logic: geo distance, category match, standard status
+    │   ├── formatters.ts            # formatNumber(), formatDistance(), formatPercentageDiffTier(), formatYearDiffTier(), expandConservationStatus(), getDirectionSymbol(), getAlphaDirectionSymbol(), numberToLetter()
+    │   ├── geo.ts                   # haversineDistance(): great-circle distance in km
+    │   ├── schemaParser.ts          # getDisplayColumns(), getFoldedColumns(), getVisibleCandidateColumns(), getFieldByKey()
+    │   └── cn.ts                    # cn(): clsx + tailwind-merge utility
+    ├── lib/
+    │   └── utils.ts                 # cn() duplicate (from Shadcn init)
+    └── components/
+        ├── ui/                      # Shadcn/UI primitives (button, card, dialog, input)
+        ├── GameGrid.tsx             # Responsive card grid: CSS Grid container, manages MajorHintModal
+        ├── GuessCard.tsx            # Individual guess card: header, attribute grid, expandable folded section
+        ├── GameInput.tsx            # Autocomplete input: downward tag cloud dropdown, keyboard nav
+        ├── GameOverModal.tsx        # Radix Dialog: "Puzzle Complete" — share + play again
+        ├── RevealAnswerModal.tsx    # Radix Dialog: shows target entity + all attributes on forfeit
+        ├── HowToPlayModal.tsx       # Radix Dialog: gameplay instructions, auto-opens first visit
+        ├── MajorHintModal.tsx       # Radix Dialog: confirmation for hint reveal (free with credits, +3 moves without)
+        ├── Scoreboard.tsx           # Header display: moves count, free hint credit indicators
+        ├── ScalarLogo.tsx           # Venn diagram SVG logo component (teal/pink circles, golden intersection)
+        └── VennBackground.tsx       # Animated decorative background with venn orbs
 ```
 
 ### Core Type Definitions
@@ -411,12 +444,13 @@ type DisplayFormat =
     | 'RELATIVE_PERCENTAGE' // Arrow + relative % (↑ +34%)
     | 'NUMBER'              // Raw number
     | 'CURRENCY'            // Arrow + $value
-    | 'LIST';               // Intersection count (X/Y)
+    | 'LIST'                // Intersection count (X/Y)
+    | 'ALPHA_POSITION';     // Letter (1→A, 2→B, ..., 26→Z) with horizontal arrows
 
 // UI color logic (how cell background is determined)
 type UIColorLogic =
     | 'DISTANCE_GRADIENT'   // Color by haversine distance
-    | 'CATEGORY_MATCH'      // Green/gray by category match
+    | 'CATEGORY_MATCH'      // Gold/gray by category match
     | 'STANDARD'            // Traditional EXACT/HOT/NEAR/MISS
     | 'NONE';
 
@@ -427,7 +461,7 @@ interface SchemaField {
     dataType: DataType;
     logicType: LogicType;
     displayFormat: DisplayFormat;
-    isFolded: boolean;            // Starts locked, costs +2 to reveal
+    isFolded: boolean;            // Placed in expandable "More clues" section
     isVirtual: boolean;           // Computed field (e.g., distance_km)
     linkedCategoryCol?: string;   // Category column for status coloring
     uiColorLogic?: UIColorLogic;  // Override cell color logic
@@ -446,10 +480,6 @@ interface Feedback {
 
 // Game states
 type GameStatus = 'PLAYING' | 'SOLVED' | 'REVEALED';
-
-// Rank tiers
-type Rank = 'GOLD' | 'SILVER' | 'BRONZE';
-interface RankInfo { rank: Rank; label: string; }
 ```
 
 ### State Management
@@ -459,39 +489,39 @@ The game uses **Zustand** with localStorage persistence (`src/store/gameStore.ts
 ```typescript
 interface GameState {
     // Core State
-    activeCategory: string;                    // Current category
-    targetEntity: Entity;                      // Entity to guess
+    activeCategory: string;                    // Current category (default: 'countries')
+    targetEntity: Entity;                      // Entity to guess (random on init)
     guesses: GuessResult[];                    // Past guesses with feedback
     gameStatus: 'PLAYING' | 'SOLVED' | 'REVEALED';
 
     // Scoring
-    score: number;                             // Total strokes (lower is better)
-    par: number;                               // Par value (default: 4)
+    moves: number;                             // Total moves (lower is better)
+    credits: number;                           // Free hint credits (default: 3)
 
-    // Column Visibility
+    // Visibility
     columnVisibility: Record<string, boolean>; // Which non-folded columns are visible
-    majorHintAttributes: string[];             // Columns with revealed exact values
-    revealedFoldedAttributes: string[];        // Folded columns that have been unlocked
+    majorHintAttributes: string[];             // Columns with revealed exact target values
 
     // Actions
-    setActiveCategory(category: string): void; // Reset with new category
-    submitGuess(guess: Entity): void;          // +1 stroke, check win
-    revealColumn(attributeId: string): void;   // +1 stroke
-    revealFoldedAttribute(key: string): void;  // +2 strokes
-    revealMajorHint(attributeId: string): void;// +5 strokes
-    revealAnswer(): void;                      // Forfeit: show answer, set REVEALED
-    resetGame(): void;                         // New target, keep category
+    setActiveCategory(category: string): void; // Full reset with new category
+    submitGuess(guess: Entity): void;          // +1 move, compute feedback, check win
+    revealColumn(attributeId: string): void;   // Free (credit) or +3 moves
+    revealFoldedAttribute(key: string): void;  // Free (credit) or +3 moves
+    revealMajorHint(attributeId: string | string[]): void; // Free (credit) or +3 moves
+    revealAnswer(): void;                      // Forfeit: set status to REVEALED
+    resetGame(): void;                         // New target, keep category, reset moves/credits
 }
 ```
 
 **Key Behaviors:**
-- Category changes trigger a full game reset with new target and fresh column visibility
-- 2 random non-folded columns are visible at game start; the rest are hidden
-- Folded attributes are tracked separately from column visibility
-- Game state persists to localStorage (key: `scalar-game-storage`, version 4)
-- Win condition checked after each guess (all fields `EXACT`)
-- Players can forfeit via `revealAnswer()`, which transitions to the REVEALED state
+- All non-folded display columns are **visible by default** — `getInitialColumnVisibility()` sets all non-folded, non-hidden fields to `true`
+- Category changes trigger a full game reset: new target, cleared guesses, fresh column visibility, moves reset to 0, credits reset to 3
+- Hint credit system: 3 free credits per game. `revealColumn`, `revealFoldedAttribute`, and `revealMajorHint` all consume a credit (0 moves) if available, otherwise cost +3 moves
+- Game state persists to localStorage (key: `scalar-game-storage`, version 11, with migration that clears stale state)
+- Win condition checked after each guess — all feedback fields must be `EXACT`
+- Players can forfeit via `revealAnswer()`, transitioning to the REVEALED state
 - No loss state — players keep guessing until they solve it or choose to reveal
+- Store constants: `HINT_MOVE_COST = 3`, `DEFAULT_CREDITS = 3`
 
 ### Game Logic — Feedback Engine
 
@@ -500,7 +530,7 @@ The feedback system in `src/utils/gameLogic.ts` uses a **dispatch pattern** base
 ```
 getFeedback(target, guess, schema)
   ├── Pre-computes haversine distance (for DISTANCE_GRADIENT fields)
-  └── For each schema field:
+  └── For each schema field (skipping TARGET and NONE):
       ├── EXACT_MATCH    → handleExactMatch()
       ├── CATEGORY_MATCH → handleCategoryMatch()
       ├── HIGHER_LOWER   → handleHigherLower()
@@ -512,78 +542,102 @@ getFeedback(target, guess, schema)
 
 | Handler | Logic | Status Rules |
 |---------|-------|-------------|
-| `handleExactMatch` | Binary equality (case-insensitive strings, boolean) | EXACT or MISS |
-| `handleCategoryMatch` | String equality; attaches distance for gradient coloring | EXACT or MISS |
-| `handleHigherLower` | Numeric comparison; percentage diff; linked category status | EXACT (equal), HOT (category match), MISS |
-| `handleGeoDistance` | Haversine distance in km | EXACT (0km), HOT (<1000km), NEAR (<3000km), MISS |
-| `handleSetIntersection` | List intersection-over-union ratio | EXACT (1.0), HOT (>0.5), NEAR (>0), MISS (0) |
+| `handleExactMatch` | Binary equality (case-insensitive strings, boolean→Yes/No) | EXACT or MISS |
+| `handleCategoryMatch` | String equality; attaches `distanceKm` when `uiColorLogic === 'DISTANCE_GRADIENT'` | EXACT or MISS |
+| `handleHigherLower` | Numeric comparison; computes `percentageDiff`; checks `linkedCategoryCol` for status; builds display value by `displayFormat` (PERCENTAGE_DIFF, RELATIVE_PERCENTAGE, CURRENCY, or raw) | EXACT (equal), HOT (linked category matches), MISS |
+| `handleGeoDistance` | Uses pre-computed haversine distance in km | EXACT (0km), HOT (<1000km), NEAR (<3000km), MISS |
+| `handleSetIntersection` | Comma-separated list intersection-over-union ratio | EXACT (1.0), HOT (>0.5), NEAR (>0), MISS (0) |
 
-**Supporting Utility Functions:**
+**Game Utility Functions:**
 
-| Function | Purpose |
-|----------|---------|
-| `getRandomTarget(gameData, category)` | Random entity from category |
-| `checkWinCondition(feedback)` | True if all statuses are EXACT |
-| `getSuggestions(entities, query, guessedIds)` | Fuzzy autocomplete (max 8, deduplicated) |
-| `calculateRank(score, par)` | GOLD (<=par), SILVER (<=par+3), BRONZE (>par+3) |
-| `getInitialColumnVisibility(schema)` | 2 random non-folded columns visible |
-| `haversineDistance(lat1, lon1, lat2, lon2)` | Great-circle distance in km (geo.ts) |
-| `formatNumber(num)` | k/M/B/T/P/E suffixed strings (formatters.ts) |
-| `formatDistance(km)` | Formatted distance display (formatters.ts) |
-| `formatPercentageDiffTier(pct)` | Percentage buckets (formatters.ts) |
-| `getDisplayColumns(schema)` | Non-hidden schema fields (schemaParser.ts) |
-| `getFoldedColumns(schema)` | Folded schema fields (schemaParser.ts) |
+| Function | Location | Purpose |
+|----------|----------|---------|
+| `getRandomTarget(gameData, category)` | gameLogic.ts | Random entity from category |
+| `checkWinCondition(feedback)` | gameLogic.ts | Returns true if all statuses are EXACT |
+| `getSuggestions(entities, query, guessedIds)` | gameLogic.ts | Fuzzy autocomplete (max 8, deduplicated by name) |
+| `getInitialColumnVisibility(schema)` | gameLogic.ts | Sets all non-folded display columns to visible |
+| `haversineDistance(lat1, lon1, lat2, lon2)` | geo.ts | Great-circle distance in km using Haversine formula |
+| `formatNumber(num, digits)` | formatters.ts | Converts to k/M/B/T/P/E suffixed strings |
+| `formatDistance(km)` | formatters.ts | Formatted distance (e.g., "1,234 km") |
+| `formatPercentageDiffTier(percentDiff)` | formatters.ts | Buckets into tiers: "Exact", "~10%", "~25%", "~50%", "~100%", then multiplier tiers: "2x+", "5x+", "10x+", "50x+", "100x+" |
+| `formatYearDiffTier(absDiff)` | formatters.ts | Absolute year difference tiers: "Exact", "±2 yrs", "±5 yrs", "±10 yrs", "±25 yrs", "±50 yrs", "50+ yrs" |
+| `expandConservationStatus(code)` | formatters.ts | Expands IUCN codes to full labels (LC→Least Concern, EN→Endangered, etc.) |
+| `getDirectionSymbol(direction)` | formatters.ts | Returns "↑" for UP, "↓" for DOWN, "" otherwise |
+| `getAlphaDirectionSymbol(direction)` | formatters.ts | Returns "→" for UP (later in alphabet), "←" for DOWN (earlier) |
+| `numberToLetter(num)` | formatters.ts | Converts 1-26 to A-Z letter character |
+| `getDisplayColumns(schema)` | schemaParser.ts | Fields where `displayFormat !== 'HIDDEN'` |
+| `getFoldedColumns(schema)` | schemaParser.ts | Fields where `isFolded === true` |
+| `getVisibleCandidateColumns(schema)` | schemaParser.ts | Display fields that are NOT folded |
+| `getFieldByKey(schema, key)` | schemaParser.ts | Lookup by `attributeKey` |
+
+### Feedback Color System
+
+Color logic is centralized in `src/utils/feedbackColors.ts` with a composite dispatcher:
+
+```
+getCellColor(feedback, field)
+  ├── GEO_DISTANCE logicType → getGeoDistanceCellClass(distanceKm)
+  │   └── <1000km: green, <3000km: amber, <5000km: yellow, else: white
+  ├── DISTANCE_GRADIENT uiColorLogic → binary: green if EXACT, white if miss
+  ├── CATEGORY_MATCH uiColorLogic (or categoryMatch present)
+  │   └── EXACT: green, match: bg-cat-match (gold), miss: white
+  └── Default → getStandardStatusClass(status)
+      └── EXACT: green, HOT: orange, NEAR: amber+dashed, MISS: white
+```
+
+All color functions return Tailwind CSS class strings. EXACT status always returns green (`bg-thermal-green text-white`) regardless of the color logic branch.
 
 ### Component Hierarchy
 
 ```
 App
-├── Header (inline)
-│   ├── "SCALAR" title + "Daily Logic" subtitle
-│   ├── "How to Play" link
-│   ├── Category Selector Tabs
-│   └── Header Bar
-│       ├── Category Label (left)
-│       ├── Answer Display + "Reveal Answer" link (center)
-│       └── Scoreboard (strokes, par, rank) (right)
+├── VennBackground                   # Animated decorative SVG orbs (fixed, behind content)
+├── ScalarLogo                       # Venn diagram logo (centered, semi-transparent)
+├── Header (inline in App.tsx)
+│   ├── Category Selector (<select>) # Dropdown for countries/hollywood/chemicals/animals
+│   ├── GameInput                    # Autocomplete text input
+│   │   ├── Shadcn Input             # Underline-style (bottom border only)
+│   │   ├── Tag Cloud Dropdown       # Opens downward with arrow caret
+│   │   └── No Match State           # "No match found" message
+│   ├── Scoreboard                   # Moves count + hint credit squares
+│   └── "How to Play" link
 ├── GameGrid
-│   ├── GridHeader
-│   │   ├── Name Column Header
-│   │   ├── Hidden Column Headers (+ icon, narrow)
-│   │   ├── Folded Column Headers (lock icon + label, full width)
-│   │   ├── Visible Column Headers (label + eye icon)
-│   │   └── Major-Hinted Headers (value + check icon, inverted)
-│   └── GridRow (for each guess slot)
-│       ├── Name Cell
-│       ├── Hidden Cells (hatched pattern)
-│       ├── Folded Cells (locked pattern)
-│       └── GridCell (for each visible attribute)
-├── GameInput
-│   ├── Stroke Counter
-│   ├── Text Input
-│   └── Tag Cloud Suggestions (opens upward)
-├── GameOverModal (Radix Dialog)
-│   ├── "Puzzle Complete" Title
-│   ├── Target Entity Name
-│   ├── Score + Par + Rank Badge
-│   └── Share / Play Again Buttons
-├── RevealAnswerModal (Radix Dialog)
-│   ├── "Answer Revealed" Title
-│   ├── Target Entity Name
-│   ├── All Attribute Values (scrollable list)
-│   └── New Game Button
-├── HowToPlayModal (Radix Dialog)
-│   ├── Goal, How It Works
-│   ├── Feedback Colors + Direction Indicators
-│   ├── Scoring Rules + Ranks
-│   └── Hint System Explanation
-├── MajorHintModal (Radix Dialog)
-│   ├── Warning: +5 Strokes
-│   └── Cancel / Reveal Buttons
-└── FoldedHintModal (Radix Dialog)
-    ├── Warning: +2 Strokes
-    └── Cancel / Reveal Buttons
+│   ├── Empty State                  # "Make a guess to get started"
+│   ├── GuessCard (for each guess, most recent first)
+│   │   ├── Card Header              # Entity name (bold uppercase) + index (#01)
+│   │   ├── Main Attribute Grid      # grid-cols-2 gap-px bg-charcoal
+│   │   │   ├── Location Cell        # Merged: Hemisphere • Continent • Subregion (col-span-2)
+│   │   │   ├── Standard Cell        # Label + value with feedback color
+│   │   │   │   ├── Label            # text-[10px] uppercase opacity-60
+│   │   │   │   ├── Value            # text-sm font-bold (HIGHER_LOWER: split value/tier layout)
+│   │   │   │   ├── Eye Icon         # Hint trigger (all cells)
+│   │   │   │   └── Hint Badge       # Inverted target value (if revealed)
+│   │   │   └── List Cell            # Full-width (col-span-2) for Genre/Cast & Crew
+│   │   └── Expandable Section       # "More clues" / "Hide clues" toggle + folded fields grid
+│   └── MajorHintModal               # Confirmation: "Free" or "+3 moves" warning
+├── Answer Section (inline in App.tsx)
+│   ├── "??????" (while PLAYING) / Entity name (when solved/revealed)
+│   └── "Reveal Answer" button
+├── GameOverModal                    # "Puzzle Complete" — entity, moves, share + play again
+├── RevealAnswerModal                # "Answer Revealed" — entity + all attribute values
+└── HowToPlayModal                   # Instructions — auto-opens first visit (localStorage)
 ```
+
+**Component Details:**
+
+| Component | Description |
+|-----------|-------------|
+| **App.tsx** | Root component. Renders header bar (category selector, GameInput, Scoreboard, How to Play link), GameGrid, answer section, and all modals. Drives category tabs from `gameData.categories` keys. Win effect: adds `invert` class to `<html>` for 500ms. Answer shows `??????` while PLAYING, entity name (truncated to 12 chars) when solved/revealed. |
+| **GameGrid.tsx** | Responsive CSS Grid container: `grid-cols-1` / `md:grid-cols-2` / `xl:grid-cols-3`. Renders GuessCard for each guess in reverse order (most recent first). Manages MajorHintModal state (`pendingMajorHint`). Shows empty-state message when no guesses. |
+| **GuessCard.tsx** | Individual guess card with: header (entity name + `#XX` index), 2-column attribute grid. Features merged Location cell (Continent/Subregion/Hemisphere), HIGHER_LOWER split layout (value + arrow/tier), full-width list rows (Genre/Cast & Crew with per-item match coloring), Olympics merging, conservation status expansion, ALPHA_POSITION letter rendering, year diff tiers, N/A handling, and animal unit suffixes. Eye icon on ALL cells for hint reveal. Uses `getCellColor()` for all color logic. Card styling: `border border-charcoal bg-paper-white`, no rounding, no shadows. |
+| **GameInput.tsx** | Autocomplete with downward-opening tag cloud dropdown (with arrow caret pointing up). Keyboard nav: ArrowUp/Down to navigate, Enter to select, Escape to close. Disabled with "Solved"/"Revealed" placeholder when game is over. Max 8 suggestions, deduplicated by name. Underline-style input (bottom border only, `w-48` mobile / `w-56` desktop). |
+| **GameOverModal.tsx** | Radix Dialog — bottom-sheet on mobile, centered on desktop. Title: "Puzzle Complete" (inverted charcoal banner). Shows entity name (+ image if available), total moves count. Share button builds emoji grid; Play Again resets game. |
+| **RevealAnswerModal.tsx** | Radix Dialog — bottom-sheet on mobile, centered on desktop. Title: "Answer Revealed". Uses `getDisplayColumns()` to show all target entity attributes in a scrollable list. Formats numbers/booleans/strings. "New Game" button resets. |
+| **HowToPlayModal.tsx** | Radix Dialog — auto-opens on first visit (localStorage key: `scalar-htp-seen`). Sections: Goal, How It Works, Feedback Colors (thermal swatches: gold/orange/amber/gray), Direction Indicators, Scoring (Total Moves + credits), Hints (credits + major hints). |
+| **MajorHintModal.tsx** | Centered Radix Dialog. Shows dynamic cost: "Free" if credits available (with count), "+3 moves" otherwise. Cancel / Reveal (Free) / Reveal (+3) buttons. |
+| **Scoreboard.tsx** | Inline in header. Displays: "Moves" label + count (tabular-nums), divider, "Hints" label + 3 squares (filled if credit available, empty if spent). |
+| **ScalarLogo.tsx** | SVG Venn diagram: two overlapping circles (teal left, pink right) with golden vesica piscis intersection. Configurable size. Rendered behind the title at 50% opacity. |
+| **VennBackground.tsx** | Fixed full-screen SVG with animated decorative orbs: primary Venn pair (top-left), secondary pair (bottom-right), floating accent orbs, and subtle vesica piscis outlines. All very low opacity (3-7%). Gentle CSS animations on circle positions. |
 
 ---
 
@@ -607,8 +661,9 @@ The script:
 1. Reads schema config CSVs to build `SchemaField` definitions
 2. Reads enriched data CSVs and cleans values by declared data type
 3. Handles data types: INT, FLOAT, STRING, CURRENCY, BOOLEAN, LIST
-4. Cleans values (strips `$`, commas; treats null/-1 as missing)
-5. Outputs `src/assets/data/gameData.json`
+4. Cleans values (strips `$`, commas; treats null/empty/`-1` as missing)
+5. Identifies entity name from the `TARGET` logicType field; uses `id` column or entity name as ID
+6. Outputs `src/assets/data/gameData.json`
 
 ### Data Format (`gameData.json`)
 
@@ -694,7 +749,7 @@ The production build outputs to the `dist/` directory.
 | `npm run dev` | Start Vite dev server with HMR |
 | `npm run build` | TypeScript compile + Vite production build |
 | `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint |
+| `npm run lint` | Run ESLint (flat config, v9) |
 
 ---
 
@@ -702,7 +757,7 @@ The production build outputs to the `dist/` directory.
 
 ### Adding a New Category
 
-1. Create `data/{category}_schema_config.csv` with columns: `category`, `attribute_key`, `display_label`, `data_type`, `logic_type`, `display_format`, `is_folded`, `is_virtual`, `linked_category_col`, `ui_color_logic`
+1. Create `data/{category}_schema_config.csv` with columns: `attribute_key`, `display_label`, `data_type`, `logic_type`, `display_format`, `is_folded`, `is_virtual`, `linked_category_col`, `ui_color_logic`
 2. Create `data/{category}_enriched.csv` with entity data matching the schema attribute keys
 3. Add entry to `CATEGORY_MAP` in `fetch_data.py`
 4. Run `python fetch_data.py` to regenerate `gameData.json`
@@ -713,23 +768,99 @@ The production build outputs to the `dist/` directory.
 1. Add the type to `LogicType` union in `src/types.ts`
 2. Create a handler function in `src/utils/gameLogic.ts`
 3. Add the case to the switch in `getFeedback()`
-4. Update `GridCell.tsx` if new coloring logic is needed
-5. Add custom CSS utilities to `src/index.css` if needed
+4. Update `src/utils/feedbackColors.ts` if new coloring logic is needed
+5. Update `GuessCard.tsx` if new cell rendering is needed
+6. Add custom CSS utilities to `src/index.css` if needed
 
 ### Customizing the Theme
 
-Edit `src/index.css` to modify CSS custom properties and utilities:
+Edit `src/index.css` to modify CSS custom properties and Tailwind theme tokens:
 
 ```css
 :root {
-  --background: 60 14% 97%;         /* Paper white */
-  --foreground: 0 0% 10%;           /* Charcoal */
-  --border: 0 0% 10%;
+  --background: 40 33% 98%;         /* Paper white */
+  --foreground: 240 6% 10%;         /* Charcoal */
+  --border: 214 32% 91%;            /* Graphite */
   --radius: 0px;                    /* Sharp corners */
+}
+
+@theme inline {
+  --color-paper-white: #FAFAF9;
+  --color-charcoal: #18181B;
+  --color-graphite: #E2E8F0;
+  --color-thermal-gold: #EAB308;
+  --color-thermal-orange: #F97316;
+  --color-thermal-teal: #14B8A6;
+  --color-thermal-amber: #F59E0B;
 }
 ```
 
-Custom utility colors are defined via `@utility` blocks for distance gradients, category match, and cell patterns.
+Custom utility colors are defined via `@utility` blocks for distance gradients, category match, patterns, shadows, and fonts.
+
+---
+
+## Design System
+
+Scalar follows a **"Thermal E-Paper / Scientific Journal"** aesthetic — *The New York Times* data journalism meets a high-end e-reader.
+
+### Color Palette
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `paper-white` | `#FAFAF9` | Canvas background |
+| `charcoal` | `#18181B` | Primary text/ink |
+| `graphite` | `#E2E8F0` | Structural borders |
+| `thermal-gold` | `#EAB308` | Category match / linked bucket match |
+| `thermal-orange` | `#F97316` | Hot / close |
+| `thermal-amber` | `#F59E0B` | Warm / medium |
+| `thermal-teal` | `#14B8A6` | Cool / far |
+| `thermal-green` | `#22C55E` | Exact match / win |
+| `venn-teal` | `#14B8A6` | Logo/background teal |
+| `venn-pink` | `#F472B6` | Logo/background pink |
+| `venn-gold` | `#EAB308` | Logo/background intersection |
+
+### Typography
+- **Fraunces Variable** (`font-serif-display`) — Serif display font for headings, titles, and modal banners
+- **Geist Mono** — Monospace font for body text, data values, labels, and all interactive elements
+
+### Visual Rules
+- **Sharp corners** (`--radius: 0px`) — No border radius anywhere
+- **Thin borders** — `border border-charcoal` for interactive/card elements, `border border-graphite` for structural dividers
+- **Hard-edge shadows** — `shadow-hard` (6px 6px) for modals, `shadow-hard-sm` (4px 4px) for dropdowns — no soft blurs
+- **Buttons** — Invert on hover (outline → filled, filled → outline)
+- **Input** — Underline-style (bottom border only, no box)
+- **Patterns** — `bg-hidden-pattern` (45deg diagonal stripes), `bg-folded-pattern` (-45deg, darker)
+- **Gradients** — `border-b-venn` (teal → gold → pink gradient border), `border-venn-active` (gradient border image)
+
+### Custom CSS Utilities
+
+| Utility | Purpose |
+|---------|---------|
+| `bg-hidden-pattern` | 45deg diagonal stripes on light background |
+| `bg-folded-pattern` | -45deg diagonal stripes on slightly darker background |
+| `bg-geo-hot` | Solar Orange (`#F97316`), white text |
+| `bg-geo-warm` | Amber (`#F59E0B`), charcoal text |
+| `bg-geo-cool` | Glacial Teal (`#14B8A6`), white text |
+| `bg-geo-yellow` | Yellow (`#FACC15`), charcoal text |
+| `bg-geo-cold` | Graphite (`#E2E8F0`), charcoal text |
+| `bg-cat-match` | Success Gold (`#EAB308`), charcoal text |
+| `bg-cat-miss` | Graphite (`#E2E8F0`), charcoal text |
+| `font-serif-display` | Fraunces Variable serif font family |
+| `shadow-hard` | 6px 6px hard-edge shadow for modals |
+| `shadow-hard-sm` | 4px 4px hard-edge shadow for dropdowns |
+| `border-venn-active` | Teal → Gold → Pink gradient border |
+| `border-b-venn` | Subtle gradient underline (header separator) |
+
+### Actual Color Behavior (Code Reality)
+
+Note: The thermal colors have evolved from the original gold-based system. The actual code uses:
+- **EXACT** → `bg-thermal-green text-white` (green `#22C55E`) — not gold
+- **HOT** → `bg-thermal-orange text-white` (orange `#F97316`)
+- **NEAR** → `bg-amber-100 text-charcoal border-dashed border-amber-400`
+- **MISS** → `bg-white text-charcoal` (white background) — not gray
+- **GEO_DISTANCE gradient** → green (<1000km) → amber (<3000km) → yellow (<5000km) → white (>=5000km)
+- **DISTANCE_GRADIENT text fields** → green (exact match) / white (miss) — binary, no intermediate distance gradient
+- **Category match** → green (exact) / gold (bucket match) / white (miss)
 
 ---
 

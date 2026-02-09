@@ -241,6 +241,17 @@ def main():
         for label, count in counts.items():
             print(f"    {label:.<40s} {count:>3} countries")
 
+    # Fun/Meta: first_letter — ordinal position of first character (A=1, B=2, ..., Z=26)
+    print("\nComputing first_letter ...")
+    df["first_letter"] = df["name"].str.strip().str[0].str.upper().apply(
+        lambda ch: ord(ch) - ord('A') + 1 if ch.isalpha() else 0
+    )
+    dist = df["first_letter"].value_counts().sort_index()
+    print(f"  first_letter distribution ({len(dist)} unique values):")
+    for val, count in dist.items():
+        letter = chr(val + ord('A') - 1) if val > 0 else '?'
+        print(f"    {letter} ({val}):{'.' * (30 - len(f'{letter} ({val})'))} {count:>3} countries")
+
     # Write
     df.to_csv(CSV_PATH, index=False)
     print(f"\nDone — wrote {len(df)} rows × {len(df.columns)} cols to {CSV_PATH}")

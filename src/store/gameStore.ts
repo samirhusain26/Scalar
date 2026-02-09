@@ -7,14 +7,17 @@ import {
     checkWinCondition,
     getInitialColumnVisibility,
 } from '../utils/gameLogic';
+import { trackGameEvent } from '../utils/analytics';
 import gameDataRaw from '../assets/data/gameData.json';
 
 const gameData = gameDataRaw as unknown as GameData;
 
 // Bump this when schema changes to clear stale localStorage.
-const STORE_VERSION = 4;
+const STORE_VERSION = 11;
 
 const DEFAULT_CATEGORY = 'countries';
+const DEFAULT_CREDITS = 3;
+const HINT_MOVE_COST = 3;
 
 interface GuessResult {
     guess: Entity;
@@ -26,19 +29,19 @@ interface GameState {
     targetEntity: Entity;
     guesses: GuessResult[];
     gameStatus: GameStatus;
-    score: number;
-    par: number;
+    moves: number;
+    credits: number;
     columnVisibility: Record<string, boolean>;
     majorHintAttributes: string[];
-    revealedFoldedAttributes: string[];
 
     setActiveCategory: (category: string) => void;
     submitGuess: (guess: Entity) => void;
     revealColumn: (attributeId: string) => void;
-    revealMajorHint: (attributeId: string) => void;
-    revealFoldedAttribute: (attributeKey: string) => void;
+    revealFoldedAttribute: (attributeId: string) => void;
+    revealMajorHint: (attributeIds: string | string[]) => void;
     revealAnswer: () => void;
     resetGame: () => void;
+    startChallengeGame: (category: string, entity: Entity) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -48,13 +51,12 @@ export const useGameStore = create<GameState>()(
             targetEntity: getRandomTarget(gameData, DEFAULT_CATEGORY),
             guesses: [],
             gameStatus: 'PLAYING',
-            score: 0,
-            par: 4,
+            moves: 0,
+            credits: DEFAULT_CREDITS,
             columnVisibility: getInitialColumnVisibility(
                 gameData.schemaConfig[DEFAULT_CATEGORY]
             ),
             majorHintAttributes: [],
-            revealedFoldedAttributes: [],
 
             setActiveCategory: (category: string) => {
                 if (gameData.categories[category]) {
@@ -63,19 +65,18 @@ export const useGameStore = create<GameState>()(
                         targetEntity: getRandomTarget(gameData, category),
                         guesses: [],
                         gameStatus: 'PLAYING',
-                        score: 0,
-                        par: 4,
+                        moves: 0,
+                        credits: DEFAULT_CREDITS,
                         columnVisibility: getInitialColumnVisibility(
                             gameData.schemaConfig[category]
                         ),
                         majorHintAttributes: [],
-                        revealedFoldedAttributes: [],
                     });
                 }
             },
 
             submitGuess: (guess: Entity) => {
-                const { targetEntity, guesses, gameStatus, activeCategory, score } = get();
+                const { targetEntity, guesses, gameStatus, activeCategory, moves } = get();
 
                 if (gameStatus !== 'PLAYING') return;
 
@@ -87,7 +88,7 @@ export const useGameStore = create<GameState>()(
 
                 const feedback = getFeedback(targetEntity, guess, currentSchema);
                 const newGuesses = [...guesses, { guess, feedback }];
-                const newScore = score + 1;
+                const newMoves = moves + 1;
 
                 const newStatus: GameStatus = checkWinCondition(feedback)
                     ? 'SOLVED'
@@ -96,53 +97,82 @@ export const useGameStore = create<GameState>()(
                 set({
                     guesses: newGuesses,
                     gameStatus: newStatus,
-                    score: newScore,
+                    moves: newMoves,
                 });
+
+                if (newStatus === 'SOLVED') {
+                    const { credits, majorHintAttributes } = get();
+                    trackGameEvent('game_completed', {
+                        category: activeCategory,
+                        moves: newMoves,
+                        used_hints: credits < DEFAULT_CREDITS || majorHintAttributes.length > 0,
+                    });
+                }
             },
 
             revealColumn: (attributeId: string) => {
-                const { columnVisibility, gameStatus, score } = get();
+                const { columnVisibility, gameStatus, moves, credits } = get();
 
                 if (gameStatus !== 'PLAYING') return;
                 if (columnVisibility[attributeId]) return;
 
-                set({
-                    columnVisibility: {
-                        ...columnVisibility,
-                        [attributeId]: true,
-                    },
-                    score: score + 1,
-                });
+                if (credits > 0) {
+                    set({
+                        columnVisibility: {
+                            ...columnVisibility,
+                            [attributeId]: true,
+                        },
+                        credits: credits - 1,
+                    });
+                } else {
+                    set({
+                        columnVisibility: {
+                            ...columnVisibility,
+                            [attributeId]: true,
+                        },
+                        moves: moves + HINT_MOVE_COST,
+                    });
+                }
             },
 
-            revealMajorHint: (attributeId: string) => {
-                const { majorHintAttributes, gameStatus, score } = get();
+            revealFoldedAttribute: (_attributeId: string) => {
+                const { gameStatus, moves, credits } = get();
 
                 if (gameStatus !== 'PLAYING') return;
-                if (majorHintAttributes.includes(attributeId)) return;
 
-                set({
-                    majorHintAttributes: [...majorHintAttributes, attributeId],
-                    score: score + 5,
-                });
+                if (credits > 0) {
+                    set({ credits: credits - 1 });
+                } else {
+                    set({ moves: moves + HINT_MOVE_COST });
+                }
             },
 
-            revealFoldedAttribute: (attributeKey: string) => {
-                const { revealedFoldedAttributes, gameStatus, score } = get();
+            revealMajorHint: (attributeIds: string | string[]) => {
+                const { majorHintAttributes, gameStatus, moves, credits } = get();
 
                 if (gameStatus !== 'PLAYING') return;
-                if (revealedFoldedAttributes.includes(attributeKey)) return;
 
-                set({
-                    revealedFoldedAttributes: [...revealedFoldedAttributes, attributeKey],
-                    score: score + 2,
-                });
+                const ids = Array.isArray(attributeIds) ? attributeIds : [attributeIds];
+                const newIds = ids.filter(id => !majorHintAttributes.includes(id));
+                if (newIds.length === 0) return;
+
+                if (credits > 0) {
+                    set({
+                        majorHintAttributes: [...majorHintAttributes, ...newIds],
+                        credits: credits - 1,
+                    });
+                } else {
+                    set({
+                        majorHintAttributes: [...majorHintAttributes, ...newIds],
+                        moves: moves + HINT_MOVE_COST,
+                    });
+                }
             },
 
             revealAnswer: () => {
                 const { gameStatus } = get();
                 if (gameStatus !== 'PLAYING') return;
-                set({ gameStatus: 'REVEALED' });
+                set({ gameStatus: 'REVEALED', moves: Infinity });
             },
 
             resetGame: () => {
@@ -151,13 +181,27 @@ export const useGameStore = create<GameState>()(
                     targetEntity: getRandomTarget(gameData, activeCategory),
                     guesses: [],
                     gameStatus: 'PLAYING',
-                    score: 0,
-                    par: 4,
+                    moves: 0,
+                    credits: DEFAULT_CREDITS,
                     columnVisibility: getInitialColumnVisibility(
                         gameData.schemaConfig[activeCategory]
                     ),
                     majorHintAttributes: [],
-                    revealedFoldedAttributes: [],
+                });
+            },
+
+            startChallengeGame: (category: string, entity: Entity) => {
+                set({
+                    activeCategory: category,
+                    targetEntity: entity,
+                    guesses: [],
+                    gameStatus: 'PLAYING',
+                    moves: 0,
+                    credits: DEFAULT_CREDITS,
+                    columnVisibility: getInitialColumnVisibility(
+                        gameData.schemaConfig[category]
+                    ),
+                    majorHintAttributes: [],
                 });
             },
         }),
@@ -172,13 +216,12 @@ export const useGameStore = create<GameState>()(
                         targetEntity: getRandomTarget(gameData, DEFAULT_CATEGORY),
                         guesses: [],
                         gameStatus: 'PLAYING' as const,
-                        score: 0,
-                        par: 4,
+                        moves: 0,
+                        credits: DEFAULT_CREDITS,
                         columnVisibility: getInitialColumnVisibility(
                             gameData.schemaConfig[DEFAULT_CATEGORY]
                         ),
                         majorHintAttributes: [],
-                        revealedFoldedAttributes: [],
                     };
                 }
                 return _persistedState as GameState;

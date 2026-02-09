@@ -13,8 +13,8 @@ import csv
 import os
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILE = os.path.join(SCRIPT_DIR, 'animals.csv')
-OUTPUT_FILE = os.path.join(SCRIPT_DIR, 'animals.csv')
+INPUT_FILE = os.path.join(SCRIPT_DIR, 'animals_enriched.csv')
+OUTPUT_FILE = os.path.join(SCRIPT_DIR, 'animals_enriched.csv')
 
 # ============================================================
 # ENTRIES TO REMOVE (duplicates, corrupted, or too generic)
@@ -381,6 +381,23 @@ def classify_body_size(kg):
 
 
 # ============================================================
+# SCRABBLE SCORING
+# ============================================================
+
+SCRABBLE_SCORES = {
+    'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4,
+    'I': 1, 'J': 8, 'K': 5, 'L': 1, 'M': 3, 'N': 1, 'O': 1, 'P': 3,
+    'Q': 10, 'R': 1, 'S': 1, 'T': 1, 'U': 1, 'V': 4, 'W': 4, 'X': 8,
+    'Y': 4, 'Z': 10,
+}
+
+
+def calculate_scrabble_score(word):
+    """Sum Scrabble letter points for a word. Ignores spaces, hyphens, and non-alpha."""
+    return sum(SCRABBLE_SCORES.get(ch, 0) for ch in word.upper() if ch.isalpha())
+
+
+# ============================================================
 # HELPERS
 # ============================================================
 
@@ -477,6 +494,10 @@ def main():
         row['bite_force_class'] = classify_bite_force(bite)
         row['body_size'] = classify_body_size(weight)
 
+        # --- Fun/Meta fields ---
+        row['scrabble_score'] = fmt(calculate_scrabble_score(animal))
+        row['name_word_count'] = fmt(len(animal.split()))
+
         output.append(row)
 
     # --- Write ---
@@ -485,6 +506,7 @@ def main():
         'weight_kg', 'height_cm', 'lifespan_years', 'speed_kmh',
         'gestation_days', 'activity_cycle',
         'daily_sleep_hours', 'bite_force_psi',
+        'scrabble_score', 'name_word_count',
         'weight_class', 'height_class', 'speed_class', 'lifespan_class',
         'sleep_class', 'bite_force_class', 'body_size',
     ]

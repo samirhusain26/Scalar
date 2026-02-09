@@ -1,98 +1,54 @@
+import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { cn } from '../utils/cn';
-import type { Entity, Feedback, Rank } from '../types';
-import { calculateRank } from '../utils/gameLogic';
+import { encodeChallenge } from '../utils/challengeUtils';
+import { trackGameEvent } from '../utils/analytics';
+import type { Entity } from '../types';
 
 interface GameOverModalProps {
     isOpen: boolean;
     targetEntity: Entity;
-    guesses: { guess: Entity; feedback: Record<string, Feedback> }[];
-    score: number;
-    par: number;
-    columnVisibility: Record<string, boolean>;
+    moves: number;
+    activeCategory: string;
     onReset: () => void;
 }
 
-const RANK_STYLES: Record<Rank, { color: string; bg: string }> = {
-    GOLD: { color: 'text-thermal-gold', bg: 'bg-amber-50 border-thermal-gold' },
-    SILVER: { color: 'text-gray-500', bg: 'bg-gray-50 border-gray-300' },
-    BRONZE: { color: 'text-orange-700', bg: 'bg-orange-50 border-orange-300' },
-};
-
-function RankBadge({ rank, label }: { rank: Rank; label: string }) {
-    const style = RANK_STYLES[rank];
-    return (
-        <div className={cn('flex items-center gap-2 px-4 py-2 border', style.bg)}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" className={style.color}>
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            <span className={cn('text-sm font-bold uppercase tracking-wide', style.color)}>{label}</span>
-        </div>
-    );
-}
-
-function buildShareGrid(
-    guesses: { guess: Entity; feedback: Record<string, Feedback> }[],
-    columnVisibility: Record<string, boolean>
-): string {
-    const keys = Object.keys(columnVisibility);
-    return guesses.map(({ feedback }) => {
-        return keys.map(key => {
-            if (!columnVisibility[key]) return '\u2B1B';
-            const status = feedback[key]?.status;
-            if (status === 'EXACT') return '\uD83D\uDFE9';
-            return '\uD83D\uDFE8';
-        }).join('');
-    }).join('\n');
-}
 
 export function GameOverModal({
     isOpen,
     targetEntity,
-    guesses,
-    score,
-    par,
-    columnVisibility,
+    moves,
+    activeCategory,
     onReset,
 }: GameOverModalProps) {
-    const rankInfo = calculateRank(score, par);
+    const [challengeCopied, setChallengeCopied] = useState(false);
 
-    const handleShare = async () => {
-        const emojiGrid = buildShareGrid(guesses, columnVisibility);
-        const text = `Scalar | Score: ${score} (Par ${par}) | Rank: ${rankInfo.label}\n\n${emojiGrid}`;
+    const handleChallenge = async () => {
+        const hash = encodeChallenge(activeCategory, targetEntity.id);
+        const url = `${window.location.origin}${window.location.pathname}?challenge=${hash}`;
+        const text = `Can you beat my score of ${moves} moves? Play Scalar: ${url}`;
 
         try {
-            if (navigator.share) {
-                await navigator.share({
-                    title: 'Scalar',
-                    text: text,
-                });
-            } else {
-                await navigator.clipboard.writeText(text);
-                alert('Result copied to clipboard!');
-            }
+            await navigator.clipboard.writeText(text);
+            setChallengeCopied(true);
+            trackGameEvent('challenge_shared', { category: activeCategory, moves });
+            setTimeout(() => setChallengeCopied(false), 2000);
         } catch (error) {
-            console.error('Error sharing:', error);
+            console.error('Error copying challenge:', error);
         }
     };
+
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onReset()}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(
-                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none transition-all duration-200",
-                    // Mobile: Bottom Sheet
-                    "bottom-0 left-0 right-0 w-full border-t border-charcoal pb-10",
+                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none",
+                    "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-md border border-charcoal",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
-                    "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-
-                    // Desktop: Centered Modal
-                    "md:top-1/2 md:left-1/2 md:bottom-auto md:right-auto md:w-full md:max-w-md md:-translate-x-1/2 md:-translate-y-1/2",
-                    "md:border md:pb-6",
-                    "md:data-[state=open]:slide-in-from-top-[48%] md:data-[state=open]:slide-in-from-left-1/2",
-                    "md:data-[state=closed]:slide-out-to-top-[48%] md:data-[state=closed]:slide-out-to-left-1/2",
-                    "md:data-[state=closed]:zoom-out-95 md:data-[state=open]:zoom-in-95"
+                    "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                    "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                 )}>
 
                     <div className="flex flex-col items-center text-center space-y-6">
@@ -117,30 +73,24 @@ export function GameOverModal({
                             <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
                         </div>
 
-                        {/* Score */}
+                        {/* Total Moves */}
                         <div className="w-full font-mono border border-charcoal/20 py-3">
                             <div className="text-3xl font-black">
-                                {score} <span className="text-lg font-bold">Strokes</span>
-                            </div>
-                            <div className="text-sm text-charcoal/50 font-bold mt-1">
-                                Par: {par}
+                                {moves} <span className="text-lg font-bold">Moves</span>
                             </div>
                         </div>
 
-                        {/* Rank Badge */}
-                        <RankBadge rank={rankInfo.rank} label={rankInfo.label} />
-
                         {/* Buttons */}
-                        <div className="flex w-full gap-4 pt-4">
+                        <div className="flex flex-col w-full gap-3 pt-4">
                             <button
-                                onClick={handleShare}
-                                className="flex-1 px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
+                                onClick={handleChallenge}
+                                className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide animate-glow"
                             >
-                                Share Result
+                                {challengeCopied ? 'Link Copied!' : 'Challenge a Friend'}
                             </button>
                             <button
                                 onClick={onReset}
-                                className="flex-1 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                                className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
                             >
                                 Play Again
                             </button>
