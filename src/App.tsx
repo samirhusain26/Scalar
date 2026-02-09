@@ -80,35 +80,69 @@ function App() {
       <div className="w-full max-w-6xl lg:p-8 lg:bg-paper-white transition-all duration-300 min-h-[80vh] flex flex-col relative overflow-hidden">
 
         {/* Header / Top Bar */}
-        <header className="mb-6 flex items-center justify-between border-b-venn pb-4 font-mono relative">
-          {/* LEFT: CATEGORY DROPDOWN */}
-          <select
-            value={activeCategory}
-            onChange={(e) => setActiveCategory(e.target.value)}
-            className="text-xs sm:text-sm font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none shrink-0"
-          >
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+        <header className="mb-6 border-b-venn pb-4 font-mono relative">
+          {/* Mobile layout: stacked rows */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {/* Row 1: Category + Score + How to Play */}
+            <div className="flex items-center justify-between">
+              <select
+                value={activeCategory}
+                onChange={(e) => setActiveCategory(e.target.value)}
+                className="text-xs font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none shrink-0"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
 
-          {/* CENTER: GUESS INPUT */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <GameInput />
+              <div className="flex items-center gap-3 shrink-0">
+                <Scoreboard />
+                <div className="h-4 w-px bg-graphite" />
+                <button
+                  onClick={() => setShowHowToPlay(true)}
+                  className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+                >
+                  How to Play
+                </button>
+              </div>
+            </div>
+
+            {/* Row 2: Input centered */}
+            <div className="flex justify-center">
+              <GameInput />
+            </div>
           </div>
 
-          {/* RIGHT: SCORE + HOW TO PLAY */}
-          <div className="flex items-center gap-3 shrink-0">
-            <Scoreboard />
-            <div className="h-4 w-px bg-graphite" />
-            <button
-              onClick={() => setShowHowToPlay(true)}
-              className="text-[10px] md:text-xs text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+          {/* Desktop layout: single row with centered input */}
+          <div className="hidden md:flex items-center justify-between">
+            <select
+              value={activeCategory}
+              onChange={(e) => setActiveCategory(e.target.value)}
+              className="text-sm font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none shrink-0"
             >
-              How to Play
-            </button>
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <GameInput />
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <Scoreboard />
+              <div className="h-4 w-px bg-graphite" />
+              <button
+                onClick={() => setShowHowToPlay(true)}
+                className="text-xs text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+              >
+                How to Play
+              </button>
+            </div>
           </div>
         </header>
 
