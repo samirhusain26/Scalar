@@ -82,41 +82,35 @@ function App() {
       <div className="w-full max-w-6xl lg:p-8 lg:bg-paper-white transition-all duration-300 min-h-[80vh] flex flex-col relative overflow-hidden">
 
         {/* Header / Top Bar */}
-        <header className="mb-6 border-b-venn pb-4 font-mono relative">
-          {/* Mobile layout: stacked rows */}
-          <div className="flex flex-col gap-3 md:hidden">
-            {/* Row 1: Score + How to Play */}
-            <div className="flex items-center justify-end">
-              <div className="flex items-center gap-3 shrink-0">
-                <Scoreboard />
-                <div className="h-4 w-px bg-graphite" />
-                <button
-                  onClick={() => setShowHowToPlay(true)}
-                  className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
-                >
-                  How to Play
-                </button>
-              </div>
-            </div>
+        <header className="mb-6 border-b-venn pb-4 font-mono relative z-30">
+          {/* Mobile layout: stacked rows, all centered */}
+          <div className="flex flex-col gap-3 items-center md:hidden">
+            {/* Row 1: Category dropdown */}
+            <select
+              value={activeCategory}
+              onChange={(e) => setActiveCategory(e.target.value)}
+              className="text-xs font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none"
+            >
+              {CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
 
-            {/* Row 2: Input centered */}
-            <div className="flex justify-center">
-              <GameInput />
-            </div>
+            {/* Row 2: Input */}
+            <GameInput />
 
-            {/* Row 3: Category dropdown centered */}
-            <div className="flex justify-center">
-              <select
-                value={activeCategory}
-                onChange={(e) => setActiveCategory(e.target.value)}
-                className="text-xs font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none"
+            {/* Row 3: Score + How to Play */}
+            <div className="flex items-center gap-3">
+              <Scoreboard />
+              <div className="h-4 w-px bg-graphite" />
+              <button
+                onClick={() => setShowHowToPlay(true)}
+                className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
               >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+                How to Play
+              </button>
             </div>
           </div>
 
