@@ -83,3 +83,37 @@
 * [ ] Create a `StatsModal` to visualize performance.
 * [ ] Implement a Bar Chart for "Guess Distribution" (e.g., how many games won in 3 moves vs. 4 moves).
 * [ ] Display Win % and Current/Max Streaks.
+
+
+
+
+#### **1. New Hint Mechanics**
+
+* [ ] **Database:** Add `fact_text` column to `enriched.csv` files for all categories.
+* [ ] **Store:** Add `revealedAnswerIndices` (array of numbers) to `GameState`.
+* [ ] **UI - Answer Component:**
+* [ ] Render "dashed" lines `_ _ _ _` representing word length.
+* [ ] Add logic to render revealed letters at specific indices.
+
+
+* [ ] **UI - Intel Dossier:**
+* [ ] Create "Intel" button (Folder icon).
+* [ ] Create slide-out card component with Typewriter font for the Fact.
+
+
+
+#### **2. New Content**
+
+* [ ] **Companies Category:** Scrape data for Market Cap, CEO, Founded, HQ.
+* [ ] **Athletes Category:** Scrape data for Age, Team, Stats.
+* [ ] **Update Pipeline:** Run `fetch_data.py` to generate new JSON.
+
+#### **3. Mobile & Monetization (Capacitor)**
+
+* [ ] **Setup:** Install Capacitor and add iOS platform.
+* [ ] **Styling:** Update CSS to handle "Safe Area" (notch) on iPhones (`padding-top: env(safe-area-inset-top)`).
+* [ ] **Ads Integration:**
+* [ ] Sign up for Google AdMob.
+* [ ] Install AdMob Capacitor plugin.
+* [ ] Create `AdManager` utility file.
+* [ ] Connect "Watch Ad" button in `MajorHintModal` to the AdManager.
