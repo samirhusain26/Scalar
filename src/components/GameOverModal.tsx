@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { encodeChallenge } from '../utils/challengeUtils';
 import { trackGameEvent } from '../utils/analytics';
-import type { Entity } from '../types';
+import { ElementCellCard } from './ElementCellCard';
+import { CountryDetailCard } from './CountryDetailCard';
+import gameDataRaw from '../assets/data/gameData.json';
+import type { Entity, GameData } from '../types';
+
+const gameData = gameDataRaw as unknown as GameData;
 
 interface GameOverModalProps {
     isOpen: boolean;
@@ -68,16 +74,25 @@ export function GameOverModal({
                         </Dialog.Description>
 
                         {/* Target Entity */}
-                        <div className="flex flex-col items-center gap-2">
-                            {typeof targetEntity.image === 'string' && targetEntity.image && (
-                                <img
-                                    src={targetEntity.image}
-                                    alt={targetEntity.name}
-                                    className="w-16 h-16 object-contain border border-charcoal/20"
-                                />
-                            )}
-                            <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
-                        </div>
+                        {activeCategory === 'elements' ? (
+                            <ElementCellCard
+                                entity={targetEntity}
+                                schema={gameData.schemaConfig[activeCategory] || []}
+                            />
+                        ) : activeCategory === 'countries' ? (
+                            <CountryDetailCard entity={targetEntity} />
+                        ) : (
+                            <div className="flex flex-col items-center gap-2">
+                                {typeof targetEntity.image === 'string' && targetEntity.image && (
+                                    <img
+                                        src={targetEntity.image}
+                                        alt={targetEntity.name}
+                                        className="w-16 h-16 object-contain border border-charcoal/20"
+                                    />
+                                )}
+                                <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
+                            </div>
+                        )}
 
                         {/* Total Moves */}
                         <div className="w-full font-mono border border-charcoal/20 py-3">
@@ -103,8 +118,8 @@ export function GameOverModal({
                         </div>
                     </div>
 
-                    <Dialog.Close className="absolute top-4 right-4 text-paper-white opacity-70 hover:opacity-100 transition-opacity" aria-label="Close">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <Dialog.Close className="absolute right-4 top-4 z-50 p-2 text-charcoal hover:text-charcoal/70 transition-colors" aria-label="Close">
+                        <X size={20} />
                     </Dialog.Close>
                 </Dialog.Content>
             </Dialog.Portal>

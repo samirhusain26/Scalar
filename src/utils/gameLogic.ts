@@ -149,9 +149,12 @@ function handleHigherLower(
         };
     }
 
-    // Percentage diff (use max(|tNum|, 1) as denominator to avoid division-by-zero)
-    const denominator = tNum !== 0 ? Math.abs(tNum) : 1;
-    const percentDiff = Math.round(Math.abs((gNum - tNum) / denominator) * 100);
+    // Symmetric ratio: max(|a|,|b|) / min(|a|,|b|) - 1, so 10x off reads the same in both directions.
+    // e.g. guess=10k target=1M → ratio=100 → 9900%, not capped at 99% like target-denominator math.
+    const larger = Math.max(Math.abs(tNum), Math.abs(gNum));
+    const smaller = Math.min(Math.abs(tNum), Math.abs(gNum));
+    const safeDenom = smaller > 0 ? smaller : 1;
+    const percentDiff = Math.round((larger / safeDenom - 1) * 100);
 
     // Category match (linked column or range-based fallback)
     let catMatch: boolean | undefined;

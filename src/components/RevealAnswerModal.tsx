@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { trackGameEvent } from '../utils/analytics';
 import { useGameStore } from '../store/gameStore';
+import { ElementCellCard } from './ElementCellCard';
+import { CountryDetailCard } from './CountryDetailCard';
 import type { Entity, CategorySchema } from '../types';
 import { formatNumber, numberToLetter } from '../utils/formatters';
 import { getDisplayColumns } from '../utils/schemaParser';
@@ -46,6 +49,10 @@ export function RevealAnswerModal({
                     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
                     "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                 )}>
+                    <Dialog.Close className="absolute right-4 top-4 z-50 p-2 text-charcoal hover:text-charcoal/70 transition-colors" aria-label="Close">
+                        <X size={20} />
+                    </Dialog.Close>
+
                     <div className="flex flex-col items-center text-center space-y-6">
                         <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white font-serif-display">
                             Answer Revealed
@@ -55,46 +62,52 @@ export function RevealAnswerModal({
                             The answer and all its details
                         </Dialog.Description>
 
-                        {/* Entity Name */}
-                        <div className="flex flex-col items-center gap-2">
-                            <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
-                        </div>
+                        {/* Entity Display */}
+                        {activeCategory === 'elements' ? (
+                            <ElementCellCard entity={targetEntity} schema={schema} />
+                        ) : activeCategory === 'countries' ? (
+                            <CountryDetailCard entity={targetEntity} />
+                        ) : (
+                            <>
+                                <div className="flex flex-col items-center gap-2">
+                                    <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
+                                </div>
+                                <div className="w-full border border-charcoal/20 max-h-60 overflow-y-auto">
+                                    {displayFields.map((field, i) => {
+                                        const value = targetEntity[field.attributeKey];
+                                        if (value === undefined || value === null) return null;
 
-                        {/* Attribute Details */}
-                        <div className="w-full border border-charcoal/20 max-h-60 overflow-y-auto">
-                            {displayFields.map((field, i) => {
-                                const value = targetEntity[field.attributeKey];
-                                if (value === undefined || value === null) return null;
+                                        let displayVal: string;
+                                        if (field.displayFormat === 'ALPHA_POSITION' && typeof value === 'number') {
+                                            displayVal = numberToLetter(value);
+                                        } else if (typeof value === 'number') {
+                                            displayVal = formatNumber(value);
+                                        } else if (typeof value === 'boolean') {
+                                            displayVal = value ? 'Yes' : 'No';
+                                        } else {
+                                            displayVal = String(value);
+                                        }
 
-                                let displayVal: string;
-                                if (field.displayFormat === 'ALPHA_POSITION' && typeof value === 'number') {
-                                    displayVal = numberToLetter(value);
-                                } else if (typeof value === 'number') {
-                                    displayVal = formatNumber(value);
-                                } else if (typeof value === 'boolean') {
-                                    displayVal = value ? 'Yes' : 'No';
-                                } else {
-                                    displayVal = String(value);
-                                }
-
-                                return (
-                                    <div
-                                        key={field.attributeKey}
-                                        className={cn(
-                                            "flex justify-between items-center px-4 py-2.5 font-mono text-sm",
-                                            i < displayFields.length - 1 && "border-b border-charcoal/10"
-                                        )}
-                                    >
-                                        <span className="font-bold uppercase text-charcoal/60 text-xs tracking-wide">
-                                            {field.displayLabel}
-                                        </span>
-                                        <span className="font-bold text-charcoal">
-                                            {displayVal}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                        return (
+                                            <div
+                                                key={field.attributeKey}
+                                                className={cn(
+                                                    "flex justify-between items-center px-4 py-2.5 font-mono text-sm",
+                                                    i < displayFields.length - 1 && "border-b border-charcoal/10"
+                                                )}
+                                            >
+                                                <span className="font-bold uppercase text-charcoal/60 text-xs tracking-wide">
+                                                    {field.displayLabel}
+                                                </span>
+                                                <span className="font-bold text-charcoal">
+                                                    {displayVal}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
 
                         {/* New Game Button */}
                         <div className="flex w-full pt-4">

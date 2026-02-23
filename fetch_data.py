@@ -12,17 +12,9 @@ CATEGORY_MAP = {
         "schema": "countries_schema_config.csv",
         "data": "countries_enriched.csv",
     },
-    "hollywood": {
-        "schema": "hollywood_schema_config.csv",
-        "data": "hollywood_enriched.csv",
-    },
-    "chemicals": {
-        "schema": "chemicals_schema_config.csv",
-        "data": "chemicals_enriched.csv",
-    },
-    "animals": {
-        "schema": "animals_schema_config.csv",
-        "data": "animals_enriched.csv",
+    "elements": {
+        "schema": "elements_schema_config.csv",
+        "data": "elements_enriched.csv",
     },
 }
 

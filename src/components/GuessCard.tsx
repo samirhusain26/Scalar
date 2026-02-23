@@ -29,8 +29,8 @@ const UNIT_MAP: Record<string, string> = {
     speed_kmh: ' km/h',
 };
 
-/** Keys that get merged into a single "Location" cell */
-const LOCATION_KEYS = ['continent', 'subregion', 'hemisphere'] as const;
+/** Keys that get merged into a single "Location" cell (rendered in this order) */
+const LOCATION_KEYS = ['hemisphere', 'continent', 'subregion'] as const;
 
 /** Keys that render as full-width list rows (SET_INTERSECTION) */
 const LIST_FIELD_KEYS = ['Credits', 'Genre'] as const;
@@ -140,19 +140,6 @@ export function GuessCard({
         if (field.displayFormat === 'ALPHA_POSITION') {
             return getAlphaDirectionSymbol(cellFeedback.direction);
         }
-        // RELATIVE_PERCENTAGE: exact % for small diffs, multiplier tiers for large diffs
-        if (field.displayFormat === 'RELATIVE_PERCENTAGE') {
-            const gNum = Number(guess[field.attributeKey]);
-            const tNum = Number(targetEntity[field.attributeKey]);
-            const arrow = getDirectionSymbol(cellFeedback.direction);
-            if (!isNaN(gNum) && !isNaN(tNum) && gNum !== 0) {
-                const relPct = Math.abs(((tNum - gNum) / gNum) * 100);
-                if (relPct > 150) {
-                    return `${arrow} ${formatPercentageDiffTier(relPct)}`.trim();
-                }
-            }
-            return cellFeedback.displayValue ?? '';
-        }
         const arrow = getDirectionSymbol(cellFeedback.direction);
         // Year-like fields: use absolute year difference tiers instead of percentage
         const isYearField = /year|discovered/i.test(field.displayLabel);
@@ -162,9 +149,34 @@ export function GuessCard({
             const tier = formatYearDiffTier(Math.abs(guessVal - targetVal));
             return `${arrow} ${tier}`.trim();
         }
-        // All other formats: show tier-bucketed (e.g. "↑ ~25%")
+        // All HIGHER_LOWER formats (including RELATIVE_PERCENTAGE): use symmetric percentDiff tier.
+        // percentageDiff is now stored as a symmetric ratio, so both directions give the same reading.
         const tier = formatPercentageDiffTier(cellFeedback.percentageDiff ?? 0);
         return `${arrow} ${tier}`.trim();
+    }
+
+    /** Render secondary text with the direction arrow in a larger font than the tier label */
+    function renderSecondaryText(text: string) {
+        if (!text) return null;
+        const ARROW_CHARS = ['↑', '↓', '→', '←'];
+        const spaceIdx = text.indexOf(' ');
+        const firstChar = text[0];
+        if (ARROW_CHARS.includes(firstChar) && spaceIdx > -1) {
+            const arrowPart = text.slice(0, spaceIdx);
+            const tierPart = text.slice(spaceIdx + 1);
+            return (
+                <>
+                    <span className="text-base font-bold leading-none">{arrowPart}</span>
+                    {' '}
+                    <span className="text-[11px] font-mono">{tierPart}</span>
+                </>
+            );
+        }
+        // Arrow-only (ALPHA_POSITION) or no arrow (e.g. "Exact")
+        if (ARROW_CHARS.includes(firstChar)) {
+            return <span className="text-base font-bold leading-none">{text}</span>;
+        }
+        return <span className="text-[11px] font-mono">{text}</span>;
     }
 
     /** Custom color for Olympics Hosted cell */
@@ -190,12 +202,15 @@ export function GuessCard({
         const allLocationHinted = locationKeys.every(k => majorHintAttributes.includes(k));
         const anyLocationHinted = locationKeys.some(k => majorHintAttributes.includes(k));
 
-        // Build per-attribute feedback data
-        const parts = locationFields.map(f => ({
-            field: f,
-            value: getDisplayValue(f),
-            isExact: feedback[f.attributeKey]?.status === 'EXACT',
-        }));
+        // Build per-attribute feedback data in LOCATION_KEYS order (Hemisphere → Continent → Subregion)
+        const parts = LOCATION_KEYS
+            .map(key => locationFields.find(f => f.attributeKey === key))
+            .filter((f): f is SchemaField => f !== undefined)
+            .map(f => ({
+                field: f,
+                value: getDisplayValue(f),
+                isExact: feedback[f.attributeKey]?.status === 'EXACT',
+            }));
 
         const exactCount = parts.filter(p => p.isExact).length;
         const allExact = exactCount === parts.length;
@@ -210,7 +225,7 @@ export function GuessCard({
         return (
             <div className={cn("relative col-span-2 px-3 py-2 font-mono", cellBg)}>
                 <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight mb-1">
-                    Location
+                    Location (Hemisphere | Continent | Region)
                 </div>
                 <div className="flex items-baseline gap-0 text-sm font-bold leading-tight flex-wrap">
                     {parts.map((part, i) => (
@@ -232,7 +247,7 @@ export function GuessCard({
                 {anyLocationHinted && (
                     <div className="inline-flex items-center gap-0.5 mt-1 px-1 py-0.5 bg-charcoal text-paper-white text-[9px] uppercase tracking-wider">
                         <Check className="w-2.5 h-2.5" />
-                        <span>{locationFields.map(f => String(targetEntity[f.attributeKey] ?? '')).join(' • ')}</span>
+                        <span>{parts.map(p => String(targetEntity[p.field.attributeKey] ?? '')).join(' • ')}</span>
                     </div>
                 )}
 
@@ -276,7 +291,7 @@ export function GuessCard({
                 <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight mb-1">
                     {field.displayLabel}
                 </div>
-                <div className="text-sm leading-tight line-clamp-2">
+                <div className="text-sm leading-tight line-clamp-2" title={displayItems.map(i => i.text).join(', ')}>
                     {displayItems.map((item, i) => (
                         <span key={i}>
                             <span className={cn(
@@ -365,11 +380,11 @@ export function GuessCard({
                         {displayLabel}
                     </div>
                     <div className="flex justify-between items-baseline mt-0.5">
-                        <span className="text-base font-bold leading-tight truncate">
+                        <span className="text-base font-bold leading-tight truncate" title={primaryText}>
                             {primaryText}
                         </span>
-                        <span className="text-xs font-mono opacity-80 shrink-0 ml-2 min-w-[4rem] text-right">
-                            {secondaryText}
+                        <span className="opacity-80 shrink-0 ml-2 min-w-[3.5rem] text-right">
+                            {renderSecondaryText(secondaryText)}
                         </span>
                     </div>
 
@@ -401,7 +416,7 @@ export function GuessCard({
                 <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight">
                     {displayLabel}
                 </div>
-                <div className={cn("text-sm font-bold leading-tight mt-0.5 truncate", isNA && "text-gray-400 font-normal italic")}>
+                <div className={cn("text-sm font-bold leading-tight mt-0.5 truncate", isNA && "text-gray-400 font-normal italic")} title={primaryText}>
                     {primaryText}
                     {secondaryText && (
                         <span className="text-[10px] font-normal opacity-70 ml-1">{secondaryText}</span>
@@ -437,7 +452,7 @@ export function GuessCard({
         <div className="border border-charcoal bg-paper-white">
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-charcoal">
-                <span className="font-mono font-bold text-base text-charcoal uppercase truncate">
+                <span className="font-mono font-bold text-base text-charcoal uppercase truncate" title={guess.name}>
                     {guess.name}
                 </span>
                 <span className="font-mono text-sm text-charcoal/60 shrink-0 ml-2">

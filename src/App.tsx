@@ -207,7 +207,7 @@ function App() {
             href="https://www.samirhusain.info"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+            className="inline-block px-3 py-2 -mx-3 -my-2 text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
           >
             Built by Samir Husain
           </a>

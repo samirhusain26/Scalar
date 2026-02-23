@@ -1,0 +1,31 @@
+category,attribute_key,display_label,data_type,logic_type,display_format,is_folded,is_virtual,linked_category_col
+elements,Id,Symbol,STRING,EXACT_MATCH,HIDDEN,False,False,
+elements,Name,Element,STRING,TARGET,HIDDEN,False,False,
+elements,AtomicNumber,Atomic #,INT,HIGHER_LOWER,NUMBER,False,False,
+elements,group,Group,INT,HIGHER_LOWER,NUMBER,False,False,GroupBlock
+elements,period,Period,INT,HIGHER_LOWER,NUMBER,False,False,
+elements,StandardState,Phase (STP),STRING,CATEGORY_MATCH,TEXT,False,False,
+elements,element_family,Element Family,STRING,CATEGORY_MATCH,TEXT,False,False,
+elements,block,Block,STRING,CATEGORY_MATCH,TEXT,False,False,
+elements,is_radioactive,Radioactive,BOOLEAN,EXACT_MATCH,TEXT,False,False,
+elements,symbol_match,Symbol matches name?,BOOLEAN,EXACT_MATCH,TEXT,False,False,
+elements,AtomicMass,Atomic Mass,FLOAT,HIGHER_LOWER,HIDDEN,False,False,atomic_mass_range
+elements,Density,Density (g/cm3),FLOAT,HIGHER_LOWER,HIDDEN,False,False,density_range
+elements,MeltingPoint,Melt Point (K),FLOAT,HIGHER_LOWER,HIDDEN,False,False,melting_point_range
+elements,BoilingPoint,Boil Point (K),FLOAT,HIGHER_LOWER,HIDDEN,False,False,boiling_point_range
+elements,Electronegativity,Electronegativity,FLOAT,HIGHER_LOWER,HIDDEN,False,False,
+elements,AtomicRadius,Atomic Radius (pm),FLOAT,HIGHER_LOWER,HIDDEN,False,False,
+elements,IonizationEnergy,Ionization (eV),FLOAT,HIGHER_LOWER,HIDDEN,False,False,
+elements,ElectronAffinity,Electron Affinity,FLOAT,HIGHER_LOWER,HIDDEN,False,False,
+elements,rarity_category,Rarity,STRING,CATEGORY_MATCH,HIDDEN,False,False,
+elements,YearDiscovered,Discovered,INT,HIGHER_LOWER,HIDDEN,False,False,year_discovered_range
+elements,is_synthetic,Synthetic,BOOLEAN,EXACT_MATCH,HIDDEN,False,False,
+elements,neutron_count,Neutrons,INT,HIGHER_LOWER,HIDDEN,False,False,
+elements,conductivity_type,Conductivity,STRING,CATEGORY_MATCH,HIDDEN,False,False,
+elements,broad_classification,Classification,STRING,CATEGORY_MATCH,HIDDEN,False,False,
+elements,GroupBlock,Group Name,STRING,NONE,HIDDEN,False,False,
+elements,year_discovered_range,Year Range,STRING,NONE,HIDDEN,False,False,
+elements,atomic_mass_range,Mass Range,STRING,NONE,HIDDEN,False,False,
+elements,density_range,Density Range,STRING,NONE,HIDDEN,False,False,
+elements,melting_point_range,Melt Range,STRING,NONE,HIDDEN,False,False,
+elements,boiling_point_range,Boil Range,STRING,NONE,HIDDEN,False,False,

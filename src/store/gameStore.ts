@@ -12,7 +12,7 @@ import gameDataRaw from '../assets/data/gameData.json';
 const gameData = gameDataRaw as unknown as GameData;
 
 // Bump this when schema changes to clear stale localStorage.
-const STORE_VERSION = 12;
+const STORE_VERSION = 13;
 
 const DEFAULT_CATEGORY = 'countries';
 const DEFAULT_CREDITS = 3;

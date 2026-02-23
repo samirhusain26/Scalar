@@ -39,32 +39,41 @@ export function formatDistance(km: number): string {
     return `${formatNumber(km)} km`;
 }
 
-/** Format percentage diff into display tiers (small diffs as %, large diffs as multipliers) */
+/**
+ * Format a symmetric percentDiff (from max/min ratio) into approximate tier labels.
+ * percentDiff = (max(|a|,|b|) / min(|a|,|b|) - 1) * 100, so it's always ≥ 0 and
+ * reflects the same magnitude regardless of which direction the miss is in.
+ *
+ * Tier thresholds by effective ratio:
+ *   ratio < 1.15  (~10%)  →  "~10%"
+ *   ratio < 1.37  (~25%)  →  "~25%"
+ *   ratio < 1.75  (~50%)  →  "~50%"
+ *   ratio < 3     (~2×)   →  "~2×"
+ *   ratio < 7     (~5×)   →  "~5×"
+ *   ratio < 15    (~10×)  →  "~10×"
+ *   ratio < 60    (~50×)  →  "~50×"
+ *   ratio ≥ 60    (~100×) →  "~100×"
+ */
 export function formatPercentageDiffTier(percentDiff: number): string {
     if (percentDiff === 0) return 'Exact';
-    if (percentDiff <= 15) return '~10%';
-    if (percentDiff <= 37) return '~25%';
-    if (percentDiff <= 75) return '~50%';
-    if (percentDiff <= 150) return '~100%';
-
-    // For large differences, switch to multiplier tiers
-    const factor = percentDiff / 100 + 1; // e.g. 200% diff = 3x factor
-    if (factor < 5) return '2x+';
-    if (factor < 10) return '5x+';
-    if (factor < 50) return '10x+';
-    if (factor < 100) return '50x+';
-    return '100x+';
+    const ratio = percentDiff / 100 + 1;
+    if (ratio < 1.15) return '~10%';
+    if (ratio < 1.37) return '~25%';
+    if (ratio < 1.75) return '~50%';
+    if (ratio < 3)    return '~2×';
+    if (ratio < 7)    return '~5×';
+    if (ratio < 15)   return '~10×';
+    if (ratio < 60)   return '~50×';
+    return '~100×';
 }
 
 /** Format absolute year difference into human-readable range tiers */
 export function formatYearDiffTier(absDiff: number): string {
     if (absDiff === 0) return 'Exact';
-    if (absDiff <= 2) return '±2 yrs';
-    if (absDiff <= 5) return '±5 yrs';
-    if (absDiff <= 10) return '±10 yrs';
-    if (absDiff <= 25) return '±25 yrs';
-    if (absDiff <= 50) return '±50 yrs';
-    return '50+ yrs';
+    if (absDiff <= 5)  return '~5 yrs';
+    if (absDiff <= 15) return '~15 yrs';
+    if (absDiff <= 30) return '~30 yrs';
+    return '30+ yrs';
 }
 
 /** Expand IUCN conservation status codes to full labels */
