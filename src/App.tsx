@@ -139,11 +139,8 @@ function App() {
             {/* Row 2: Input */}
             <GameInput onFocusChange={setIsInputFocused} />
 
-            {/* Row 3: Score + How to Play — hidden while input is focused */}
-            <div className={cn(
-              "overflow-hidden transition-all duration-200",
-              isInputFocused ? "max-h-0 opacity-0" : "max-h-16 opacity-100"
-            )}>
+            {/* Row 3: Score + How to Play — always visible */}
+            <div className="overflow-hidden transition-all duration-200 max-h-16 opacity-100">
               <div className="flex items-center gap-3">
                 <Scoreboard />
                 <div className="h-4 w-px bg-graphite" />
@@ -267,6 +264,15 @@ function App() {
           >
             Privacy Policy
           </button>
+          <span className="text-charcoal/30 text-[10px]">&middot;</span>
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSeAPZsI6lxoo4WZIz3o5Vr0dpKqgPVK_GgDrYyVoGuHeSeyIg/viewform?usp=publish-editor"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+          >
+            Submit Feedback
+          </a>
         </footer>
 
       </div>

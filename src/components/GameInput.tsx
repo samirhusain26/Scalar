@@ -132,12 +132,14 @@ export function GameInput({ onFocusChange }: GameInputProps) {
                             "[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden",
                             isDisabled && "cursor-not-allowed opacity-50"
                         )}
-                        autoComplete="new-password"
+                        autoComplete="off"
                         autoCorrect="off"
                         spellCheck={false}
                         autoCapitalize="none"
+                        enterKeyHint="search"
                         data-1p-ignore="true"
                         data-lpignore="true"
+                        data-form-type="other"
                     />
                 </div>
 

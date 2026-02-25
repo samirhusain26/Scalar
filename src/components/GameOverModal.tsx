@@ -122,6 +122,14 @@ export function GameOverModal({
                         >
                             Play Again
                         </button>
+                        <a
+                            href="https://docs.google.com/forms/d/e/1FAIpQLSeAPZsI6lxoo4WZIz3o5Vr0dpKqgPVK_GgDrYyVoGuHeSeyIg/viewform?usp=publish-editor"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-center text-[10px] font-bold uppercase tracking-widest text-charcoal/40 hover:text-charcoal/70 transition-colors underline underline-offset-2"
+                        >
+                            Submit Feedback
+                        </a>
                     </div>
                 </Dialog.Content>
             </Dialog.Portal>
