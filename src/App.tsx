@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { Share2 } from 'lucide-react';
 import { GameGrid } from './components/GameGrid';
@@ -7,11 +7,14 @@ import { GameOverModal } from './components/GameOverModal';
 import { RevealAnswerModal } from './components/RevealAnswerModal';
 import { HowToPlayModal } from './components/HowToPlayModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
+import { ColorLegend } from './components/ColorLegend';
 import { Scoreboard } from './components/Scoreboard';
+import { CategoryToggle } from './components/CategoryToggle';
 import { ScalarLogo } from './components/ScalarLogo';
 import { VennBackground } from './components/VennBackground';
 import { useGameStore } from './store/gameStore';
 import { decodeChallenge, encodeChallenge } from './utils/challengeUtils';
+import { cn } from './utils/cn';
 import gameDataRaw from './assets/data/gameData.json';
 import type { GameData } from './types';
 
@@ -32,10 +35,15 @@ function App() {
   const [showHowToPlay, setShowHowToPlay] = useState(() => {
     return !localStorage.getItem(HTP_STORAGE_KEY);
   });
+  const [showHtpPulse, setShowHtpPulse] = useState(() => !localStorage.getItem(HTP_STORAGE_KEY));
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [showShare, setShowShare] = useState(true);
+  const lastScrollY = useRef(0);
 
   const handleCloseHowToPlay = () => {
     setShowHowToPlay(false);
+    setShowHtpPulse(false);
     localStorage.setItem(HTP_STORAGE_KEY, '1');
   };
 
@@ -55,6 +63,23 @@ function App() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Share button auto-hide on scroll down, reveal on scroll up
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current + 10) {
+        setShowShare(false);
+      } else if (currentY < lastScrollY.current - 10) {
+        setShowShare(true);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const shareVisible = showShare || gameStatus === 'SOLVED';
+
   // Win effect (invert colors)
   useEffect(() => {
     if (gameStatus === 'SOLVED') {
@@ -72,66 +97,82 @@ function App() {
   }, [gameStatus]);
 
   return (
-    <div className="min-h-screen bg-paper-white flex flex-col items-center justify-center p-4 font-mono relative">
+    <div className="min-h-screen bg-paper-white relative">
       <VennBackground />
 
-      {/* HEADER TITLE */}
-      <div className="relative flex items-center justify-center mb-1" style={{ height: '120px' }}>
-        <ScalarLogo size={160} className="absolute opacity-50" />
-        <h1 className="relative text-4xl md:text-6xl text-charcoal tracking-[0.12em] uppercase select-none font-serif-display font-light">
-          SCALAR
-        </h1>
-      </div>
+      {/* Main container */}
+      <div className="w-full max-w-5xl mx-auto px-4 lg:px-8 flex flex-col min-h-screen relative">
 
-      {/* Desktop Container */}
-      <div className="w-full max-w-6xl lg:p-8 lg:bg-paper-white transition-all duration-300 min-h-[80vh] flex flex-col relative overflow-hidden">
+        {/* HEADER TITLE — all screen sizes; collapses on mobile when input focused */}
+        <div
+          className={cn(
+            "relative flex flex-col items-center justify-center overflow-hidden transition-all duration-200",
+            isInputFocused
+              ? "h-0 mb-0 opacity-0 md:h-[120px] md:mb-1 md:opacity-100"
+              : "h-[120px] mb-1"
+          )}
+        >
+          <div className="absolute opacity-50">
+            <ScalarLogo size={160} />
+          </div>
+          <h1 className="relative text-4xl md:text-6xl font-light font-serif-display tracking-[0.12em] uppercase select-none text-charcoal">
+            SCALAR
+          </h1>
+        </div>
 
         {/* Header / Top Bar */}
-        <header className="mb-6 border-b-venn pb-4 font-mono relative z-30">
+        <header className="sticky top-0 z-40 mb-6 min-h-[52px] border-b-venn md:[border-image:none] md:border-b-2 md:border-charcoal pb-4 font-mono bg-paper-white/95 backdrop-blur-sm">
           {/* Mobile layout: stacked rows, all centered */}
           <div className="flex flex-col gap-3 items-center md:hidden">
-            {/* Row 1: Category dropdown */}
-            <select
-              value={activeCategory}
-              onChange={(e) => setActiveCategory(e.target.value)}
-              className="text-xs font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            {/* Row 1: Category toggle — hidden while input is focused */}
+            <div className={cn(
+              "overflow-hidden transition-all duration-200",
+              isInputFocused ? "max-h-0 opacity-0" : "max-h-16 opacity-100"
+            )}>
+              <CategoryToggle
+                categories={CATEGORIES}
+                activeCategory={activeCategory}
+                onChange={setActiveCategory}
+              />
+            </div>
 
             {/* Row 2: Input */}
-            <GameInput />
+            <GameInput onFocusChange={setIsInputFocused} />
 
-            {/* Row 3: Score + How to Play */}
-            <div className="flex items-center gap-3">
-              <Scoreboard />
-              <div className="h-4 w-px bg-graphite" />
-              <button
-                onClick={() => setShowHowToPlay(true)}
-                className="text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
-              >
-                How to Play
-              </button>
+            {/* Row 3: Score + How to Play — hidden while input is focused */}
+            <div className={cn(
+              "overflow-hidden transition-all duration-200",
+              isInputFocused ? "max-h-0 opacity-0" : "max-h-16 opacity-100"
+            )}>
+              <div className="flex items-center gap-3">
+                <Scoreboard />
+                <div className="h-4 w-px bg-graphite" />
+                <div className="relative">
+                  <button
+                    onClick={() => setShowHowToPlay(true)}
+                    className="w-7 h-7 border border-charcoal flex items-center justify-center text-[11px] font-black text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation shrink-0"
+                    title="How to Play"
+                    aria-label="How to Play"
+                  >
+                    ?
+                  </button>
+                  {showHtpPulse && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-thermal-orange rounded-full animate-pulse pointer-events-none" />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Desktop layout: single row with centered input */}
           <div className="hidden md:flex items-center justify-between">
-            <select
-              value={activeCategory}
-              onChange={(e) => setActiveCategory(e.target.value)}
-              className="text-sm font-bold uppercase tracking-wide bg-transparent border border-charcoal px-2 py-1 text-charcoal cursor-pointer font-mono focus:outline-none shrink-0"
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <div className="shrink-0">
+              <CategoryToggle
+                categories={CATEGORIES}
+                activeCategory={activeCategory}
+                onChange={setActiveCategory}
+              />
+            </div>
 
             <div className="absolute left-1/2 -translate-x-1/2">
               <GameInput />
@@ -140,12 +181,19 @@ function App() {
             <div className="flex items-center gap-3 shrink-0">
               <Scoreboard />
               <div className="h-4 w-px bg-graphite" />
-              <button
-                onClick={() => setShowHowToPlay(true)}
-                className="text-xs text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
-              >
-                How to Play
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowHowToPlay(true)}
+                  className="w-7 h-7 border border-charcoal flex items-center justify-center text-[11px] font-black text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation shrink-0"
+                  title="How to Play"
+                  aria-label="How to Play"
+                >
+                  ?
+                </button>
+                {showHtpPulse && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-thermal-orange rounded-full animate-pulse pointer-events-none" />
+                )}
+              </div>
             </div>
           </div>
         </header>
@@ -153,22 +201,23 @@ function App() {
         {/* Main Game Area */}
         <main className="flex-1 flex flex-col w-full">
 
-          <GameGrid />
-
-          <div className="flex-1" />
+          <div className="flex-1">
+            <ColorLegend />
+            <GameGrid />
+          </div>
 
           {/* ANSWER */}
-          <div className="flex flex-col items-center justify-center py-6 border-t border-graphite mt-6">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal/60 mb-1">
+          <div className="mt-auto border-t-2 border-charcoal py-3 px-4 flex flex-col md:flex-row items-center justify-between md:justify-center md:gap-8">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-charcoal/60 mb-1 md:mb-0">
               ANSWER
             </span>
-            <div className="text-xl tracking-widest font-black text-charcoal">
-              {gameStatus !== 'PLAYING' ? targetEntity.name.substring(0, 12).toUpperCase() : '??????'}
-            </div>
+            <span className="text-xl tracking-widest font-black text-charcoal">
+              {gameStatus !== 'PLAYING' ? targetEntity.name.toUpperCase() : '??????'}
+            </span>
             {gameStatus === 'PLAYING' && (
               <button
                 onClick={revealAnswer}
-                className="mt-1 text-[10px] text-charcoal/40 hover:text-charcoal/70 font-bold uppercase tracking-widest transition-colors underline underline-offset-2"
+                className="mt-2 md:mt-0 border border-charcoal px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation min-h-[36px]"
               >
                 Reveal Answer
               </button>
@@ -239,7 +288,10 @@ function App() {
             // User cancelled share or clipboard denied — ignore
           }
         }}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-1.5 border border-charcoal bg-paper-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors"
+        className={cn(
+          "fixed bottom-4 right-4 z-50 flex items-center gap-1.5 border border-charcoal bg-paper-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-all duration-300",
+          shareVisible ? "translate-y-0" : "translate-y-24"
+        )}
       >
         <Share2 size={12} />
         Share

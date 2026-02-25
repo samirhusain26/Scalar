@@ -16,18 +16,15 @@ export function Scoreboard() {
             <div className="h-4 w-px bg-graphite" />
 
             {/* Free Hint Credits */}
-            <div className="flex items-center gap-1.5">
-                <span className="text-charcoal/50 uppercase text-xs">Hints</span>
-                <div className="flex items-center gap-1">
-                    {[0, 1, 2].map(i => (
-                        <div
-                            key={i}
-                            className={`w-2.5 h-2.5 border border-charcoal ${
-                                i < credits ? 'bg-charcoal' : 'bg-transparent'
-                            }`}
-                        />
-                    ))}
-                </div>
+            <div className="flex items-center gap-1">
+                {[0, 1, 2].map(i => (
+                    <div
+                        key={i}
+                        className={`w-2.5 h-2.5 border border-charcoal ${
+                            i < credits ? 'bg-charcoal' : 'bg-transparent'
+                        }`}
+                    />
+                ))}
             </div>
         </div>
     );

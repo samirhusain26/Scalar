@@ -1,8 +1,10 @@
 import type { Entity } from '../types';
 import { formatNumber } from '../utils/formatters';
+import { cn } from '../utils/cn';
 
 interface CountryDetailCardProps {
     entity: Entity;
+    variant?: 'modal' | 'default';
 }
 
 interface DataField {
@@ -41,7 +43,8 @@ const DATA_FIELDS: DataField[] = [
 /** Pad cells needed to fill the last grid row */
 const PAD_COUNT = DATA_FIELDS.length % 3 === 0 ? 0 : 3 - (DATA_FIELDS.length % 3);
 
-export function CountryDetailCard({ entity }: CountryDetailCardProps) {
+export function CountryDetailCard({ entity, variant = 'default' }: CountryDetailCardProps) {
+    const isModal = variant === 'modal';
     const isoCode  = String(entity.id   ?? '');
     const name     = String(entity.name ?? '');
     const continent = String(entity.continent  ?? '');
@@ -77,7 +80,7 @@ export function CountryDetailCard({ entity }: CountryDetailCardProps) {
     const locationStr = [hemisphere, continent, subregion].filter(Boolean).join(' • ');
 
     return (
-        <div className="w-full border border-charcoal bg-paper-white">
+        <div className={cn("w-full bg-paper-white", isModal ? "border-2 border-charcoal" : "border border-charcoal")}>
 
             {/* ── Passport Header ─────────────────────────────── */}
             <div className="px-4 pt-4 pb-3 border-b border-charcoal">
@@ -85,6 +88,7 @@ export function CountryDetailCard({ entity }: CountryDetailCardProps) {
                     <div className="min-w-0">
                         {/* Country name */}
                         <div className="font-serif-display text-2xl font-light text-charcoal leading-tight truncate">
+                            {isModal && <span className="mr-1.5 opacity-40">◎</span>}
                             {name}
                         </div>
                         {/* Location breadcrumb */}
@@ -99,7 +103,7 @@ export function CountryDetailCard({ entity }: CountryDetailCardProps) {
                         )}
                     </div>
                     {/* ISO code watermark */}
-                    <div className="font-mono text-xl font-black text-charcoal/[0.12] tracking-widest shrink-0 select-none">
+                    <div className={cn("font-mono text-xl font-black tracking-widest shrink-0 select-none", isModal ? "text-charcoal/[0.18]" : "text-charcoal/[0.12]")}>
                         {isoCode}
                     </div>
                 </div>
@@ -108,7 +112,7 @@ export function CountryDetailCard({ entity }: CountryDetailCardProps) {
             {/* ── Data Grid ───────────────────────────────────── */}
             <div className="grid grid-cols-3 gap-px bg-charcoal">
                 {DATA_FIELDS.map((field) => (
-                    <div key={field.key} className="bg-paper-white px-2 py-1.5">
+                    <div key={field.key} className={cn("bg-paper-white px-2", isModal ? "py-2" : "py-1.5")}>
                         <div className="text-[9px] uppercase opacity-50 tracking-wider leading-tight font-mono truncate">
                             {field.label}
                         </div>

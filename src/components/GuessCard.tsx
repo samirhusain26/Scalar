@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Eye, Check, ChevronDown } from 'lucide-react';
 import type { SchemaField, Entity, Feedback, GameStatus } from '../types';
 import { formatNumber, formatPercentageDiffTier, formatYearDiffTier, getDirectionSymbol, getAlphaDirectionSymbol, numberToLetter, expandConservationStatus } from '../utils/formatters';
@@ -12,8 +12,12 @@ interface GuessCardProps {
     majorHintAttributes: string[];
     targetEntity: Entity;
     guessIndex: number;
+    index: number;
     gameStatus: GameStatus;
     onRevealMajorHint: (attributeKeys: string | string[]) => void;
+    isNew: boolean;
+    collapsed: boolean;
+    onToggleCollapse: () => void;
 }
 
 const OLYMPICS_HOSTED_KEY = 'olympics_hosted_count';
@@ -32,6 +36,27 @@ const UNIT_MAP: Record<string, string> = {
 /** Keys that get merged into a single "Location" cell (rendered in this order) */
 const LOCATION_KEYS = ['hemisphere', 'continent', 'subregion'] as const;
 
+const TRUNCATE_THRESHOLD = 14;
+const SUBREGION_TRUNCATE_THRESHOLD = 16;
+
+/** Inline text that truncates beyond `threshold` chars and expands on tap/click. */
+function TruncatableText({ value, threshold = TRUNCATE_THRESHOLD }: { value: string; threshold?: number }) {
+    const [expanded, setExpanded] = useState(false);
+    const needsTruncation = value.length > threshold;
+    if (!needsTruncation) return <span>{value}</span>;
+    return (
+        <button
+            onClick={(e) => { e.stopPropagation(); setExpanded(prev => !prev); }}
+            className="text-left touch-manipulation"
+            title={value}
+        >
+            <span className={expanded ? '' : 'truncate block max-w-full'}>
+                {expanded ? value : value.slice(0, threshold) + '…'}
+            </span>
+        </button>
+    );
+}
+
 /** Keys that render as full-width list rows (SET_INTERSECTION) */
 const LIST_FIELD_KEYS = ['Credits', 'Genre'] as const;
 
@@ -42,11 +67,22 @@ export function GuessCard({
     majorHintAttributes,
     targetEntity,
     guessIndex,
+    index,
     gameStatus,
     onRevealMajorHint,
+    isNew,
+    collapsed,
+    onToggleCollapse,
 }: GuessCardProps) {
     const isPlaying = gameStatus === 'PLAYING';
     const [expanded, setExpanded] = useState(false);
+
+    // Track previous collapsed state to detect expand transitions for animation
+    const prevCollapsedRef = useRef(collapsed);
+    useEffect(() => {
+        prevCollapsedRef.current = collapsed;
+    }, [collapsed]);
+    const isExpandingFromCollapsed = prevCollapsedRef.current && !collapsed;
 
     // Hide olympics_latest_year (merged into Olympics Hosted); keep N/A cells visible
     const isAvailable = (f: SchemaField) =>
@@ -156,27 +192,29 @@ export function GuessCard({
     }
 
     /** Render secondary text with the direction arrow in a larger font than the tier label */
-    function renderSecondaryText(text: string) {
+    function renderSecondaryText(text: string, isOnColoredBg = false) {
         if (!text) return null;
         const ARROW_CHARS = ['↑', '↓', '→', '←'];
         const spaceIdx = text.indexOf(' ');
         const firstChar = text[0];
+        const arrowColor = isOnColoredBg ? 'text-white/80' : 'text-charcoal/70';
+        const tierColor = isOnColoredBg ? 'text-white/60' : 'text-charcoal/50';
         if (ARROW_CHARS.includes(firstChar) && spaceIdx > -1) {
             const arrowPart = text.slice(0, spaceIdx);
             const tierPart = text.slice(spaceIdx + 1);
             return (
                 <>
-                    <span className="text-base font-bold leading-none">{arrowPart}</span>
+                    <span className={cn("text-sm font-bold leading-none", arrowColor)}>{arrowPart}</span>
                     {' '}
-                    <span className="text-[11px] font-mono">{tierPart}</span>
+                    <span className={cn("text-[10px] font-mono tracking-tight", tierColor)}>{tierPart}</span>
                 </>
             );
         }
         // Arrow-only (ALPHA_POSITION) or no arrow (e.g. "Exact")
         if (ARROW_CHARS.includes(firstChar)) {
-            return <span className="text-base font-bold leading-none">{text}</span>;
+            return <span className={cn("text-sm font-bold leading-none", arrowColor)}>{text}</span>;
         }
-        return <span className="text-[11px] font-mono">{text}</span>;
+        return <span className={cn("text-[10px] font-mono", tierColor)}>{text}</span>;
     }
 
     /** Custom color for Olympics Hosted cell */
@@ -192,6 +230,32 @@ export function GuessCard({
         }
 
         return 'bg-white text-charcoal';
+    }
+
+    /** Render the collapsed summary strip: one colored square per visible field */
+    function renderSummaryStrip() {
+        const squares = displayFields.map(field => {
+            const fb = feedback[field.attributeKey];
+            const status = fb?.status ?? 'MISS';
+            let squareClass: string;
+            switch (status) {
+                case 'EXACT': squareClass = 'bg-thermal-green'; break;
+                case 'HOT': squareClass = 'bg-thermal-orange'; break;
+                case 'NEAR': squareClass = 'bg-amber-200'; break;
+                default: squareClass = 'bg-white border border-charcoal/20'; break;
+            }
+            return <div key={field.attributeKey} className={cn('w-2.5 h-2.5 shrink-0', squareClass)} />;
+        });
+
+        return (
+            <button
+                onClick={onToggleCollapse}
+                className="w-full flex items-center gap-1 px-3 py-1.5 border-t border-charcoal hover:bg-zinc-100 transition-colors"
+            >
+                {squares}
+                <ChevronDown className="w-3.5 h-3.5 text-charcoal/40 ml-auto shrink-0" />
+            </button>
+        );
     }
 
     /** Render the merged Location cell (Hemisphere • Continent • Subregion) */
@@ -222,10 +286,17 @@ export function GuessCard({
             ? 'bg-thermal-green text-white'
             : 'bg-white text-charcoal';
 
+        const locationHoverClass = !allExact && isPlaying ? 'md:hover:bg-zinc-100' : '';
+
         return (
-            <div className={cn("relative col-span-2 px-3 py-2 font-mono", cellBg)}>
-                <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight mb-1">
-                    Location (Hemisphere | Continent | Region)
+            <div className={cn("relative group col-span-2 px-3 py-2 font-mono transition-colors duration-100", cellBg, locationHoverClass)}>
+                <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] uppercase opacity-60 tracking-wider leading-tight">
+                        Location
+                    </span>
+                    <span className="text-[9px] uppercase opacity-30 tracking-wider leading-tight hidden md:block">
+                        Hemisphere · Continent · Region
+                    </span>
                 </div>
                 <div className="flex items-baseline gap-0 text-sm font-bold leading-tight flex-wrap">
                     {parts.map((part, i) => (
@@ -234,7 +305,9 @@ export function GuessCard({
                                 !allExact && part.isExact && 'text-green-600 font-extrabold',
                                 !allExact && !part.isExact && 'opacity-50',
                             )}>
-                                {part.value}
+                                {part.field.attributeKey === 'subregion'
+                                    ? <TruncatableText value={part.value} threshold={SUBREGION_TRUNCATE_THRESHOLD} />
+                                    : part.value}
                             </span>
                             {i < parts.length - 1 && (
                                 <span className={cn("mx-1.5", allExact ? 'opacity-60' : 'opacity-30')}>•</span>
@@ -255,11 +328,14 @@ export function GuessCard({
                 {isPlaying && !allLocationHinted && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onRevealMajorHint(locationKeys); }}
-                        className="absolute top-1 right-1 p-0.5 opacity-40 hover:opacity-100 transition-opacity"
+                        className="absolute top-0.5 right-0.5 w-7 h-7 flex items-center justify-center p-1.5 touch-manipulation opacity-50 md:opacity-0 md:group-hover:opacity-70 md:hover:opacity-100 transition-opacity duration-150 group/eye"
                         title="Reveal exact value"
                         aria-label="Reveal exact location values"
                     >
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-3.5 h-3.5" />
+                        <span className="hidden md:block absolute bottom-full right-0 mb-1 bg-charcoal text-paper-white text-[9px] uppercase tracking-wider px-1.5 py-0.5 whitespace-nowrap pointer-events-none opacity-0 group-hover/eye:opacity-100 transition-opacity duration-100">
+                            Reveal
+                        </span>
                     </button>
                 )}
             </div>
@@ -286,9 +362,11 @@ export function GuessCard({
             ? 'bg-thermal-green text-white'
             : 'bg-white text-charcoal';
 
+        const listHoverClass = !allExact && isPlaying ? 'md:hover:bg-zinc-100' : '';
+
         return (
-            <div key={key} className={cn("relative col-span-2 px-3 py-2 font-mono", cellBg)}>
-                <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight mb-1">
+            <div key={key} className={cn("relative group col-span-2 px-3 py-2 font-mono transition-colors duration-100", cellBg, listHoverClass)}>
+                <div className="text-[11px] uppercase opacity-60 tracking-wider leading-tight mb-1">
                     {field.displayLabel}
                 </div>
                 <div className="text-sm leading-tight line-clamp-2" title={displayItems.map(i => i.text).join(', ')}>
@@ -323,11 +401,14 @@ export function GuessCard({
                 {isPlaying && !isMajorHinted && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onRevealMajorHint(key); }}
-                        className="absolute top-1 right-1 p-0.5 opacity-40 hover:opacity-100 transition-opacity"
+                        className="absolute top-0.5 right-0.5 w-7 h-7 flex items-center justify-center p-1.5 touch-manipulation opacity-50 md:opacity-0 md:group-hover:opacity-70 md:hover:opacity-100 transition-opacity duration-150 group/eye"
                         title="Reveal exact value"
                         aria-label={`Reveal exact value for ${field.displayLabel}`}
                     >
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-3.5 h-3.5" />
+                        <span className="hidden md:block absolute bottom-full right-0 mb-1 bg-charcoal text-paper-white text-[9px] uppercase tracking-wider px-1.5 py-0.5 whitespace-nowrap pointer-events-none opacity-0 group-hover/eye:opacity-100 transition-opacity duration-100">
+                            Reveal
+                        </span>
                     </button>
                 )}
             </div>
@@ -372,20 +453,23 @@ export function GuessCard({
             secondaryText = '';
         }
 
+        const isColored = cellFeedback?.status === 'EXACT' || cellFeedback?.status === 'HOT';
+        const cellHoverClass = !isColored && isPlaying ? 'md:hover:bg-zinc-100' : '';
+
         // HIGHER_LOWER cells get the split value/logic layout
         if (isHigherLower && secondaryText) {
             return (
-                <div key={key} className={cn("relative px-2 py-2 font-mono", colorClass)}>
-                    <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight">
+                <div key={key} className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass)}>
+                    <div className="text-[11px] uppercase opacity-60 tracking-wider leading-tight">
                         {displayLabel}
                     </div>
                     <div className="flex justify-between items-baseline mt-0.5">
                         <span className="text-base font-bold leading-tight truncate" title={primaryText}>
                             {primaryText}
                         </span>
-                        <span className="opacity-80 shrink-0 ml-2 min-w-[3.5rem] text-right">
-                            {renderSecondaryText(secondaryText)}
-                        </span>
+                        <div className="flex items-baseline gap-0.5 shrink-0 ml-2">
+                            {renderSecondaryText(secondaryText, cellFeedback.status === 'EXACT' || cellFeedback.status === 'HOT')}
+                        </div>
                     </div>
 
                     {/* Hint badge */}
@@ -400,24 +484,31 @@ export function GuessCard({
                     {isPlaying && !isMajorHinted && (
                         <button
                             onClick={(e) => { e.stopPropagation(); onRevealMajorHint(key); }}
-                            className="absolute top-1 right-1 p-0.5 opacity-40 hover:opacity-100 transition-opacity"
+                            className="absolute top-0.5 right-0.5 w-7 h-7 flex items-center justify-center p-1.5 touch-manipulation opacity-50 md:opacity-0 md:group-hover:opacity-70 md:hover:opacity-100 transition-opacity duration-150 group/eye"
                             title="Reveal exact value"
                             aria-label={`Reveal exact value for ${field.displayLabel}`}
                         >
-                            <Eye className="w-3 h-3" />
+                            <Eye className="w-3.5 h-3.5" />
+                            <span className="hidden md:block absolute bottom-full right-0 mb-1 bg-charcoal text-paper-white text-[9px] uppercase tracking-wider px-1.5 py-0.5 whitespace-nowrap pointer-events-none opacity-0 group-hover/eye:opacity-100 transition-opacity duration-100">
+                                Reveal
+                            </span>
                         </button>
                     )}
                 </div>
             );
         }
 
+        const canTruncate = !isNA && field.logicType === 'CATEGORY_MATCH';
+
         return (
-            <div key={key} className={cn("relative px-2 py-2 font-mono", colorClass)}>
+            <div key={key} className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass)}>
                 <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight">
                     {displayLabel}
                 </div>
-                <div className={cn("text-sm font-bold leading-tight mt-0.5 truncate", isNA && "text-gray-400 font-normal italic")} title={primaryText}>
-                    {primaryText}
+                <div className={cn("text-sm font-bold leading-tight mt-0.5", !canTruncate && "truncate", isNA && "text-gray-400 font-normal italic")} title={primaryText}>
+                    {canTruncate
+                        ? <TruncatableText value={primaryText} />
+                        : primaryText}
                     {secondaryText && (
                         <span className="text-[10px] font-normal opacity-70 ml-1">{secondaryText}</span>
                     )}
@@ -435,11 +526,14 @@ export function GuessCard({
                 {isPlaying && !isMajorHinted && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onRevealMajorHint(key); }}
-                        className="absolute top-1 right-1 p-0.5 opacity-40 hover:opacity-100 transition-opacity"
+                        className="absolute top-0.5 right-0.5 w-7 h-7 flex items-center justify-center p-1.5 touch-manipulation opacity-50 md:opacity-0 md:group-hover:opacity-70 md:hover:opacity-100 transition-opacity duration-150 group/eye"
                         title="Reveal exact value"
                         aria-label={`Reveal exact value for ${field.displayLabel}`}
                     >
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-3.5 h-3.5" />
+                        <span className="hidden md:block absolute bottom-full right-0 mb-1 bg-charcoal text-paper-white text-[9px] uppercase tracking-wider px-1.5 py-0.5 whitespace-nowrap pointer-events-none opacity-0 group-hover/eye:opacity-100 transition-opacity duration-100">
+                            Reveal
+                        </span>
                     </button>
                 )}
             </div>
@@ -448,47 +542,73 @@ export function GuessCard({
 
     const paddedIndex = String(guessIndex).padStart(2, '0');
 
+    const opacityClass = index === 0 ? 'opacity-100' : index === 1 ? 'opacity-95' : 'opacity-[0.85]';
+    const scaleClass = index >= 2 ? 'scale-[0.99]' : 'scale-100';
+
     return (
-        <div className="border border-charcoal bg-paper-white">
+        <div className={cn(
+            "border border-charcoal bg-paper-white w-full max-w-[420px] mx-auto xl:max-w-none",
+            "transition-opacity",
+            opacityClass,
+            scaleClass,
+            isNew && "animate-card-enter",
+        )}>
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-charcoal">
                 <span className="font-mono font-bold text-base text-charcoal uppercase truncate" title={guess.name}>
                     {guess.name}
                 </span>
-                <span className="font-mono text-sm text-charcoal/60 shrink-0 ml-2">
-                    #{paddedIndex}
-                </span>
-            </div>
-
-            {/* Main Attribute Grid (with merged Location row at top) */}
-            <div className="grid grid-cols-2 gap-px bg-charcoal">
-                {renderLocationCell()}
-                {mainFields.map(renderCell)}
-                {mainFields.length % 2 !== 0 && (
-                    <div className="bg-paper-white" />
-                )}
-                {listFields.map(renderListCell)}
-            </div>
-
-            {/* Expandable section for folded attributes */}
-            {foldedFields.length > 0 && (
-                <>
-                    <button
-                        onClick={() => setExpanded(prev => !prev)}
-                        className="w-full flex items-center justify-center gap-1 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-charcoal/50 hover:text-charcoal hover:bg-charcoal/5 transition-colors border-t border-charcoal"
-                    >
-                        <span>{expanded ? 'Hide' : 'More'} clues</span>
-                        <ChevronDown className={cn("w-3 h-3 transition-transform", expanded && "rotate-180")} />
-                    </button>
-                    {expanded && (
-                        <div className="grid grid-cols-2 gap-px bg-charcoal border-t border-charcoal">
-                            {foldedFields.map(renderCell)}
-                            {foldedFields.length % 2 !== 0 && (
-                                <div className="bg-paper-white" />
-                            )}
-                        </div>
+                <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <span className="font-mono text-sm text-charcoal/60">
+                        #{paddedIndex}
+                    </span>
+                    {!collapsed && (
+                        <button
+                            onClick={onToggleCollapse}
+                            className="md:hidden w-7 h-7 flex items-center justify-center text-charcoal/40 active:text-charcoal transition-colors touch-manipulation"
+                            aria-label="Collapse card"
+                        >
+                            <ChevronDown className="w-4 h-4 rotate-180" />
+                        </button>
                     )}
-                </>
+                </div>
+            </div>
+
+            {collapsed ? (
+                renderSummaryStrip()
+            ) : (
+                <div className={isExpandingFromCollapsed ? 'card-body-enter' : undefined}>
+                    {/* Main Attribute Grid (with merged Location row at top) */}
+                    <div className="grid grid-cols-2 gap-px bg-charcoal">
+                        {renderLocationCell()}
+                        {mainFields.map(renderCell)}
+                        {mainFields.length % 2 !== 0 && (
+                            <div className="bg-paper-white" />
+                        )}
+                        {listFields.map(renderListCell)}
+                    </div>
+
+                    {/* Expandable section for folded attributes */}
+                    {foldedFields.length > 0 && (
+                        <>
+                            <button
+                                onClick={() => setExpanded(prev => !prev)}
+                                className="w-full flex items-center justify-center gap-1 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-charcoal/50 hover:text-charcoal hover:bg-zinc-100 transition-colors border-t border-charcoal"
+                            >
+                                <span>{expanded ? 'Hide' : 'More'} clues</span>
+                                <ChevronDown className={cn("w-3 h-3 transition-transform", expanded && "rotate-180")} />
+                            </button>
+                            {expanded && (
+                                <div className="grid grid-cols-2 gap-px bg-charcoal border-t border-charcoal">
+                                    {foldedFields.map(renderCell)}
+                                    {foldedFields.length % 2 !== 0 && (
+                                        <div className="bg-paper-white" />
+                                    )}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             )}
         </div>
     );

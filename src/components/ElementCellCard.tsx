@@ -1,9 +1,11 @@
 import type { Entity, CategorySchema } from '../types';
 import { formatNumber } from '../utils/formatters';
+import { cn } from '../utils/cn';
 
 interface ElementCellCardProps {
     entity: Entity;
     schema: CategorySchema;
+    variant?: 'modal' | 'default';
 }
 
 /** Fields rendered in the 3-col data grid */
@@ -27,7 +29,8 @@ const DATA_PANEL_KEYS = [
     'BoilingPoint',
 ] as const;
 
-export function ElementCellCard({ entity, schema }: ElementCellCardProps) {
+export function ElementCellCard({ entity, schema, variant = 'default' }: ElementCellCardProps) {
+    const isModal = variant === 'modal';
     const symbol = String(entity.id ?? '');
     const name = entity.name;
     const atomicNumber = Number(entity.AtomicNumber ?? 0);
@@ -81,8 +84,14 @@ export function ElementCellCard({ entity, schema }: ElementCellCardProps) {
                 </div>
 
                 {/* Center: Symbol */}
-                <div className="text-center py-1">
-                    <span className="font-mono text-7xl font-black text-charcoal leading-none tracking-tight">
+                <div className="relative text-center py-1">
+                    {isModal && (
+                        <div
+                            className="absolute inset-0 pointer-events-none"
+                            style={{ background: 'radial-gradient(circle at center, rgba(34,197,94,0.07) 0%, transparent 70%)' }}
+                        />
+                    )}
+                    <span className={cn("font-mono font-black text-charcoal leading-none tracking-tight", isModal ? "text-8xl" : "text-7xl")}>
                         {symbol}
                     </span>
                 </div>

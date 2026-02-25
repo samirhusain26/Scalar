@@ -54,25 +54,31 @@ export function GameOverModal({
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content
-                    onInteractOutside={(e) => e.preventDefault()}
                     className={cn(
-                    "fixed z-50 bg-paper-white shadow-hard p-6 focus:outline-none",
+                    "fixed z-50 bg-paper-white shadow-hard focus:outline-none",
                     "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-md border border-charcoal",
+                    "max-h-[85dvh] flex flex-col",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                     "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
                     "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                 )}>
 
-                    <div className="flex flex-col items-center text-center space-y-6">
-                        {/* Heading */}
-                        <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-4 border border-charcoal bg-charcoal text-paper-white font-serif-display">
+                    {/* Sticky header */}
+                    <div className="shrink-0 relative">
+                        <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-3 px-4 border-b border-charcoal bg-charcoal text-paper-white font-serif-display text-center">
                             Puzzle Complete
                         </Dialog.Title>
+                        <Dialog.Close className="absolute right-3 top-1/2 -translate-y-1/2 z-50 p-2 text-paper-white hover:text-paper-white/70 transition-colors" aria-label="Close">
+                            <X size={20} />
+                        </Dialog.Close>
+                    </div>
 
-                        <Dialog.Description className="sr-only">
-                            Puzzle completion summary
-                        </Dialog.Description>
+                    <Dialog.Description className="sr-only">
+                        Puzzle completion summary
+                    </Dialog.Description>
 
+                    {/* Scrollable body */}
+                    <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center gap-4">
                         {/* Target Entity */}
                         {activeCategory === 'elements' ? (
                             <ElementCellCard
@@ -95,32 +101,28 @@ export function GameOverModal({
                         )}
 
                         {/* Total Moves */}
-                        <div className="w-full font-mono border border-charcoal/20 py-3">
+                        <div className="w-full font-mono border border-charcoal/20 py-3 text-center">
                             <div className="text-3xl font-black">
                                 {moves} <span className="text-lg font-bold">Moves</span>
                             </div>
                         </div>
-
-                        {/* Buttons */}
-                        <div className="flex flex-col w-full gap-3 pt-4">
-                            <button
-                                onClick={handleChallenge}
-                                className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide animate-glow"
-                            >
-                                {challengeCopied ? 'Link Copied!' : 'Challenge a Friend'}
-                            </button>
-                            <button
-                                onClick={onReset}
-                                className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
-                            >
-                                Play Again
-                            </button>
-                        </div>
                     </div>
 
-                    <Dialog.Close className="absolute right-4 top-4 z-50 p-2 text-charcoal hover:text-charcoal/70 transition-colors" aria-label="Close">
-                        <X size={20} />
-                    </Dialog.Close>
+                    {/* Sticky footer buttons */}
+                    <div className="shrink-0 flex flex-col gap-3 p-4 border-t border-charcoal/20">
+                        <button
+                            onClick={handleChallenge}
+                            className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                        >
+                            {challengeCopied ? 'Link Copied!' : 'Challenge a Friend'}
+                        </button>
+                        <button
+                            onClick={onReset}
+                            className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
+                        >
+                            Play Again
+                        </button>
+                    </div>
                 </Dialog.Content>
             </Dialog.Portal>
         </Dialog.Root>

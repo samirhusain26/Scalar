@@ -8,7 +8,11 @@ import { Input } from './ui/input';
 
 const gameData = gameDataRaw as unknown as GameData;
 
-export function GameInput() {
+interface GameInputProps {
+    onFocusChange?: (focused: boolean) => void;
+}
+
+export function GameInput({ onFocusChange }: GameInputProps) {
     const [query, setQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -42,10 +46,12 @@ export function GameInput() {
         setQuery('');
         setShowSuggestions(false);
         setSelectedIndex(-1);
-        // Only re-focus input if game is still in progress;
-        // otherwise blur so the win/reveal modal can manage focus on mobile
+        // Scroll to top + re-focus if still playing, otherwise blur for modal focus
         if (useGameStore.getState().gameStatus === 'PLAYING') {
-            inputRef.current?.focus();
+            setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                inputRef.current?.focus();
+            }, 150);
         } else {
             inputRef.current?.blur();
         }
@@ -91,18 +97,31 @@ export function GameInput() {
     }, [selectedIndex]);
 
     return (
-        <div className="w-48 sm:w-56 relative z-40">
+        <div className="w-48 md:w-72 lg:w-80 relative z-40">
             <div className="relative group">
                 <div className="relative w-full">
                     <Input
                         ref={inputRef}
-                        type="text"
+                        type="search"
+                        id="scalar-guess"
+                        name="scalar-guess"
                         value={query}
                         onChange={(e) => {
                             setQuery(e.target.value);
                             setShowSuggestions(true);
                         }}
-                        onFocus={() => setShowSuggestions(true)}
+                        onFocus={() => {
+                            setShowSuggestions(true);
+                            onFocusChange?.(true);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        onBlur={() => {
+                            setTimeout(() => {
+                                if (document.activeElement !== inputRef.current) {
+                                    onFocusChange?.(false);
+                                }
+                            }, 150);
+                        }}
                         onKeyDown={handleKeyDown}
                         disabled={isDisabled}
                         placeholder={isDisabled ? (gameStatus === 'REVEALED' ? 'Revealed' : 'Solved') : "Type your guess..."}
@@ -110,11 +129,15 @@ export function GameInput() {
                             "font-mono uppercase text-sm shadow-none h-8",
                             "border-0 border-b-2 border-b-charcoal rounded-none bg-transparent px-0",
                             "focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-b-charcoal",
+                            "[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden",
                             isDisabled && "cursor-not-allowed opacity-50"
                         )}
-                        autoComplete="off"
+                        autoComplete="new-password"
                         autoCorrect="off"
-                        spellCheck="false"
+                        spellCheck={false}
+                        autoCapitalize="none"
+                        data-1p-ignore="true"
+                        data-lpignore="true"
                     />
                 </div>
 
