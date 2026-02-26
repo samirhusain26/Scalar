@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { encodeChallenge } from '../utils/challengeUtils';
 import { trackGameEvent } from '../utils/analytics';
+import { useGameStore } from '../store/gameStore';
 import { ElementCellCard } from './ElementCellCard';
 import { CountryDetailCard } from './CountryDetailCard';
 import gameDataRaw from '../assets/data/gameData.json';
@@ -30,15 +31,17 @@ export function GameOverModal({
     const [challengeCopied, setChallengeCopied] = useState(false);
 
     const handleChallenge = async () => {
-        const hash = encodeChallenge(activeCategory, targetEntity.id);
+        const hash = encodeChallenge(activeCategory, targetEntity.id, moves);
         const url = `${window.location.origin}${window.location.pathname}?challenge=${hash}`;
-        const text = `Can you beat my score of ${moves} moves? Play Scalar: ${url}`;
+        // Keep URL out of text when using navigator.share (url field handles the link separately)
+        const shareMessage = `Can you beat my score of ${moves} moves? Play Scalar!`;
+        const clipboardText = `Can you beat my score of ${moves} moves? ${url}`;
 
         try {
             if (navigator.share) {
-                await navigator.share({ title: 'Scalar Challenge', text, url });
+                await navigator.share({ title: 'Scalar Challenge', text: shareMessage, url });
             } else {
-                await navigator.clipboard.writeText(text);
+                await navigator.clipboard.writeText(clipboardText);
             }
             setChallengeCopied(true);
             trackGameEvent('challenge_shared', { category: activeCategory, moves });
@@ -50,7 +53,11 @@ export function GameOverModal({
 
 
     return (
-        <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onReset()}>
+        <Dialog.Root open={isOpen} onOpenChange={(open) => {
+            // Only reset if the game is still SOLVED — prevents double-reset when a
+            // category switch already reset the game and just closed the modal externally.
+            if (!open && useGameStore.getState().gameStatus === 'SOLVED') onReset();
+        }}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content

@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Eye, Check, ChevronDown } from 'lucide-react';
 import type { SchemaField, Entity, Feedback, GameStatus } from '../types';
-import { formatNumber, formatPercentageDiffTier, formatYearDiffTier, getDirectionSymbol, getAlphaDirectionSymbol, numberToLetter, expandConservationStatus } from '../utils/formatters';
+import { formatNumber, formatPercentageDiffTier, formatYearDiffTier, formatDistanceInUnit, formatAreaInUnit, getDirectionSymbol, getAlphaDirectionSymbol, numberToLetter, expandConservationStatus } from '../utils/formatters';
 import { cn } from '../utils/cn';
 import { getCellColor } from '../utils/feedbackColors';
+import { useDistanceUnit } from '../utils/useDistanceUnit';
 
 interface GuessCardProps {
     guess: Entity;
@@ -60,6 +61,9 @@ function TruncatableText({ value, threshold = TRUNCATE_THRESHOLD }: { value: str
 /** Keys that render as full-width list rows (SET_INTERSECTION) */
 const LIST_FIELD_KEYS = ['Credits', 'Genre'] as const;
 
+/** HIGHER_LOWER fields whose raw value is in sq km and should convert to sq mi */
+const SQ_KM_FIELD_KEYS = ['area'] as const;
+
 export function GuessCard({
     guess,
     feedback,
@@ -76,6 +80,7 @@ export function GuessCard({
 }: GuessCardProps) {
     const isPlaying = gameStatus === 'PLAYING';
     const [expanded, setExpanded] = useState(false);
+    const [distanceUnit, toggleDistanceUnit] = useDistanceUnit();
 
     // Track previous collapsed state to detect expand transitions for animation
     const prevCollapsedRef = useRef(collapsed);
@@ -166,6 +171,9 @@ export function GuessCard({
             const pts = `${rawValue} pts`;
             return wordCount > 1 ? `${pts} · ${wordCount}w` : pts;
         }
+        if ((SQ_KM_FIELD_KEYS as readonly string[]).includes(field.attributeKey)) {
+            return formatAreaInUnit(rawValue, distanceUnit);
+        }
         const unit = UNIT_MAP[field.attributeKey] ?? '';
         return formatNumber(rawValue) + unit;
     }
@@ -252,8 +260,10 @@ export function GuessCard({
                 onClick={onToggleCollapse}
                 className="w-full flex items-center gap-1 px-3 py-1.5 border-t border-charcoal hover:bg-zinc-100 transition-colors"
             >
-                {squares}
-                <ChevronDown className="w-3.5 h-3.5 text-charcoal/40 ml-auto shrink-0" />
+                <div className="flex flex-wrap gap-1 flex-1 min-w-0">
+                    {squares}
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-charcoal/40 shrink-0" />
             </button>
         );
     }
@@ -419,9 +429,12 @@ export function GuessCard({
         const key = field.attributeKey;
         const cellFeedback = feedback[key];
         const isMajorHinted = majorHintAttributes.includes(key);
-        const displayLabel = field.logicType === 'GEO_DISTANCE' ? 'Distance from Target' : field.displayLabel;
+        let displayLabel = field.logicType === 'GEO_DISTANCE' ? 'Distance from Target' : field.displayLabel;
         const isHigherLower = field.logicType === 'HIGHER_LOWER';
         const isOlympicsHosted = key === OLYMPICS_HOSTED_KEY;
+        const isDistanceField = field.displayFormat === 'DISTANCE';
+        const isSqKmField = (SQ_KM_FIELD_KEYS as readonly string[]).includes(key);
+        if (isSqKmField && distanceUnit === 'mi') displayLabel = displayLabel.replace('sq km', 'sq mi');
 
         // --- Compute color, primary text, secondary text ---
         let colorClass: string;
@@ -440,6 +453,9 @@ export function GuessCard({
             colorClass = getCellColor(cellFeedback, field);
             primaryText = getHigherLowerPrimary(field, cellFeedback);
             secondaryText = getHigherLowerSecondary(cellFeedback, field);
+        } else if (isDistanceField && cellFeedback?.distanceKm !== undefined) {
+            colorClass = getCellColor(cellFeedback, field);
+            primaryText = formatDistanceInUnit(cellFeedback.distanceKm, distanceUnit);
         } else {
             colorClass = getCellColor(cellFeedback, field);
             primaryText = getDisplayValue(field);
@@ -459,7 +475,7 @@ export function GuessCard({
         // HIGHER_LOWER cells get the split value/logic layout
         if (isHigherLower && secondaryText) {
             return (
-                <div key={key} className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass)}>
+                <div key={key} className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass, isSqKmField && "cursor-pointer select-none")} onClick={isSqKmField ? toggleDistanceUnit : undefined}>
                     <div className="text-[11px] uppercase opacity-60 tracking-wider leading-tight">
                         {displayLabel}
                     </div>
@@ -501,7 +517,11 @@ export function GuessCard({
         const canTruncate = !isNA && field.logicType === 'CATEGORY_MATCH';
 
         return (
-            <div key={key} className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass)}>
+            <div
+                key={key}
+                className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass, isDistanceField && "cursor-pointer select-none")}
+                onClick={isDistanceField ? toggleDistanceUnit : undefined}
+            >
                 <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight">
                     {displayLabel}
                 </div>

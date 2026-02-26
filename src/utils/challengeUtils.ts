@@ -6,15 +6,18 @@ const gameData = gameDataRaw as unknown as GameData;
 interface ChallengePayload {
     c: string;
     i: string;
+    m?: number;
 }
 
 interface ChallengeResult {
     category: string;
     entity: Entity;
+    challengerMoves?: number;
 }
 
-export function encodeChallenge(categoryId: string, entityId: string): string {
+export function encodeChallenge(categoryId: string, entityId: string, moves?: number): string {
     const payload: ChallengePayload = { c: categoryId, i: entityId };
+    if (moves !== undefined) payload.m = moves;
     return btoa(JSON.stringify(payload));
 }
 
@@ -31,7 +34,7 @@ export function decodeChallenge(hash: string): ChallengeResult | null {
         const entity = entities.find((e) => e.id === payload.i);
         if (!entity) return null;
 
-        return { category: payload.c, entity };
+        return { category: payload.c, entity, challengerMoves: payload.m };
     } catch {
         return null;
     }

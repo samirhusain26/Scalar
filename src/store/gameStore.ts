@@ -52,7 +52,7 @@ export const useGameStore = create<GameState>()(
             majorHintAttributes: [],
 
             setActiveCategory: (category: string) => {
-                if (gameData.categories[category]) {
+                if (gameData.categories[category] && category !== get().activeCategory) {
                     set({
                         activeCategory: category,
                         targetEntity: getRandomTarget(gameData, category),
@@ -123,10 +123,10 @@ export const useGameStore = create<GameState>()(
             },
 
             revealAnswer: () => {
-                const { gameStatus, activeCategory } = get();
+                const { gameStatus } = get();
                 if (gameStatus !== 'PLAYING') return;
-                const entityCount = (gameData.categories[activeCategory] || []).length;
-                set({ gameStatus: 'REVEALED', moves: entityCount });
+                // Preserve actual move count — showing entity count as moves is confusing UX.
+                set({ gameStatus: 'REVEALED' });
             },
 
             resetGame: () => {

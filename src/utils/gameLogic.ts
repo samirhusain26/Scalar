@@ -124,9 +124,11 @@ function handleHigherLower(
 
     // Handle missing data
     if (isNaN(tNum) || isNaN(gNum)) {
+        // Both missing = same entity matches itself on this field
+        const status = (isNaN(tNum) && isNaN(gNum)) ? 'EXACT' : 'MISS';
         return {
             direction: 'NONE',
-            status: 'MISS',
+            status,
             value: guess[field.attributeKey] ?? '',
             displayValue: 'N/A',
         };
@@ -192,9 +194,10 @@ function handleHigherLower(
         }
     }
 
-    // Determine status from category match
+    // Determine status from category match; within 25% but different category = NEAR
     let status: FeedbackStatus = 'MISS';
     if (catMatch === true) status = 'HOT';
+    else if (percentDiff <= 25) status = 'NEAR';
 
     return {
         direction,

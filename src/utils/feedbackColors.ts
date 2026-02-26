@@ -43,11 +43,11 @@ export function getCellColor(cellFeedback: Feedback | undefined, field: SchemaFi
             : 'bg-white text-charcoal';
     }
 
-    // CATEGORY_MATCH / linked-category HIGHER_LOWER — green for exact, gold for same bucket
+    // CATEGORY_MATCH / linked-category HIGHER_LOWER — green for exact, amber for near, gold for same bucket
     if (field.uiColorLogic === 'CATEGORY_MATCH' || cellFeedback.categoryMatch !== undefined) {
-        return cellFeedback.status === 'EXACT'
-            ? 'bg-thermal-green text-white'
-            : getCategoryMatchClass(cellFeedback.categoryMatch);
+        if (cellFeedback.status === 'EXACT') return 'bg-thermal-green text-white';
+        if (cellFeedback.status === 'NEAR') return 'bg-amber-100 text-charcoal border border-dashed border-amber-400';
+        return getCategoryMatchClass(cellFeedback.categoryMatch);
     }
 
     // STANDARD fallback — green for exact, orange/amber/gray for rest

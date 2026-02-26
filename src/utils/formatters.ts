@@ -39,6 +39,25 @@ export function formatDistance(km: number): string {
     return `${formatNumber(km)} km`;
 }
 
+export type DistanceUnit = 'km' | 'mi';
+
+/** Format distance with unit selection — supports km or miles */
+export function formatDistanceInUnit(km: number, unit: DistanceUnit): string {
+    if (unit === 'mi') {
+        const miles = km * 0.621371;
+        if (miles === 0) return '0 mi';
+        if (miles < 1000) return `${Math.round(miles).toLocaleString()} mi`;
+        return `${formatNumber(miles)} mi`;
+    }
+    return formatDistance(km);
+}
+
+/** Format area (sq km) with unit selection — converts using 0.621371² ≈ 0.386102 */
+export function formatAreaInUnit(sqKm: number, unit: DistanceUnit): string {
+    if (unit === 'mi') return formatNumber(sqKm * 0.386102);
+    return formatNumber(sqKm);
+}
+
 /**
  * Format a symmetric percentDiff (from max/min ratio) into approximate tier labels.
  * percentDiff = (max(|a|,|b|) / min(|a|,|b|) - 1) * 100, so it's always ≥ 0 and

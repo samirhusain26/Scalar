@@ -76,8 +76,13 @@ export function GameInput({ onFocusChange }: GameInputProps) {
             e.preventDefault();
             if (showSuggestions && selectedIndex >= 0 && suggestions[selectedIndex]) {
                 handleSubmit(suggestions[selectedIndex]);
-            } else if (suggestions.length > 0 && selectedIndex === -1 && query.length > 0) {
-                if (!showSuggestions) setShowSuggestions(true);
+            } else if (suggestions.length > 0 && query.length > 0) {
+                if (!showSuggestions) {
+                    setShowSuggestions(true);
+                } else {
+                    // Suggestions visible but nothing keyboard-selected: submit the top result
+                    handleSubmit(suggestions[0]);
+                }
             }
         } else if (e.key === 'Escape') {
             setShowSuggestions(false);

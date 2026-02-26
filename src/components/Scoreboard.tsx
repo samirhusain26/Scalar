@@ -16,7 +16,10 @@ export function Scoreboard() {
             <div className="h-4 w-px bg-graphite" />
 
             {/* Free Hint Credits */}
-            <div className="flex items-center gap-1">
+            <div
+                className="flex items-center gap-1 cursor-help"
+                title={`${credits} free hint credit${credits !== 1 ? 's' : ''} remaining — tap the eye icon next to any attribute to reveal the exact answer value for that field`}
+            >
                 {[0, 1, 2].map(i => (
                     <div
                         key={i}

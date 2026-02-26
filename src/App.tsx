@@ -39,12 +39,21 @@ function App() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [showShare, setShowShare] = useState(true);
+  const [showRevealConfirm, setShowRevealConfirm] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [challengerMoves, setChallengerMoves] = useState<number | null>(null);
   const lastScrollY = useRef(0);
 
   const handleCloseHowToPlay = () => {
     setShowHowToPlay(false);
     setShowHtpPulse(false);
     localStorage.setItem(HTP_STORAGE_KEY, '1');
+  };
+
+  const handleReset = () => {
+    resetGame();
+    setChallengerMoves(null);
+    setShowRevealConfirm(false);
   };
 
   // Challenge URL detection
@@ -55,6 +64,9 @@ function App() {
       const result = decodeChallenge(challengeHash);
       if (result) {
         startChallengeGame(result.category, result.entity);
+        if (result.challengerMoves !== undefined) {
+          setChallengerMoves(result.challengerMoves);
+        }
       }
       // Clean up URL to prevent re-triggering on refresh
       const url = new URL(window.location.href);
@@ -132,7 +144,7 @@ function App() {
               <CategoryToggle
                 categories={CATEGORIES}
                 activeCategory={activeCategory}
-                onChange={setActiveCategory}
+                onChange={(cat) => { setActiveCategory(cat); setChallengerMoves(null); setShowRevealConfirm(false); }}
               />
             </div>
 
@@ -167,7 +179,7 @@ function App() {
               <CategoryToggle
                 categories={CATEGORIES}
                 activeCategory={activeCategory}
-                onChange={setActiveCategory}
+                onChange={(cat) => { setActiveCategory(cat); setChallengerMoves(null); setShowRevealConfirm(false); }}
               />
             </div>
 
@@ -199,6 +211,11 @@ function App() {
         <main className="flex-1 flex flex-col w-full">
 
           <div className="flex-1">
+            {challengerMoves !== null && gameStatus === 'PLAYING' && (
+              <div className="mb-3 border border-charcoal/30 bg-charcoal/5 px-4 py-2 text-center font-mono text-xs">
+                Your friend solved this in <strong>{challengerMoves} move{challengerMoves !== 1 ? 's' : ''}</strong>. Can you beat them?
+              </div>
+            )}
             <ColorLegend />
             <GameGrid />
           </div>
@@ -211,13 +228,30 @@ function App() {
             <span className="text-xl tracking-widest font-black text-charcoal">
               {gameStatus !== 'PLAYING' ? targetEntity.name.toUpperCase() : '??????'}
             </span>
-            {gameStatus === 'PLAYING' && (
+            {gameStatus === 'PLAYING' && !showRevealConfirm && (
               <button
-                onClick={revealAnswer}
+                onClick={() => setShowRevealConfirm(true)}
                 className="mt-2 md:mt-0 border border-charcoal px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation min-h-[36px]"
               >
                 Reveal Answer
               </button>
+            )}
+            {gameStatus === 'PLAYING' && showRevealConfirm && (
+              <div className="mt-2 md:mt-0 flex items-center gap-2">
+                <span className="text-[10px] font-mono text-charcoal/70">End your game?</span>
+                <button
+                  onClick={() => { revealAnswer(); setShowRevealConfirm(false); }}
+                  className="border border-charcoal px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation min-h-[36px]"
+                >
+                  Yes, Reveal
+                </button>
+                <button
+                  onClick={() => setShowRevealConfirm(false)}
+                  className="border border-charcoal/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-charcoal/60 hover:border-charcoal hover:text-charcoal transition-colors touch-manipulation min-h-[36px]"
+                >
+                  Cancel
+                </button>
+              </div>
             )}
           </div>
 
@@ -226,14 +260,14 @@ function App() {
             targetEntity={targetEntity}
             moves={moves}
             activeCategory={activeCategory}
-            onReset={resetGame}
+            onReset={handleReset}
           />
 
           <RevealAnswerModal
             isOpen={gameStatus === 'REVEALED'}
             targetEntity={targetEntity}
             schema={gameData.schemaConfig[activeCategory] || []}
-            onNewGame={resetGame}
+            onNewGame={handleReset}
           />
 
           <HowToPlayModal
@@ -282,13 +316,17 @@ function App() {
       {/* Share Challenge Button — fixed bottom-right */}
       <button
         onClick={async () => {
-          const hash = encodeChallenge(activeCategory, targetEntity.id);
+          const hash = encodeChallenge(activeCategory, targetEntity.id, moves);
           const url = `${window.location.origin}${window.location.pathname}?challenge=${hash}`;
+          const shareMessage = `Can you beat my score of ${moves} moves? Play Scalar!`;
+          const clipboardText = `Can you beat my score of ${moves} moves? ${url}`;
           try {
             if (navigator.share) {
-              await navigator.share({ title: 'Scalar Challenge', url });
+              await navigator.share({ title: 'Scalar Challenge', text: shareMessage, url });
             } else {
-              await navigator.clipboard.writeText(url);
+              await navigator.clipboard.writeText(clipboardText);
+              setShareCopied(true);
+              setTimeout(() => setShareCopied(false), 2000);
             }
           } catch {
             // User cancelled share or clipboard denied — ignore
@@ -300,7 +338,7 @@ function App() {
         )}
       >
         <Share2 size={12} />
-        Share
+        {shareCopied ? 'Copied!' : 'Share'}
       </button>
     </div>
   );
