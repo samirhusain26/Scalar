@@ -11,6 +11,10 @@ export interface TutorialStep {
     nextLabel?: string;
     /** Hide the "Skip Tutorial" link on the final step */
     skipHidden?: boolean;
+    /** Wait for this many guesses before advancing */
+    waitForGuesses?: number;
+    /** A specific cell `[row, col]` to highlight */
+    highlightCell?: string;
 }
 
 export const TUTORIAL_STEPS: TutorialStep[] = [
@@ -27,6 +31,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tooltipPosition: 'bottom',
         title: 'Your Controls',
         body: 'Switch categories on the left, type a guess in the center, and track your moves and hint credits on the right.',
+        waitForGuesses: 1,
     },
     {
         id: 'legend',
@@ -34,6 +39,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         tooltipPosition: 'bottom',
         title: 'Reading the Colors',
         body: 'Green = exact match. Orange = very close. Amber dashed = getting warmer. White = no match.',
+        highlightCell: '0,1',
     },
     {
         id: 'hints',
