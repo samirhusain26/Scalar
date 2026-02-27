@@ -78,3 +78,31 @@ export interface Feedback {
 // --- Game Status ---
 export type GameStatus = 'PLAYING' | 'SOLVED' | 'REVEALED';
 
+// --- Game Mode ---
+export type GameMode = 'daily' | 'freeplay';
+
+// --- Guess Result (exported so dailyUtils and components can reference it) ---
+export interface GuessResult {
+    guess: Entity;
+    feedback: Record<string, Feedback>;
+}
+
+// --- Game Slot (state for one mode + category combination) ---
+export interface GameSlot {
+    targetEntity: Entity;
+    guesses: GuessResult[];
+    gameStatus: GameStatus;
+    moves: number;
+    credits: number;
+    majorHintAttributes: string[];
+    /** YYYY-MM-DD; only set on daily slots, used to detect day rollovers. */
+    dailyDate?: string;
+}
+
+// --- Daily Meta (streak tracking, keyed by category) ---
+export interface DailyMeta {
+    lastCompletedDate: string | null; // YYYY-MM-DD
+    currentStreak: number;
+    maxStreak: number;
+}
+

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useGameStore } from '../store/gameStore';
 import gameDataRaw from '../assets/data/gameData.json';
 import type { Entity, GameData } from '../types';
@@ -12,12 +12,20 @@ interface GameInputProps {
     onFocusChange?: (focused: boolean) => void;
 }
 
-export function GameInput({ onFocusChange }: GameInputProps) {
+export interface GameInputHandle {
+    focus: () => void;
+}
+
+export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function GameInput({ onFocusChange }, ref) {
     const [query, setQuery] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const inputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
+
+    useImperativeHandle(ref, () => ({
+        focus: () => inputRef.current?.focus(),
+    }));
 
     const activeCategory = useGameStore(state => state.activeCategory);
     const submitGuess = useGameStore(state => state.submitGuess);
@@ -102,7 +110,7 @@ export function GameInput({ onFocusChange }: GameInputProps) {
     }, [selectedIndex]);
 
     return (
-        <div className="w-48 md:w-72 lg:w-80 relative z-40">
+        <div className="w-48 md:w-72 lg:w-80 relative z-40" data-tutorial="game-input">
             <div className="relative group">
                 <div className="relative w-full">
                     <Input
@@ -196,4 +204,4 @@ export function GameInput({ onFocusChange }: GameInputProps) {
 
         </div>
     );
-}
+});

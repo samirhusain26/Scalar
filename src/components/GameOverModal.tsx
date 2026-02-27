@@ -2,13 +2,21 @@ import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { encodeChallenge } from '../utils/challengeUtils';
 import { trackGameEvent } from '../utils/analytics';
 import { useGameStore } from '../store/gameStore';
+import { generateShareText } from '../utils/dailyUtils';
+import { getDisplayColumns } from '../utils/schemaParser';
 import { ElementCellCard } from './ElementCellCard';
 import { CountryDetailCard } from './CountryDetailCard';
 import gameDataRaw from '../assets/data/gameData.json';
-import type { Entity, GameData } from '../types';
+import type {
+    Entity,
+    GameData,
+    GameMode,
+    GuessResult,
+    DailyMeta,
+    CategorySchema,
+} from '../types';
 
 const gameData = gameDataRaw as unknown as GameData;
 
@@ -17,47 +25,74 @@ interface GameOverModalProps {
     targetEntity: Entity;
     moves: number;
     activeCategory: string;
+    activeMode: GameMode;
+    guesses: GuessResult[];
+    schema: CategorySchema;
+    dailyMeta?: DailyMeta;
+    dateString: string;
     onReset: () => void;
+    onSwitchToFreePlay: () => void;
+    /** Called when the user closes the modal via X / overlay in daily mode. */
+    onDismissDaily: () => void;
 }
-
 
 export function GameOverModal({
     isOpen,
     targetEntity,
     moves,
     activeCategory,
+    activeMode,
+    guesses,
+    schema,
+    dailyMeta,
+    dateString,
     onReset,
+    onSwitchToFreePlay,
+    onDismissDaily,
 }: GameOverModalProps) {
-    const [challengeCopied, setChallengeCopied] = useState(false);
+    const [shareCopied, setShareCopied] = useState(false);
 
-    const handleChallenge = async () => {
-        const hash = encodeChallenge(activeCategory, targetEntity.id, moves);
-        const url = `${window.location.origin}${window.location.pathname}?challenge=${hash}`;
-        // Keep URL out of text when using navigator.share (url field handles the link separately)
-        const shareMessage = `Can you beat my score of ${moves} moves? Play Scalar!`;
-        const clipboardText = `Can you beat my score of ${moves} moves? ${url}`;
-
+    const handleShare = async () => {
+        const displayFields = getDisplayColumns(schema);
+        const text = generateShareText(
+            activeMode,
+            dateString,
+            activeCategory,
+            moves,
+            guesses,
+            displayFields,
+            targetEntity.id,
+        );
         try {
             if (navigator.share) {
-                await navigator.share({ title: 'Scalar Challenge', text: shareMessage, url });
+                await navigator.share({ title: 'Scalar', text });
             } else {
-                await navigator.clipboard.writeText(clipboardText);
+                await navigator.clipboard.writeText(text);
             }
-            setChallengeCopied(true);
+            setShareCopied(true);
             trackGameEvent('challenge_shared', { category: activeCategory, moves });
-            setTimeout(() => setChallengeCopied(false), 2000);
+            setTimeout(() => setShareCopied(false), 2000);
         } catch {
-            // User cancelled share or clipboard denied — ignore
+            // User cancelled or clipboard denied — ignore
         }
     };
 
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            if (activeMode === 'daily') {
+                // Overlay/X dismisses without resetting (daily game stays SOLVED)
+                onDismissDaily();
+            } else if (useGameStore.getState().gameStatus === 'SOLVED') {
+                onReset();
+            }
+        }
+    };
+
+    const streak = dailyMeta?.currentStreak ?? 0;
+    const maxStreak = dailyMeta?.maxStreak ?? 0;
 
     return (
-        <Dialog.Root open={isOpen} onOpenChange={(open) => {
-            // Only reset if the game is still SOLVED — prevents double-reset when a
-            // category switch already reset the game and just closed the modal externally.
-            if (!open && useGameStore.getState().gameStatus === 'SOLVED') onReset();
-        }}>
+        <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content
@@ -86,6 +121,16 @@ export function GameOverModal({
 
                     {/* Scrollable body */}
                     <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center gap-4">
+
+                        {/* Daily badge */}
+                        {activeMode === 'daily' && (
+                            <div className="w-full flex items-center justify-center">
+                                <span className="bg-charcoal text-paper-white font-mono text-[10px] font-bold uppercase tracking-widest px-3 py-1">
+                                    Daily · {dateString.slice(5).replace('-', '/')}
+                                </span>
+                            </div>
+                        )}
+
                         {/* Target Entity */}
                         {activeCategory === 'elements' ? (
                             <ElementCellCard
@@ -113,22 +158,46 @@ export function GameOverModal({
                                 {moves} <span className="text-lg font-bold">Moves</span>
                             </div>
                         </div>
+
+                        {/* Daily streak */}
+                        {activeMode === 'daily' && streak > 0 && (
+                            <div className="font-mono text-xs text-charcoal/70 text-center">
+                                🔥 <strong>{streak}</strong> day streak
+                                {maxStreak > streak && (
+                                    <span className="text-charcoal/40 ml-2">· Best: {maxStreak}</span>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Sticky footer buttons */}
                     <div className="shrink-0 flex flex-col gap-3 p-4 border-t border-charcoal/20">
+                        {/* Share Result — Wordle-style emoji grid, both modes */}
                         <button
-                            onClick={handleChallenge}
+                            onClick={handleShare}
                             className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
                         >
-                            {challengeCopied ? 'Link Copied!' : 'Challenge a Friend'}
+                            {shareCopied ? 'Copied!' : 'Share Result'}
                         </button>
-                        <button
-                            onClick={onReset}
-                            className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
-                        >
-                            Play Again
-                        </button>
+
+                        {activeMode === 'daily' ? (
+                            /* Daily mode: funnel user to Free Play */
+                            <button
+                                onClick={onSwitchToFreePlay}
+                                className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
+                            >
+                                Try Free Play →
+                            </button>
+                        ) : (
+                            /* Freeplay mode: standard Play Again */
+                            <button
+                                onClick={onReset}
+                                className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
+                            >
+                                Play Again
+                            </button>
+                        )}
+
                         <a
                             href="https://docs.google.com/forms/d/e/1FAIpQLSeAPZsI6lxoo4WZIz3o5Vr0dpKqgPVK_GgDrYyVoGuHeSeyIg/viewform?usp=publish-editor"
                             target="_blank"

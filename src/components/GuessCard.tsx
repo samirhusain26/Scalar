@@ -475,7 +475,7 @@ export function GuessCard({
         // HIGHER_LOWER cells get the split value/logic layout
         if (isHigherLower && secondaryText) {
             return (
-                <div key={key} className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass, isSqKmField && "cursor-pointer select-none")} onClick={isSqKmField ? toggleDistanceUnit : undefined}>
+                <div key={key} className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass, isSqKmField && "cursor-pointer select-none")} onClick={isSqKmField ? toggleDistanceUnit : undefined} {...(index === 0 ? { 'data-tutorial-cell': key } : {})}>
                     <div className="text-[11px] uppercase opacity-60 tracking-wider leading-tight">
                         {displayLabel}
                     </div>
@@ -521,6 +521,7 @@ export function GuessCard({
                 key={key}
                 className={cn("relative group px-2 py-2 font-mono transition-colors duration-100", colorClass, cellHoverClass, isDistanceField && "cursor-pointer select-none")}
                 onClick={isDistanceField ? toggleDistanceUnit : undefined}
+                {...(index === 0 ? { 'data-tutorial-cell': key } : {})}
             >
                 <div className="text-[10px] uppercase opacity-60 tracking-wider leading-tight">
                     {displayLabel}
@@ -566,13 +567,16 @@ export function GuessCard({
     const scaleClass = index >= 2 ? 'scale-[0.99]' : 'scale-100';
 
     return (
-        <div className={cn(
-            "border border-charcoal bg-paper-white w-full max-w-[420px] mx-auto xl:max-w-none",
-            "transition-opacity",
-            opacityClass,
-            scaleClass,
-            isNew && "animate-card-enter",
-        )}>
+        <div
+            className={cn(
+                "border border-charcoal bg-paper-white w-full max-w-[420px] mx-auto xl:max-w-none",
+                "transition-opacity",
+                opacityClass,
+                scaleClass,
+                isNew && "animate-card-enter",
+            )}
+            {...(index === 0 ? { 'data-tutorial': 'guess-card' } : {})}
+        >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-charcoal">
                 <span className="font-mono font-bold text-base text-charcoal uppercase truncate" title={guess.name}>

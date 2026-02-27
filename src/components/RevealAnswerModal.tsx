@@ -6,20 +6,27 @@ import { trackGameEvent } from '../utils/analytics';
 import { useGameStore } from '../store/gameStore';
 import { ElementCellCard } from './ElementCellCard';
 import { CountryDetailCard } from './CountryDetailCard';
-import type { Entity, CategorySchema } from '../types';
+import type { Entity, CategorySchema, GameMode } from '../types';
 
 interface RevealAnswerModalProps {
     isOpen: boolean;
     targetEntity: Entity;
     schema: CategorySchema;
+    activeMode: GameMode;
     onNewGame: () => void;
+    onSwitchToFreePlay: () => void;
+    /** Called when the user closes the modal via X / overlay in daily mode. */
+    onDismissDaily: () => void;
 }
 
 export function RevealAnswerModal({
     isOpen,
     targetEntity,
     schema,
+    activeMode,
     onNewGame,
+    onSwitchToFreePlay,
+    onDismissDaily,
 }: RevealAnswerModalProps) {
     const activeCategory = useGameStore(state => state.activeCategory);
     const hasFiredRef = useRef(false);
@@ -34,8 +41,18 @@ export function RevealAnswerModal({
         }
     }, [isOpen, activeCategory]);
 
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            if (activeMode === 'daily') {
+                onDismissDaily();
+            } else {
+                onNewGame();
+            }
+        }
+    };
+
     return (
-        <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onNewGame()}>
+        <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
                 <Dialog.Content className={cn(
@@ -75,16 +92,32 @@ export function RevealAnswerModal({
                                 </span>
                             </div>
                         )}
+
+                        {/* Daily forfeit note */}
+                        {activeMode === 'daily' && (
+                            <p className="mt-3 text-center font-mono text-[10px] text-charcoal/50 uppercase tracking-widest">
+                                Streak not credited on forfeit
+                            </p>
+                        )}
                     </div>
 
-                    {/* New Game button — pinned to bottom */}
-                    <div className="p-4 border-t border-charcoal shrink-0">
-                        <button
-                            onClick={onNewGame}
-                            className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
-                        >
-                            New Game
-                        </button>
+                    {/* Action button — pinned to bottom */}
+                    <div className="p-4 border-t border-charcoal shrink-0 flex flex-col gap-2">
+                        {activeMode === 'daily' ? (
+                            <button
+                                onClick={onSwitchToFreePlay}
+                                className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                            >
+                                Try Free Play →
+                            </button>
+                        ) : (
+                            <button
+                                onClick={onNewGame}
+                                className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                            >
+                                New Game
+                            </button>
+                        )}
                     </div>
                 </Dialog.Content>
             </Dialog.Portal>

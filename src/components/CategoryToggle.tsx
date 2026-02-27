@@ -6,7 +6,7 @@ interface CategoryToggleProps {
 
 export function CategoryToggle({ categories, activeCategory, onChange }: CategoryToggleProps) {
     return (
-        <div className="flex items-center border border-charcoal shrink-0">
+        <div className="flex items-center border border-charcoal shrink-0" data-tutorial="category-toggle">
             {categories.map((cat, index) => {
                 const isActive = cat === activeCategory;
                 return (

@@ -7,7 +7,7 @@ const legend = [
 
 export function ColorLegend() {
   return (
-    <div className="flex items-center justify-center gap-3 py-0 pb-1 mb-1 border-b border-graphite opacity-70">
+    <div className="flex items-center justify-center gap-3 py-0 pb-1 mb-1 border-b border-graphite opacity-70" data-tutorial="color-legend">
       {legend.map(({ color, label }) => (
         <div key={label} className="flex items-center gap-1">
           <div className={`w-3 h-3 shrink-0 ${color}`} />

@@ -9,7 +9,11 @@ import { cn } from '../utils/cn';
 
 const gameData = gameDataRaw as unknown as GameData;
 
-export function GameGrid() {
+interface GameGridProps {
+    onEmptyStateClick?: () => void;
+}
+
+export function GameGrid({ onEmptyStateClick }: GameGridProps) {
     const guesses = useGameStore(state => state.guesses);
     const activeCategory = useGameStore(state => state.activeCategory);
     const majorHintAttributes = useGameStore(state => state.majorHintAttributes);
@@ -83,12 +87,15 @@ export function GameGrid() {
         <div className="w-full mx-auto p-4 relative">
             {/* Empty-state overlay — fades out when first guess arrives, then unmounts */}
             {showEmptyOverlay && (
-                <div className={cn(
-                    'transition-opacity duration-300',
-                    guesses.length > 0
-                        ? 'opacity-0 pointer-events-none absolute inset-0 z-10'
-                        : 'opacity-100',
-                )}>
+                <div
+                    className={cn(
+                        'transition-opacity duration-300',
+                        guesses.length > 0
+                            ? 'opacity-0 pointer-events-none absolute inset-0 z-10'
+                            : 'opacity-100 cursor-pointer',
+                    )}
+                    onClick={guesses.length === 0 ? onEmptyStateClick : undefined}
+                >
                     {/* Animated prompt with bouncing arrow — all screen sizes */}
                     <div className="flex flex-col items-center justify-center min-h-[200px] md:min-h-[300px] select-none pointer-events-none">
                         <div className="animate-bounce-up flex flex-col items-center gap-2 mb-6">
