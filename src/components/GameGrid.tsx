@@ -135,6 +135,7 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
                                 guessIndex={guesses.length - idx}
                                 index={idx}
                                 gameStatus={gameStatus}
+                                activeCategory={activeCategory}
                                 onRevealMajorHint={(key) => setPendingMajorHint(key)}
                                 isNew={idx === 0}
                                 collapsed={collapsedByStableId.get(stableId) ?? false}

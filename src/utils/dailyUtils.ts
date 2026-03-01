@@ -22,14 +22,14 @@ export function formatToggleDateLabel(dateString: string): string {
 }
 
 /**
- * Epoch for puzzle numbering. Puzzle #1 = 2026-02-26 (launch day).
+ * Epoch for puzzle numbering. Puzzle #1 = 2026-03-01 (launch day).
  * The epoch is the day before launch so that the 1-indexed count starts on launch.
  */
-const EPOCH_DATE_STRING = '2026-02-25';
+const EPOCH_DATE_STRING = '2026-02-28';
 
 /**
  * Returns the sequential puzzle number for a given date string.
- * Puzzle #1 = 2026-02-01. Uses local-timezone date arithmetic so the number
+ * Puzzle #1 = 2026-03-01. Uses local-timezone date arithmetic so the number
  * matches what the user sees on their clock regardless of DST offsets.
  */
 export function getPuzzleNumber(dateString: string): number {
@@ -72,7 +72,7 @@ export function getDailyEntity(category: string, entities: Entity[], dateString:
     return sorted[index];
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
+export const CATEGORY_ICONS: Record<string, string> = {
     countries: '🌍',
     elements: '⚗️',
 };
@@ -82,8 +82,19 @@ const CATEGORY_ICONS: Record<string, string> = {
  * cell in GuessCard. We consolidate them into one emoji in the share grid to
  * prevent line-wrapping on narrow screens (11 cols → 9 cols for countries).
  */
-const LOCATION_KEYS = ['hemisphere', 'continent', 'subregion'] as const;
-const LOCATION_KEY_SET = new Set<string>(LOCATION_KEYS);
+export const LOCATION_KEYS = ['hemisphere', 'continent', 'subregion'] as const;
+export const LOCATION_KEY_SET = new Set<string>(LOCATION_KEYS);
+
+/**
+ * Returns the consolidated status for the merged Location cell.
+ * Used by ShareCard (colored-div rendering) instead of emoji.
+ */
+export function getLocationStatus(feedback: Record<string, Feedback>): 'EXACT' | 'PARTIAL' | 'MISS' {
+    const exactCount = LOCATION_KEYS.filter(key => feedback[key]?.status === 'EXACT').length;
+    if (exactCount === 3) return 'EXACT';
+    if (exactCount > 0)   return 'PARTIAL';
+    return 'MISS';
+}
 
 function getStatusEmoji(status: string | undefined): string {
     switch (status) {

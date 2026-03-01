@@ -5,6 +5,7 @@ import { formatNumber, formatPercentageDiffTier, formatYearDiffTier, formatDista
 import { cn } from '../utils/cn';
 import { getCellColor } from '../utils/feedbackColors';
 import { useDistanceUnit } from '../utils/useDistanceUnit';
+import { getCountryFlag } from '../utils/countryFlag';
 
 interface GuessCardProps {
     guess: Entity;
@@ -15,6 +16,7 @@ interface GuessCardProps {
     guessIndex: number;
     index: number;
     gameStatus: GameStatus;
+    activeCategory?: string;
     onRevealMajorHint: (attributeKeys: string | string[]) => void;
     isNew: boolean;
     collapsed: boolean;
@@ -58,6 +60,17 @@ function TruncatableText({ value, threshold = TRUNCATE_THRESHOLD }: { value: str
     );
 }
 
+/** Block → badge color classes for the mini element cell badge */
+function getBlockBadgeClass(block: string): string {
+    switch (block) {
+        case 's-block': return 'border-red-400 bg-red-50 text-red-800';
+        case 'p-block': return 'border-sky-400 bg-sky-50 text-sky-800';
+        case 'd-block': return 'border-zinc-400 bg-zinc-100 text-zinc-700';
+        case 'f-block': return 'border-amber-400 bg-amber-50 text-amber-800';
+        default:        return 'border-charcoal bg-paper-white text-charcoal';
+    }
+}
+
 /** Keys that render as full-width list rows (SET_INTERSECTION) */
 const LIST_FIELD_KEYS = ['Credits', 'Genre'] as const;
 
@@ -73,6 +86,7 @@ export function GuessCard({
     guessIndex,
     index,
     gameStatus,
+    activeCategory,
     onRevealMajorHint,
     isNew,
     collapsed,
@@ -579,7 +593,34 @@ export function GuessCard({
         >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-charcoal">
-                <span className="font-mono font-bold text-base text-charcoal uppercase truncate" title={guess.name}>
+                <span className="font-mono font-bold text-base text-charcoal uppercase truncate flex items-center gap-1.5" title={guess.name}>
+                    {activeCategory === 'countries' && (
+                        <a
+                            href={`https://en.wikipedia.org/wiki/${encodeURIComponent(guess.name)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-lg leading-none not-uppercase shrink-0 hover:opacity-70 transition-opacity"
+                            title={`${guess.name} on Wikipedia`}
+                        >
+                            {getCountryFlag(String(guess.id))}
+                        </a>
+                    )}
+                    {activeCategory === 'elements' && (
+                        <a
+                            href={`https://en.wikipedia.org/wiki/${encodeURIComponent(String(guess.name))}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className={cn(
+                                "w-7 h-7 border-2 flex items-center justify-center shrink-0 hover:opacity-70 transition-opacity normal-case",
+                                getBlockBadgeClass(String(guess.block ?? '')),
+                            )}
+                            title={`${guess.name} on Wikipedia`}
+                        >
+                            <span className="font-mono font-black text-[11px] leading-none">{String(guess.id)}</span>
+                        </a>
+                    )}
                     {guess.name}
                 </span>
                 <div className="flex items-center gap-2 shrink-0 ml-2">

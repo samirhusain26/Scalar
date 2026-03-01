@@ -83,7 +83,7 @@ export function ElementCellCard({ entity, schema, variant = 'default' }: Element
                     </span>
                 </div>
 
-                {/* Center: Symbol */}
+                {/* Center: Symbol (links to Wikipedia) */}
                 <div className="relative text-center py-1">
                     {isModal && (
                         <div
@@ -91,9 +91,17 @@ export function ElementCellCard({ entity, schema, variant = 'default' }: Element
                             style={{ background: 'radial-gradient(circle at center, rgba(34,197,94,0.07) 0%, transparent 70%)' }}
                         />
                     )}
-                    <span className={cn("font-mono font-black text-charcoal leading-none tracking-tight", isModal ? "text-8xl" : "text-7xl")}>
-                        {symbol}
-                    </span>
+                    <a
+                        href={`https://en.wikipedia.org/wiki/${encodeURIComponent(String(name))}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:opacity-70 transition-opacity"
+                        title={`${name} on Wikipedia`}
+                    >
+                        <span className={cn("font-mono font-black text-charcoal leading-none tracking-tight", isModal ? "text-8xl" : "text-7xl")}>
+                            {symbol}
+                        </span>
+                    </a>
                 </div>
 
                 {/* Bottom: Element Name */}

@@ -1,24 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { X, Share2, Loader2 } from 'lucide-react';
+import { toPng } from 'html-to-image';
 import { cn } from '../utils/cn';
-import { trackGameEvent } from '../utils/analytics';
 import { useGameStore } from '../store/gameStore';
-import { generateShareText } from '../utils/dailyUtils';
-import { getDisplayColumns } from '../utils/schemaParser';
 import { ElementCellCard } from './ElementCellCard';
 import { CountryDetailCard } from './CountryDetailCard';
+import { trackGameEvent } from '../utils/analytics';
+import { CATEGORY_ICONS, formatDateLabel, getPuzzleNumber } from '../utils/dailyUtils';
+import { encodeChallenge } from '../utils/challengeUtils';
 import gameDataRaw from '../assets/data/gameData.json';
 import type {
     Entity,
     GameData,
     GameMode,
-    GuessResult,
     DailyMeta,
-    CategorySchema,
 } from '../types';
 
 const gameData = gameDataRaw as unknown as GameData;
+
+const supportsShare = typeof navigator !== 'undefined' && 'share' in navigator;
+
+function downloadPng(dataUrl: string) {
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'scalar-result.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
 
 interface GameOverModalProps {
     isOpen: boolean;
@@ -26,10 +36,9 @@ interface GameOverModalProps {
     moves: number;
     activeCategory: string;
     activeMode: GameMode;
-    guesses: GuessResult[];
-    schema: CategorySchema;
     dailyMeta?: DailyMeta;
     dateString: string;
+    shareCardRef: React.RefObject<HTMLDivElement | null>;
     onReset: () => void;
     onSwitchToFreePlay: () => void;
     /** Called when the user closes the modal via X / overlay in daily mode. */
@@ -42,45 +51,95 @@ export function GameOverModal({
     moves,
     activeCategory,
     activeMode,
-    guesses,
-    schema,
     dailyMeta,
     dateString,
+    shareCardRef,
     onReset,
     onSwitchToFreePlay,
     onDismissDaily,
 }: GameOverModalProps) {
-    const [shareCopied, setShareCopied] = useState(false);
+
+    const [blobReady, setBlobReady] = useState(false);
+    const [shareState, setShareState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+    const filePromiseRef = useRef<Promise<File> | null>(null);
+    const dataUrlRef = useRef<string | null>(null);
+
+    // Pre-generate the share image as soon as the modal opens so it's ready
+    // the moment the user taps Share — keeping us within the browser's
+    // user-gesture window when we call navigator.share().
+    useEffect(() => {
+        if (!isOpen) {
+            filePromiseRef.current = null;
+            dataUrlRef.current = null;
+            setBlobReady(false);
+            setShareState('idle');
+            return;
+        }
+
+        const node = shareCardRef.current;
+        if (!node) return;
+
+        const promise = toPng(node, {
+            pixelRatio: 2,
+            cacheBust: true,
+            style: { position: 'static', left: 'auto', top: 'auto' },
+        }).then(async (dataUrl) => {
+            dataUrlRef.current = dataUrl;
+            const blob = await (await fetch(dataUrl)).blob();
+            return new File([blob], 'scalar-result.png', { type: 'image/png' });
+        });
+
+        filePromiseRef.current = promise;
+        promise.then(() => setBlobReady(true)).catch(() => setBlobReady(false));
+    }, [isOpen, shareCardRef]);
+
+    const buildShareText = () => {
+        const icon = CATEGORY_ICONS[activeCategory] ?? '🎮';
+        const catName = activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1);
+        const header = activeMode === 'daily'
+            ? `SCALAR Daily #${getPuzzleNumber(dateString)} (${formatDateLabel(dateString)}) • ${icon} ${catName} • ${moves} Moves`
+            : `SCALAR • ${icon} ${catName} • ${moves} Moves`;
+        const url = activeMode === 'daily'
+            ? 'https://scalargame.com'
+            : `${window.location.origin}${window.location.pathname}?challenge=${encodeChallenge(activeCategory, targetEntity.id, moves)}`;
+        return `${header}\n${url}`;
+    };
 
     const handleShare = async () => {
-        const displayFields = getDisplayColumns(schema);
-        const text = generateShareText(
-            activeMode,
-            dateString,
-            activeCategory,
-            moves,
-            guesses,
-            displayFields,
-            targetEntity.id,
-        );
+        if (!filePromiseRef.current) return;
+        setShareState('busy');
         try {
-            if (navigator.share) {
-                await navigator.share({ title: 'Scalar', text });
+            const file = await filePromiseRef.current;
+            const text = buildShareText();
+
+            if (supportsShare) {
+                try {
+                    await navigator.share({ files: [file], text, title: 'Scalar' });
+                } catch (err) {
+                    if (err instanceof Error && err.name === 'AbortError') {
+                        setShareState('idle');
+                        return;
+                    }
+                    // Files not supported by this browser — fall back to download
+                    if (dataUrlRef.current) downloadPng(dataUrlRef.current);
+                }
             } else {
-                await navigator.clipboard.writeText(text);
+                // Desktop without Web Share API — download the image
+                if (dataUrlRef.current) downloadPng(dataUrlRef.current);
             }
-            setShareCopied(true);
-            trackGameEvent('challenge_shared', { category: activeCategory, moves });
-            setTimeout(() => setShareCopied(false), 2000);
+
+            trackGameEvent('image_shared', { category: activeCategory, mode: activeMode });
+            setShareState('done');
+            setTimeout(() => setShareState('idle'), 2000);
         } catch {
-            // User cancelled or clipboard denied — ignore
+            setShareState('error');
+            setTimeout(() => setShareState('idle'), 2000);
         }
     };
 
     const handleOpenChange = (open: boolean) => {
         if (!open) {
             if (activeMode === 'daily') {
-                // Overlay/X dismisses without resetting (daily game stays SOLVED)
                 onDismissDaily();
             } else if (useGameStore.getState().gameStatus === 'SOLVED') {
                 onReset();
@@ -90,6 +149,12 @@ export function GameOverModal({
 
     const streak = dailyMeta?.currentStreak ?? 0;
     const maxStreak = dailyMeta?.maxStreak ?? 0;
+
+    const shareLabel =
+        shareState === 'done'  ? 'Shared!'
+        : shareState === 'error' ? 'Failed — try again'
+        : shareState === 'busy' || !blobReady ? 'Preparing…'
+        : 'Share Result';
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
@@ -172,12 +237,17 @@ export function GameOverModal({
 
                     {/* Sticky footer buttons */}
                     <div className="shrink-0 flex flex-col gap-3 p-4 border-t border-charcoal/20">
-                        {/* Share Result — Wordle-style emoji grid, both modes */}
+                        {/* Share — directly opens native share sheet with image */}
                         <button
                             onClick={handleShare}
-                            className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                            disabled={shareState === 'busy' || shareState === 'done'}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {shareCopied ? 'Copied!' : 'Share Result'}
+                            {shareState === 'busy' || (!blobReady && shareState === 'idle')
+                                ? <Loader2 size={14} className="animate-spin" />
+                                : <Share2 size={14} />
+                            }
+                            <span>{shareLabel}</span>
                         </button>
 
                         {activeMode === 'daily' ? (

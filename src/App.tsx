@@ -7,6 +7,7 @@ import { GameOverModal } from './components/GameOverModal';
 import { RevealAnswerModal } from './components/RevealAnswerModal';
 import { HowToPlayModal } from './components/HowToPlayModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
+import { PWAInstallModal } from './components/PWAInstallModal';
 import { TutorialOverlay } from './components/TutorialOverlay';
 import { ColorLegend } from './components/ColorLegend';
 import { Scoreboard } from './components/Scoreboard';
@@ -14,6 +15,7 @@ import { CategoryToggle } from './components/CategoryToggle';
 import { ModeToggle } from './components/ModeToggle';
 import { ScalarLogo } from './components/ScalarLogo';
 import { VennBackground } from './components/VennBackground';
+import { ShareCard } from './components/ShareCard';
 import { useGameStore } from './store/gameStore';
 import { decodeChallenge, encodeChallenge } from './utils/challengeUtils';
 import { getLocalDateString, formatToggleDateLabel } from './utils/dailyUtils';
@@ -51,10 +53,26 @@ function App() {
   const [tutorialStep, setTutorialStep] = useState<number | null>(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('challenge')) return null;
+    // ?tutorial resets tutorial localStorage so the tour re-runs
+    if (params.get('tutorial') !== null) {
+      localStorage.removeItem(TUTORIAL_KEY);
+      localStorage.removeItem(HTP_STORAGE_KEY);
+      return 0;
+    }
     const tutorialSeen = localStorage.getItem(TUTORIAL_KEY);
     const htpSeen = localStorage.getItem(HTP_STORAGE_KEY);
     return !tutorialSeen && !htpSeen ? 0 : null;
   });
+
+  // Clean up ?tutorial param from URL after it's been consumed
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tutorial') !== null) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('tutorial');
+      window.history.replaceState({}, '', url.pathname + (url.search || ''));
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialise on mount: handles day rollovers after hydration; also force
   // freeplay during tutorial so practice guesses never pollute the daily slot.
@@ -78,6 +96,7 @@ function App() {
 
   const skipTutorial = () => {
     localStorage.setItem(TUTORIAL_KEY, 'skipped');
+    localStorage.setItem(HTP_STORAGE_KEY, '1');
     setTutorialStep(null);
     resetGame();
   };
@@ -122,6 +141,7 @@ function App() {
   const [challengerMoves, setChallengerMoves] = useState<number | null>(null);
   const lastScrollY = useRef(0);
   const mobileInputRef = useRef<GameInputHandle>(null);
+  const shareCardRef = useRef<HTMLDivElement>(null);
   const focusInput = useCallback(() => { mobileInputRef.current?.focus(); }, []);
 
   const handleCloseHowToPlay = () => {
@@ -360,10 +380,9 @@ function App() {
             moves={moves}
             activeCategory={activeCategory}
             activeMode={activeMode}
-            guesses={guesses}
-            schema={gameData.schemaConfig[activeCategory] || []}
             dailyMeta={dailyMeta[activeCategory]}
             dateString={todayDateString}
+            shareCardRef={shareCardRef}
             onReset={handleReset}
             onSwitchToFreePlay={handleSwitchToFreePlay}
             onDismissDaily={() => setDailyGameOverDismissed(true)}
@@ -386,12 +405,15 @@ function App() {
           <HowToPlayModal
             isOpen={showHowToPlay && tutorialStep === null}
             onClose={handleCloseHowToPlay}
+            activeCategory={activeCategory}
           />
 
           <PrivacyPolicyModal
             isOpen={showPrivacyPolicy}
             onClose={() => setShowPrivacyPolicy(false)}
           />
+
+          <PWAInstallModal />
         </main>
 
         {/* Footer */}
@@ -423,6 +445,19 @@ function App() {
         </footer>
 
       </div>
+
+      {/* Hidden share card — off-screen, captured by html-to-image on share */}
+      <ShareCard
+        ref={shareCardRef}
+        activeMode={activeMode}
+        dateString={todayDateString}
+        activeCategory={activeCategory}
+        moves={moves}
+        guesses={guesses}
+        schema={gameData.schemaConfig[activeCategory] || []}
+        streak={dailyMeta[activeCategory]?.currentStreak}
+        targetName={activeMode === 'freeplay' ? targetEntity.name : undefined}
+      />
 
       <Analytics debug={import.meta.env.DEV} />
 

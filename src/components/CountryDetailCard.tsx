@@ -1,6 +1,7 @@
 import type { Entity } from '../types';
 import { formatNumber } from '../utils/formatters';
 import { cn } from '../utils/cn';
+import { getCountryFlag } from '../utils/countryFlag';
 
 interface CountryDetailCardProps {
     entity: Entity;
@@ -86,7 +87,18 @@ export function CountryDetailCard({ entity, variant = 'default' }: CountryDetail
             <div className="px-4 pt-4 pb-3 border-b border-charcoal">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                        {/* Country name */}
+                        {/* Flag + Country name */}
+                        <div className="flex items-center gap-2 mb-1">
+                            <a
+                                href={`https://en.wikipedia.org/wiki/${encodeURIComponent(name)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={cn("leading-none select-none hover:opacity-70 transition-opacity", isModal ? "text-5xl" : "text-4xl")}
+                                title={`${name} on Wikipedia`}
+                            >
+                                {getCountryFlag(isoCode)}
+                            </a>
+                        </div>
                         <div className="font-serif-display text-2xl font-light text-charcoal leading-tight truncate">
                             {isModal && <span className="mr-1.5 opacity-40">◎</span>}
                             {name}
