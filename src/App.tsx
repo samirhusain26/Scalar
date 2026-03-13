@@ -280,7 +280,7 @@ function App() {
             <GameInput ref={mobileInputRef} onFocusChange={setIsInputFocused} />
 
             {/* Row 4: Score + Difficulty + How to Play — always visible */}
-            <div className="overflow-hidden transition-all duration-200 max-h-16 opacity-100">
+            <div className="relative overflow-visible">
               <div className="flex items-center gap-3">
                 <Scoreboard />
                 <div className="h-4 w-px bg-graphite" />
