@@ -303,9 +303,10 @@ export function checkWinCondition(feedback: Record<string, Feedback>): boolean {
 export function getSuggestions(
     entities: Entity[],
     query: string,
-    guessedIds: Set<string>
+    guessedIds: Set<string>,
+    limit: number = 8
 ): Entity[] {
-    if (!query.trim()) return [];
+    if (limit === 0 || !query.trim()) return [];
     const lowerQ = query.toLowerCase();
 
     return entities
@@ -319,6 +320,6 @@ export function getSuggestions(
             (entity, index, self) =>
                 index === self.findIndex(t => t.name === entity.name)
         )
-        .slice(0, 8);
+        .slice(0, limit);
 }
 

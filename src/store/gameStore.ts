@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type {
+    Difficulty,
     Entity,
     GameData,
     GameMode,
@@ -16,26 +17,26 @@ import {
 } from '../utils/gameLogic';
 import { trackGameEvent } from '../utils/analytics';
 import { getLocalDateString, getDailyEntity } from '../utils/dailyUtils';
+import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from '../utils/difficultyConfig';
 import gameDataRaw from '../assets/data/gameData.json';
 
 const gameData = gameDataRaw as unknown as GameData;
 
 // Bump this when schema/state shape changes to clear stale localStorage.
-const STORE_VERSION = 14;
+const STORE_VERSION = 15;
 
 const DEFAULT_CATEGORY = 'countries';
-const DEFAULT_CREDITS = 3;
 const HINT_MOVE_COST = 3;
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
-function makeDefaultSlot(entity: Entity): GameSlot {
+function makeDefaultSlot(entity: Entity, difficulty: Difficulty = DEFAULT_DIFFICULTY): GameSlot {
     return {
         targetEntity: entity,
         guesses: [],
         gameStatus: 'PLAYING',
         moves: 0,
-        credits: DEFAULT_CREDITS,
+        credits: DIFFICULTY_CONFIG[difficulty].credits,
         majorHintAttributes: [],
     };
 }
@@ -83,20 +84,22 @@ function getOrInitDailySlot(
     daily: Record<string, GameSlot>,
     category: string,
     today: string,
+    difficulty: Difficulty = DEFAULT_DIFFICULTY,
 ): GameSlot {
     const existing = daily[category];
     if (existing && existing.dailyDate === today) return existing;
     const entities = gameData.categories[category] ?? [];
     const entity = getDailyEntity(category, entities, today);
-    return { ...makeDefaultSlot(entity), dailyDate: today };
+    return { ...makeDefaultSlot(entity, difficulty), dailyDate: today };
 }
 
 /** Get or create a freeplay slot. */
 function getOrInitFreeplaySlot(
     freeplay: Record<string, GameSlot>,
     category: string,
+    difficulty: Difficulty = DEFAULT_DIFFICULTY,
 ): GameSlot {
-    return freeplay[category] ?? makeDefaultSlot(getRandomTarget(gameData, category));
+    return freeplay[category] ?? makeDefaultSlot(getRandomTarget(gameData, category), difficulty);
 }
 
 /** Compute "yesterday" as YYYY-MM-DD in local timezone. */
@@ -113,6 +116,9 @@ interface ScalarState {
     // Navigation
     activeCategory: string;
     activeMode: GameMode;
+
+    // Global difficulty preference (persisted, not per-slot)
+    difficulty: Difficulty;
 
     // Nested slot storage (persisted), keyed by category
     daily: Record<string, GameSlot>;
@@ -133,6 +139,7 @@ interface ScalarState {
     // Actions
     setActiveCategory: (category: string) => void;
     setActiveMode: (mode: GameMode) => void;
+    setDifficulty: (difficulty: Difficulty) => void;
     initializeApp: () => void;
     submitGuess: (guess: Entity) => void;
     revealMajorHint: (attributeIds: string | string[]) => void;
@@ -148,12 +155,13 @@ const _defaultEntities = gameData.categories[DEFAULT_CATEGORY] ?? [];
 const _defaultDailyEntity = getDailyEntity(DEFAULT_CATEGORY, _defaultEntities, _today);
 
 const _defaultDailySlot: GameSlot = {
-    ...makeDefaultSlot(_defaultDailyEntity),
+    ...makeDefaultSlot(_defaultDailyEntity, DEFAULT_DIFFICULTY),
     dailyDate: _today,
 };
 
 const _defaultFreeplaySlot: GameSlot = makeDefaultSlot(
     getRandomTarget(gameData, DEFAULT_CATEGORY),
+    DEFAULT_DIFFICULTY,
 );
 
 // ─── Store ───────────────────────────────────────────────────────────────────
@@ -194,6 +202,7 @@ export const useGameStore = create<ScalarState>()(
                 // ── Initial state ──
                 activeCategory: DEFAULT_CATEGORY,
                 activeMode: 'daily',
+                difficulty: DEFAULT_DIFFICULTY,
                 daily: { [DEFAULT_CATEGORY]: _defaultDailySlot },
                 freeplay: { [DEFAULT_CATEGORY]: _defaultFreeplaySlot },
                 dailyMeta: {},
@@ -208,8 +217,8 @@ export const useGameStore = create<ScalarState>()(
                     const today = getLocalDateString();
                     const slot =
                         mode === 'daily'
-                            ? getOrInitDailySlot(state.daily, state.activeCategory, today)
-                            : getOrInitFreeplaySlot(state.freeplay, state.activeCategory);
+                            ? getOrInitDailySlot(state.daily, state.activeCategory, today, state.difficulty)
+                            : getOrInitFreeplaySlot(state.freeplay, state.activeCategory, state.difficulty);
 
                     set({
                         activeMode: mode,
@@ -224,13 +233,31 @@ export const useGameStore = create<ScalarState>()(
                     const today = getLocalDateString();
                     const slot =
                         state.activeMode === 'daily'
-                            ? getOrInitDailySlot(state.daily, category, today)
-                            : getOrInitFreeplaySlot(state.freeplay, category);
+                            ? getOrInitDailySlot(state.daily, category, today, state.difficulty)
+                            : getOrInitFreeplaySlot(state.freeplay, category, state.difficulty);
 
                     set({
                         activeCategory: category,
                         ...writeSlot(state, state.activeMode, category, slot),
                     });
+                },
+
+                setDifficulty: (difficulty: Difficulty) => {
+                    const state = get();
+                    // Locked once guesses have been made in the current game
+                    if (state.gameStatus === 'PLAYING' && state.moves > 0) return;
+                    if (difficulty === state.difficulty) return;
+
+                    // If freeplay with no guesses yet, reinitialize slot with new credits
+                    if (state.activeMode === 'freeplay' && state.gameStatus === 'PLAYING' && state.moves === 0) {
+                        const newSlot = makeDefaultSlot(state.targetEntity, difficulty);
+                        set({
+                            difficulty,
+                            ...writeSlot(state, 'freeplay', state.activeCategory, newSlot),
+                        });
+                    } else {
+                        set({ difficulty });
+                    }
                 },
 
                 /**
@@ -240,13 +267,13 @@ export const useGameStore = create<ScalarState>()(
                 initializeApp: () => {
                     const state = get();
                     const today = getLocalDateString();
-                    const { activeMode, activeCategory } = state;
+                    const { activeMode, activeCategory, difficulty } = state;
 
                     if (activeMode === 'daily') {
                         const existing = state.daily[activeCategory];
                         if (!existing || existing.dailyDate !== today) {
                             // New day — reinitialise the daily slot
-                            const newSlot = getOrInitDailySlot(state.daily, activeCategory, today);
+                            const newSlot = getOrInitDailySlot(state.daily, activeCategory, today, difficulty);
                             set({
                                 daily: { ...state.daily, [activeCategory]: newSlot },
                                 ...syncFlat(newSlot),
@@ -261,7 +288,7 @@ export const useGameStore = create<ScalarState>()(
                     // Freeplay: ensure slot exists and sync flat
                     const fpSlot = state.freeplay[activeCategory];
                     if (!fpSlot) {
-                        const newSlot = makeDefaultSlot(getRandomTarget(gameData, activeCategory));
+                        const newSlot = makeDefaultSlot(getRandomTarget(gameData, activeCategory), difficulty);
                         set({
                             freeplay: { ...state.freeplay, [activeCategory]: newSlot },
                             ...syncFlat(newSlot),
@@ -304,11 +331,11 @@ export const useGameStore = create<ScalarState>()(
                         if (activeMode === 'daily') {
                             _updateDailyStreak(activeCategory, getLocalDateString());
                         }
-                        const { credits, majorHintAttributes } = get();
+                        const { credits, majorHintAttributes, difficulty } = get();
                         trackGameEvent('game_completed', {
                             category: activeCategory,
                             moves: newMoves,
-                            used_hints: credits < DEFAULT_CREDITS || majorHintAttributes.length > 0,
+                            used_hints: credits < DIFFICULTY_CONFIG[difficulty].credits || majorHintAttributes.length > 0,
                         });
                     }
                 },
@@ -360,18 +387,18 @@ export const useGameStore = create<ScalarState>()(
 
                 resetGame: () => {
                     const state = get();
-                    const { activeMode, activeCategory } = state;
+                    const { activeMode, activeCategory, difficulty } = state;
 
                     // Daily resets are not permitted.
                     if (activeMode === 'daily') return;
 
-                    const newSlot = makeDefaultSlot(getRandomTarget(gameData, activeCategory));
+                    const newSlot = makeDefaultSlot(getRandomTarget(gameData, activeCategory), difficulty);
                     set(writeSlot(state, 'freeplay', activeCategory, newSlot));
                 },
 
                 startChallengeGame: (category: string, entity: Entity) => {
                     const state = get();
-                    const newSlot = makeDefaultSlot(entity);
+                    const newSlot = makeDefaultSlot(entity, state.difficulty);
                     set({
                         activeMode: 'freeplay',
                         activeCategory: category,
@@ -391,13 +418,14 @@ export const useGameStore = create<ScalarState>()(
                     const dailyEntities = gameData.categories[DEFAULT_CATEGORY] ?? [];
                     const dailyEntity = getDailyEntity(DEFAULT_CATEGORY, dailyEntities, today);
                     const dailySlot: GameSlot = {
-                        ...makeDefaultSlot(dailyEntity),
+                        ...makeDefaultSlot(dailyEntity, DEFAULT_DIFFICULTY),
                         dailyDate: today,
                     };
-                    const freeplaySlot = makeDefaultSlot(getRandomTarget(gameData, DEFAULT_CATEGORY));
+                    const freeplaySlot = makeDefaultSlot(getRandomTarget(gameData, DEFAULT_CATEGORY), DEFAULT_DIFFICULTY);
                     return {
                         activeCategory: DEFAULT_CATEGORY,
                         activeMode: 'daily' as const,
+                        difficulty: DEFAULT_DIFFICULTY,
                         daily: { [DEFAULT_CATEGORY]: dailySlot },
                         freeplay: { [DEFAULT_CATEGORY]: freeplaySlot },
                         dailyMeta: {},

@@ -20,6 +20,7 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
     const targetEntity = useGameStore(state => state.targetEntity);
     const gameStatus = useGameStore(state => state.gameStatus);
     const credits = useGameStore(state => state.credits);
+    const difficulty = useGameStore(state => state.difficulty);
     const revealMajorHint = useGameStore(state => state.revealMajorHint);
 
     const [pendingMajorHint, setPendingMajorHint] = useState<string | string[] | null>(null);
@@ -71,7 +72,7 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
     }, []);
 
     const currentSchema = gameData.schemaConfig[activeCategory];
-    const displayFields = getDisplayColumns(currentSchema);
+    const displayFields = getDisplayColumns(currentSchema, difficulty, activeCategory);
 
     // Most recent guess first
     const reversedGuesses = [...guesses].reverse();

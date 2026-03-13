@@ -4,6 +4,7 @@ import gameDataRaw from '../assets/data/gameData.json';
 import type { Entity, GameData } from '../types';
 import { cn } from '../utils/cn';
 import { getSuggestions } from '../utils/gameLogic';
+import { DIFFICULTY_CONFIG } from '../utils/difficultyConfig';
 import { Input } from './ui/input';
 
 const gameData = gameDataRaw as unknown as GameData;
@@ -31,6 +32,7 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
     const submitGuess = useGameStore(state => state.submitGuess);
     const guesses = useGameStore(state => state.guesses);
     const gameStatus = useGameStore(state => state.gameStatus);
+    const difficulty = useGameStore(state => state.difficulty);
 
     const isGameActive = gameStatus === 'PLAYING';
     const isDisabled = !isGameActive;
@@ -40,8 +42,9 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
     // Filter suggestions
     const suggestions = useMemo(() => {
         const guessedIds = new Set(guesses.map(g => g.guess.id));
-        return getSuggestions(entities, query, guessedIds);
-    }, [query, entities, guesses]);
+        const limit = DIFFICULTY_CONFIG[difficulty].suggestionLimit;
+        return getSuggestions(entities, query, guessedIds, limit);
+    }, [query, entities, guesses, difficulty]);
 
     // Reset selected index when suggestions change
     useEffect(() => {
@@ -64,6 +67,16 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
             inputRef.current?.blur();
         }
     };
+
+    const isProdigy = DIFFICULTY_CONFIG[difficulty].suggestionLimit === 0;
+
+    // In Prodigy mode find an exact-name match for the current query (used for Enter submission)
+    const prodigyExactMatch = useMemo(() => {
+        if (!isProdigy || !query.trim()) return null;
+        const guessedIds = new Set(guesses.map(g => g.guess.id));
+        const lowerQ = query.toLowerCase();
+        return entities.find(e => !guessedIds.has(e.id) && e.name.toLowerCase() === lowerQ) ?? null;
+    }, [isProdigy, query, entities, guesses]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isGameActive) return;
@@ -91,6 +104,9 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
                     // Suggestions visible but nothing keyboard-selected: submit the top result
                     handleSubmit(suggestions[0]);
                 }
+            } else if (isProdigy && prodigyExactMatch) {
+                // Prodigy mode: no suggestions shown — submit on exact name match
+                handleSubmit(prodigyExactMatch);
             }
         } else if (e.key === 'Escape') {
             setShowSuggestions(false);
@@ -137,7 +153,7 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
                         }}
                         onKeyDown={handleKeyDown}
                         disabled={isDisabled}
-                        placeholder={isDisabled ? (gameStatus === 'REVEALED' ? 'Revealed' : 'Solved') : "Type your guess..."}
+                        placeholder={isDisabled ? (gameStatus === 'REVEALED' ? 'Revealed' : 'Solved') : isProdigy ? "Type full name, press ↵..." : "Type your guess..."}
                         className={cn(
                             "font-mono uppercase text-sm shadow-none h-8",
                             "border-0 border-b-2 border-b-charcoal rounded-none bg-transparent px-0",
@@ -192,12 +208,29 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
                     </>
                 )}
 
-                {/* No Matches State */}
-                {showSuggestions && query && suggestions.length === 0 && !isDisabled && (
+                {/* No Matches State — hidden in Prodigy (limit=0) since no suggestions is expected */}
+                {showSuggestions && query && suggestions.length === 0 && !isDisabled && !isProdigy && (
                     <div className="absolute top-full left-0 right-0 mt-2 z-50 flex justify-center">
                         <div className="bg-paper-white border border-charcoal p-3 shadow-hard-sm">
                             <span className="font-mono text-gray-400 italic font-bold text-sm">No match found</span>
                         </div>
+                    </div>
+                )}
+
+                {/* Prodigy mode: show ↵ submit indicator when an exact match exists */}
+                {isProdigy && !isDisabled && query && (
+                    <div className="absolute top-full left-0 right-0 mt-1.5 z-50 flex items-center gap-1.5">
+                        {prodigyExactMatch ? (
+                            <button
+                                onPointerDown={(e) => { e.preventDefault(); handleSubmit(prodigyExactMatch); }}
+                                className="flex items-center gap-1 px-2 py-1 border border-charcoal bg-charcoal text-paper-white font-mono text-[10px] font-bold uppercase tracking-wide touch-manipulation hover:opacity-80 transition-opacity"
+                            >
+                                <span>{prodigyExactMatch.name}</span>
+                                <span className="opacity-60">↵</span>
+                            </button>
+                        ) : (
+                            <span className="font-mono text-[10px] text-charcoal/40 italic">No match</span>
+                        )}
                     </div>
                 )}
             </div>

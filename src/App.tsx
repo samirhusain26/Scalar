@@ -8,11 +8,13 @@ import { RevealAnswerModal } from './components/RevealAnswerModal';
 import { HowToPlayModal } from './components/HowToPlayModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { PWAInstallModal } from './components/PWAInstallModal';
+import { WhatsNewModal, WHATS_NEW_VERSION, WHATS_NEW_STORAGE_KEY } from './components/WhatsNewModal';
 import { TutorialOverlay } from './components/TutorialOverlay';
 import { ColorLegend } from './components/ColorLegend';
 import { Scoreboard } from './components/Scoreboard';
 import { CategoryToggle } from './components/CategoryToggle';
 import { ModeToggle } from './components/ModeToggle';
+import { DifficultyDropdown } from './components/DifficultyDropdown';
 import { ScalarLogo } from './components/ScalarLogo';
 import { VennBackground } from './components/VennBackground';
 import { ShareCard } from './components/ShareCard';
@@ -43,6 +45,8 @@ function App() {
   const activeMode = useGameStore(state => state.activeMode);
   const setActiveMode = useGameStore(state => state.setActiveMode);
   const dailyMeta = useGameStore(state => state.dailyMeta);
+  const difficulty = useGameStore(state => state.difficulty);
+  const setDifficulty = useGameStore(state => state.setDifficulty);
   const initializeApp = useGameStore(state => state.initializeApp);
 
   // Date helpers (stable per render — no state needed)
@@ -89,6 +93,7 @@ function App() {
   const completeTutorial = () => {
     localStorage.setItem(TUTORIAL_KEY, '1');
     localStorage.setItem(HTP_STORAGE_KEY, '1');
+    localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
     setTutorialStep(null);
     setShowHtpPulse(false);
     resetGame();
@@ -97,6 +102,7 @@ function App() {
   const skipTutorial = () => {
     localStorage.setItem(TUTORIAL_KEY, 'skipped');
     localStorage.setItem(HTP_STORAGE_KEY, '1');
+    localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
     setTutorialStep(null);
     resetGame();
   };
@@ -125,6 +131,21 @@ function App() {
     setDailyGameOverDismissed(false);
     setDailyRevealDismissed(false);
   }, [activeMode, activeCategory]);
+
+  // ── What's New modal ──
+  // Shows once per release to returning users only (not first-time visitors).
+  const [showWhatsNew, setShowWhatsNew] = useState(() => {
+    const whatsNewSeen = localStorage.getItem(WHATS_NEW_STORAGE_KEY);
+    const htpSeen = localStorage.getItem(HTP_STORAGE_KEY);
+    const tutorialSeen = localStorage.getItem(TUTORIAL_KEY);
+    const isReturningUser = !!(htpSeen || tutorialSeen);
+    return isReturningUser && whatsNewSeen !== WHATS_NEW_VERSION;
+  });
+
+  const handleCloseWhatsNew = () => {
+    setShowWhatsNew(false);
+    localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
+  };
 
   // ── HTP modal ──
   const [showHowToPlay, setShowHowToPlay] = useState(() => {
@@ -258,10 +279,16 @@ function App() {
             {/* Row 3: Input */}
             <GameInput ref={mobileInputRef} onFocusChange={setIsInputFocused} />
 
-            {/* Row 4: Score + How to Play — always visible */}
+            {/* Row 4: Score + Difficulty + How to Play — always visible */}
             <div className="overflow-hidden transition-all duration-200 max-h-16 opacity-100">
               <div className="flex items-center gap-3">
                 <Scoreboard />
+                <div className="h-4 w-px bg-graphite" />
+                <DifficultyDropdown
+                  difficulty={difficulty}
+                  locked={gameStatus === 'PLAYING' && moves > 0}
+                  onChange={setDifficulty}
+                />
                 <div className="h-4 w-px bg-graphite" />
                 <div className="relative">
                   <button
@@ -301,9 +328,15 @@ function App() {
               <GameInput />
             </div>
 
-            {/* Right: Scoreboard + HTP */}
+            {/* Right: Scoreboard + Difficulty + HTP */}
             <div className="flex items-center gap-3 shrink-0">
               <Scoreboard />
+              <div className="h-4 w-px bg-graphite" />
+              <DifficultyDropdown
+                difficulty={difficulty}
+                locked={gameStatus === 'PLAYING' && moves > 0}
+                onChange={setDifficulty}
+              />
               <div className="h-4 w-px bg-graphite" />
               <div className="relative">
                 <button
@@ -413,6 +446,11 @@ function App() {
             onClose={() => setShowPrivacyPolicy(false)}
           />
 
+          <WhatsNewModal
+            isOpen={showWhatsNew && tutorialStep === null}
+            onClose={handleCloseWhatsNew}
+          />
+
           <PWAInstallModal />
         </main>
 
@@ -456,7 +494,8 @@ function App() {
         guesses={guesses}
         schema={gameData.schemaConfig[activeCategory] || []}
         streak={dailyMeta[activeCategory]?.currentStreak}
-        targetName={activeMode === 'freeplay' ? targetEntity.name : undefined}
+        targetName={activeMode === 'freeplay' && gameStatus !== 'PLAYING' ? targetEntity.name : undefined}
+        difficulty={difficulty}
       />
 
       <Analytics debug={import.meta.env.DEV} />

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Share2, Loader2 } from 'lucide-react';
+import { X, Share2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { cn } from '../utils/cn';
 import { useGameStore } from '../store/gameStore';
 import { ElementCellCard } from './ElementCellCard';
 import { CountryDetailCard } from './CountryDetailCard';
 import { trackGameEvent } from '../utils/analytics';
-import { CATEGORY_ICONS, formatDateLabel, getPuzzleNumber } from '../utils/dailyUtils';
+import { CATEGORY_ICONS, formatDateLabel, getPuzzleNumber, generateShareText } from '../utils/dailyUtils';
 import { encodeChallenge } from '../utils/challengeUtils';
 import gameDataRaw from '../assets/data/gameData.json';
 import type {
@@ -61,6 +61,7 @@ export function GameOverModal({
 
     const [blobReady, setBlobReady] = useState(false);
     const [shareState, setShareState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+    const [textCopied, setTextCopied] = useState(false);
     const filePromiseRef = useRef<Promise<File> | null>(null);
     const dataUrlRef = useRef<string | null>(null);
 
@@ -105,6 +106,23 @@ export function GameOverModal({
         return `${header}\n${url}`;
     };
 
+    const handleShareText = async () => {
+        const schema = gameData.schemaConfig[activeCategory] || [];
+        const text = generateShareText(activeMode, dateString, activeCategory, moves, guesses, schema, targetEntity.id);
+        try {
+            if (supportsShare) {
+                await navigator.share({ title: 'Scalar', text });
+            } else {
+                await navigator.clipboard.writeText(text);
+                setTextCopied(true);
+                setTimeout(() => setTextCopied(false), 2000);
+            }
+            trackGameEvent('challenge_shared', { category: activeCategory, mode: activeMode });
+        } catch {
+            // User cancelled or clipboard denied — ignore
+        }
+    };
+
     const handleShare = async () => {
         if (!filePromiseRef.current) return;
         setShareState('busy');
@@ -147,14 +165,9 @@ export function GameOverModal({
         }
     };
 
+    const guesses = useGameStore(state => state.guesses);
     const streak = dailyMeta?.currentStreak ?? 0;
     const maxStreak = dailyMeta?.maxStreak ?? 0;
-
-    const shareLabel =
-        shareState === 'done'  ? 'Shared!'
-        : shareState === 'error' ? 'Failed — try again'
-        : shareState === 'busy' || !blobReady ? 'Preparing…'
-        : 'Share Result';
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
@@ -237,18 +250,27 @@ export function GameOverModal({
 
                     {/* Sticky footer buttons */}
                     <div className="shrink-0 flex flex-col gap-3 p-4 border-t border-charcoal/20">
-                        {/* Share — directly opens native share sheet with image */}
-                        <button
-                            onClick={handleShare}
-                            disabled={shareState === 'busy' || shareState === 'done'}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            {shareState === 'busy' || (!blobReady && shareState === 'idle')
-                                ? <Loader2 size={14} className="animate-spin" />
-                                : <Share2 size={14} />
-                            }
-                            <span>{shareLabel}</span>
-                        </button>
+                        {/* Share row: text share (primary) + image share (secondary, narrow) */}
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleShareText}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                            >
+                                <Share2 size={14} />
+                                <span>{textCopied ? 'Copied!' : 'Share Result'}</span>
+                            </button>
+                            <button
+                                onClick={handleShare}
+                                disabled={shareState === 'busy' || shareState === 'done'}
+                                title="Share image"
+                                className="flex items-center justify-center gap-1.5 px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {shareState === 'busy' || (!blobReady && shareState === 'idle')
+                                    ? <Loader2 size={14} className="animate-spin" />
+                                    : <ImageIcon size={14} />
+                                }
+                            </button>
+                        </div>
 
                         {activeMode === 'daily' ? (
                             /* Daily mode: funnel user to Free Play */

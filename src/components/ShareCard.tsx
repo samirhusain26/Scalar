@@ -1,11 +1,12 @@
 import { forwardRef } from 'react';
-import type { Feedback, GameMode, GuessResult, SchemaField } from '../types';
+import type { Difficulty, Feedback, GameMode, GuessResult, SchemaField } from '../types';
 import {
     CATEGORY_ICONS,
     LOCATION_KEY_SET,
     getLocationStatus,
     getPuzzleNumber,
 } from '../utils/dailyUtils';
+import { DIFFICULTY_CONFIG } from '../utils/difficultyConfig';
 import { getDisplayColumns } from '../utils/schemaParser';
 
 interface ShareCardProps {
@@ -18,6 +19,7 @@ interface ShareCardProps {
     streak?: number;
     /** Freeplay only — shown as "Target: NAME". Omit for daily (hides the answer). */
     targetName?: string;
+    difficulty?: Difficulty;
 }
 
 // Design tokens — hardcoded hex for html-to-image fidelity
@@ -130,10 +132,11 @@ function buildHeaderKeys(displayFields: SchemaField[]): string[] {
 }
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
-    ({ activeMode, dateString, activeCategory, moves, guesses, schema, streak, targetName }, ref) => {
-        const displayFields = getDisplayColumns(schema).filter(
+    ({ activeMode, dateString, activeCategory, moves, guesses, schema, streak, targetName, difficulty }, ref) => {
+        const displayFields = getDisplayColumns(schema, difficulty, activeCategory).filter(
             f => !f.isFolded && f.logicType !== 'TARGET' && f.logicType !== 'NONE',
         );
+        const difficultyLabel = difficulty ? DIFFICULTY_CONFIG[difficulty].displayName.toUpperCase() : null;
 
         const icon    = CATEGORY_ICONS[activeCategory] ?? '🎮';
         const catName = activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1);
@@ -225,6 +228,23 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                             }}>
                                 {subtitle}
                             </div>
+                            {difficultyLabel && (
+                                <div style={{
+                                    display:         'inline-block',
+                                    marginTop:       '8px',
+                                    padding:         '2px 6px',
+                                    border:          `1px solid ${C.cardBg}`,
+                                    opacity:         0.45,
+                                    fontFamily:      MONO,
+                                    fontSize:        '7px',
+                                    fontWeight:      700,
+                                    letterSpacing:   '0.16em',
+                                    color:           C.cardBg,
+                                    textTransform:   'uppercase',
+                                }}>
+                                    {difficultyLabel}
+                                </div>
+                            )}
                         </div>
 
                         {/* ── Tone-on-tone category decoration ── */}
@@ -255,100 +275,78 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
                         )}
                     </div>
 
-                    {/* ── Hero Stats ── */}
+                    {/* ── Hero Stats — 2-column with divider ── */}
                     <div style={{
-                        padding:        '18px 20px',
-                        display:        'flex',
-                        alignItems:     'center',
-                        justifyContent: 'space-between',
-                        borderBottom:   `1px solid ${C.divider}`,
+                        display:     'grid',
+                        gridTemplateColumns: '1fr 1px 1fr',
+                        borderBottom: `1px solid ${C.divider}`,
                     }}>
-                        {/* Big move count */}
-                        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+                        {/* Left: Total Moves */}
+                        <div style={{
+                            padding:       '16px 20px',
+                            display:       'flex',
+                            flexDirection: 'column',
+                            gap:           '6px',
+                        }}>
+                            <div style={{
+                                fontFamily:    MONO,
+                                fontSize:      '8px',
+                                color:         C.charcoal,
+                                opacity:       0.40,
+                                letterSpacing: '0.18em',
+                                textTransform: 'uppercase',
+                            }}>Total Moves</div>
                             <div style={{
                                 fontFamily: MONO,
-                                fontSize:   '56px',
+                                fontSize:   '42px',
                                 fontWeight: 700,
                                 color:      C.charcoal,
                                 lineHeight: 1,
-                            }}>
-                                {moves}
-                            </div>
-                            <div style={{
-                                fontFamily:    MONO,
-                                fontSize:      '9px',
-                                color:         C.charcoal,
-                                opacity:       0.45,
-                                letterSpacing: '0.16em',
-                                textTransform: 'uppercase',
-                                marginTop:     '3px',
-                            }}>
-                                Total Moves
-                            </div>
+                            }}>{moves}</div>
                         </div>
 
-                        {/* Streak badge — square with fire emoji watermark */}
-                        {showStreak ? (
-                            <div style={{
-                                backgroundColor: 'rgba(34, 197, 94, 0.10)',
-                                border:          '1px solid rgba(34, 197, 94, 0.30)',
-                                borderRadius:    0,
-                                width:           '70px',
-                                height:          '70px',
-                                position:        'relative',
-                                display:         'flex',
-                                flexDirection:   'column',
-                                alignItems:      'center',
-                                justifyContent:  'center',
-                                gap:             '2px',
-                                overflow:        'hidden',
-                            }}>
-                                {/* Fire emoji watermark */}
-                                <span style={{
-                                    position:  'absolute',
-                                    fontSize:  '52px',
-                                    lineHeight: 1,
-                                    opacity:   0.20,
-                                    bottom:    '-6px',
-                                    left:      '50%',
-                                    transform: 'translateX(-50%)',
-                                }}>🔥</span>
-                                {/* Streak count */}
-                                <span style={{
-                                    position:   'relative',
-                                    fontFamily: MONO,
-                                    fontSize:   '22px',
-                                    fontWeight: 700,
-                                    color:      C.charcoal,
-                                    lineHeight: 1,
-                                }}>
-                                    {streak}
-                                </span>
-                                {/* Label */}
-                                <span style={{
-                                    position:      'relative',
-                                    fontFamily:    MONO,
-                                    fontSize:      '7px',
-                                    color:         C.charcoal,
-                                    opacity:       0.55,
-                                    letterSpacing: '0.12em',
-                                    textTransform: 'uppercase',
-                                }}>
-                                    Streak
-                                </span>
-                            </div>
-                        ) : (
-                            /* Category label when no streak */
+                        {/* Vertical divider */}
+                        <div style={{ backgroundColor: C.divider }} />
+
+                        {/* Right: Streak or Guesses */}
+                        <div style={{
+                            padding:       '16px 20px',
+                            display:       'flex',
+                            flexDirection: 'column',
+                            gap:           '6px',
+                        }}>
                             <div style={{
                                 fontFamily:    MONO,
-                                fontSize:      '12px',
-                                color:         C.charcoal,
-                                opacity:       0.35,
-                                letterSpacing: '0.05em',
+                                fontSize:      '8px',
+                                color:         showStreak ? C.green : C.charcoal,
+                                opacity:       showStreak ? 0.70 : 0.40,
+                                letterSpacing: '0.18em',
+                                textTransform: 'uppercase',
+                            }}>{showStreak ? 'Streak' : 'Guesses'}</div>
+                            <div style={{
+                                display:    'flex',
+                                alignItems: 'flex-end',
+                                gap:        '5px',
+                                lineHeight: 1,
                             }}>
-                                {icon} {catName}
+                                <div style={{
+                                    fontFamily: MONO,
+                                    fontSize:   '42px',
+                                    fontWeight: 700,
+                                    color:      showStreak ? C.green : C.charcoal,
+                                    lineHeight: 1,
+                                }}>{showStreak ? streak : guesses.length}</div>
+                                {showStreak && (
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        style={{ width: '18px', height: '18px', marginBottom: '5px', flexShrink: 0 }}
+                                        fill={C.green}
+                                    >
+                                        <path d="M12 1C10 6.5 6 10.5 6 15c0 3.3 2.7 6 6 6s6-2.7 6-6c0-3-2-5.5-2.5-5.5C15.5 12 14 13.5 12.5 13c-1.5-.5-2.5-2.5 0-8 0 0-4 3.5-4.5 7-.3 2 .8 3.5 2 4-.5-1.5-.2-3.5 2-5z" />
+                                    </svg>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     {/* ── Grid section ── */}

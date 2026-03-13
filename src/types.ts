@@ -81,6 +81,9 @@ export type GameStatus = 'PLAYING' | 'SOLVED' | 'REVEALED';
 // --- Game Mode ---
 export type GameMode = 'daily' | 'freeplay';
 
+// --- Difficulty ---
+export type Difficulty = 'novice' | 'scholar' | 'prodigy';
+
 // --- Guess Result (exported so dailyUtils and components can reference it) ---
 export interface GuessResult {
     guess: Entity;
