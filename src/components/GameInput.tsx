@@ -70,13 +70,17 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
 
     const isProdigy = DIFFICULTY_CONFIG[difficulty].suggestionLimit === 0;
 
-    // In Prodigy mode find an exact-name match for the current query (used for Enter submission)
+    // In Prodigy mode find an exact-name (or symbol for elements) match for the current query (used for Enter submission)
     const prodigyExactMatch = useMemo(() => {
         if (!isProdigy || !query.trim()) return null;
         const guessedIds = new Set(guesses.map(g => g.guess.id));
         const lowerQ = query.toLowerCase();
-        return entities.find(e => !guessedIds.has(e.id) && e.name.toLowerCase() === lowerQ) ?? null;
-    }, [isProdigy, query, entities, guesses]);
+        return entities.find(e =>
+            !guessedIds.has(e.id) &&
+            (e.name.toLowerCase() === lowerQ ||
+                (activeCategory === 'elements' && e.id.toLowerCase() === lowerQ))
+        ) ?? null;
+    }, [isProdigy, query, entities, guesses, activeCategory]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!isGameActive) return;
@@ -194,13 +198,19 @@ export const GameInput = forwardRef<GameInputHandle, GameInputProps>(function Ga
                                         }}
                                         onMouseEnter={() => setSelectedIndex(index)}
                                         className={cn(
-                                            "flex items-center px-3 py-1.5 border font-mono text-sm uppercase transition-all duration-150 transform active:scale-95",
+                                            "flex items-center gap-1.5 px-3 py-1.5 border font-mono text-sm transition-all duration-150 transform active:scale-95",
                                             index === selectedIndex
                                                 ? "bg-charcoal text-paper-white border-charcoal scale-105 shadow-md"
                                                 : "bg-white text-charcoal border-charcoal/30 hover:border-charcoal hover:bg-gray-50"
                                         )}
                                     >
-                                        <span className="font-bold">{entity.name}</span>
+                                        {activeCategory === 'elements' && (
+                                            <span className={cn(
+                                                "text-xs font-bold",
+                                                index === selectedIndex ? "opacity-60" : "opacity-40"
+                                            )}>{entity.id}</span>
+                                        )}
+                                        <span className="font-bold uppercase">{entity.name}</span>
                                     </button>
                                 ))}
                             </div>

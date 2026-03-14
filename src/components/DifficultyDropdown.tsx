@@ -21,7 +21,7 @@ export function DifficultyDropdown({ difficulty, locked, onChange }: DifficultyD
 
     useEffect(() => {
         if (!open) return;
-        function handleClickOutside(e: MouseEvent) {
+        function handleClickOutside(e: PointerEvent) {
             if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
                 setOpen(false);
             }
@@ -29,10 +29,10 @@ export function DifficultyDropdown({ difficulty, locked, onChange }: DifficultyD
         function handleKeyDown(e: KeyboardEvent) {
             if (e.key === 'Escape') setOpen(false);
         }
-        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('pointerdown', handleClickOutside);
         document.addEventListener('keydown', handleKeyDown);
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('pointerdown', handleClickOutside);
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [open]);
@@ -42,7 +42,11 @@ export function DifficultyDropdown({ difficulty, locked, onChange }: DifficultyD
     return (
         <div ref={containerRef} className="relative shrink-0">
             <button
-                onClick={() => !locked && setOpen(o => !o)}
+                onPointerDown={(e) => {
+                    if (locked) return;
+                    e.preventDefault(); // prevents input blur → header re-layout → button position shift on mobile
+                    setOpen(o => !o);
+                }}
                 disabled={locked}
                 title={locked ? 'Cannot change difficulty mid-game' : undefined}
                 className={[

@@ -35,6 +35,34 @@ export interface Release {
 
 export const RELEASES: Release[] = [
     {
+        version: 'v1.2',
+        date: '2026-03-13',
+        sections: [
+            {
+                label: 'Improvements',
+                items: [
+                    {
+                        text: 'Element symbols now appear in autocomplete suggestions — easier to scan at a glance',
+                        tag: 'improvement',
+                    },
+                    {
+                        text: 'Prodigy mode: you can now submit a guess by typing an element\'s chemical symbol (e.g. "Fe" for Iron)',
+                        tag: 'improvement',
+                    },
+                ],
+            },
+            {
+                label: 'Bug Fixes',
+                items: [
+                    {
+                        text: 'Tapping the difficulty dropdown on mobile no longer causes a layout jump',
+                        tag: 'fix',
+                    },
+                ],
+            },
+        ],
+    },
+    {
         version: 'v1.1',
         date: '2026-03-12',
         sections: [
