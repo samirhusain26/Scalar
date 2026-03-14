@@ -3,6 +3,7 @@ import { useGameStore } from '../store/gameStore';
 import gameDataRaw from '../assets/data/gameData.json';
 import type { GameData } from '../types';
 import { getDisplayColumns } from '../utils/schemaParser';
+import { trackGameEvent } from '../utils/analytics';
 import { GuessCard } from './GuessCard';
 import { MajorHintModal } from './MajorHintModal';
 import { cn } from '../utils/cn';
@@ -19,6 +20,7 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
     const majorHintAttributes = useGameStore(state => state.majorHintAttributes);
     const targetEntity = useGameStore(state => state.targetEntity);
     const gameStatus = useGameStore(state => state.gameStatus);
+    const activeMode = useGameStore(state => state.activeMode);
     const credits = useGameStore(state => state.credits);
     const difficulty = useGameStore(state => state.difficulty);
     const revealMajorHint = useGameStore(state => state.revealMajorHint);
@@ -79,9 +81,29 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
 
     const handleConfirmMajorHint = () => {
         if (pendingMajorHint) {
+            const attributeKey = Array.isArray(pendingMajorHint) ? 'location' : pendingMajorHint;
+            trackGameEvent('hint_confirmed', {
+                category: activeCategory,
+                mode: activeMode,
+                attribute_key: attributeKey,
+                cost_type: credits > 0 ? 'free' : 'moves',
+                credits_before: credits,
+            });
             revealMajorHint(pendingMajorHint);
             setPendingMajorHint(null);
         }
+    };
+
+    const handleCancelMajorHint = () => {
+        if (pendingMajorHint) {
+            trackGameEvent('hint_cancelled', {
+                category: activeCategory,
+                mode: activeMode,
+                attribute_key: Array.isArray(pendingMajorHint) ? 'location' : pendingMajorHint,
+                cost_type: credits > 0 ? 'free' : 'moves',
+            });
+        }
+        setPendingMajorHint(null);
     };
 
     return (
@@ -156,7 +178,7 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
                     : ''}
                 credits={credits}
                 onConfirm={handleConfirmMajorHint}
-                onCancel={() => setPendingMajorHint(null)}
+                onCancel={handleCancelMajorHint}
             />
         </div>
     );

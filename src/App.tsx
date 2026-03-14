@@ -22,9 +22,10 @@ import { useGameStore } from './store/gameStore';
 import { decodeChallenge, encodeChallenge } from './utils/challengeUtils';
 import { getLocalDateString, formatToggleDateLabel } from './utils/dailyUtils';
 import { TUTORIAL_STEPS } from './utils/tutorialConfig';
+import { trackGameEvent } from './utils/analytics';
 import { cn } from './utils/cn';
 import gameDataRaw from './assets/data/gameData.json';
-import type { GameData } from './types';
+import type { GameData, GameMode, Difficulty } from './types';
 
 const gameData = gameDataRaw as unknown as GameData;
 const CATEGORIES = Object.keys(gameData.categories);
@@ -91,6 +92,7 @@ function App() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const completeTutorial = () => {
+    trackGameEvent('tutorial_completed', { category: activeCategory });
     localStorage.setItem(TUTORIAL_KEY, '1');
     localStorage.setItem(HTP_STORAGE_KEY, '1');
     localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
@@ -100,6 +102,7 @@ function App() {
   };
 
   const skipTutorial = () => {
+    trackGameEvent('tutorial_skipped', { skipped_at_step: tutorialStep ?? 0 });
     localStorage.setItem(TUTORIAL_KEY, 'skipped');
     localStorage.setItem(HTP_STORAGE_KEY, '1');
     localStorage.setItem(WHATS_NEW_STORAGE_KEY, WHATS_NEW_VERSION);
@@ -178,7 +181,25 @@ function App() {
   };
 
   const handleSwitchToFreePlay = () => {
+    trackGameEvent('mode_switched', { from_mode: activeMode, to_mode: 'freeplay', category: activeCategory });
     setActiveMode('freeplay');
+  };
+
+  const handleCategoryChange = (cat: string) => {
+    trackGameEvent('category_switched', { from_category: activeCategory, to_category: cat, mode: activeMode });
+    setActiveCategory(cat);
+    setChallengerMoves(null);
+    setShowRevealConfirm(false);
+  };
+
+  const handleModeChange = (mode: GameMode) => {
+    trackGameEvent('mode_switched', { from_mode: activeMode, to_mode: mode, category: activeCategory });
+    setActiveMode(mode);
+  };
+
+  const handleDifficultyChange = (diff: Difficulty) => {
+    trackGameEvent('difficulty_changed', { from_difficulty: difficulty, to_difficulty: diff, category: activeCategory, mode: activeMode });
+    setDifficulty(diff);
   };
 
   // Challenge URL detection
@@ -189,6 +210,10 @@ function App() {
       const result = decodeChallenge(challengeHash);
       if (result) {
         startChallengeGame(result.category, result.entity);
+        trackGameEvent('challenge_started', {
+          category: result.category,
+          challenger_moves: result.challengerMoves ?? -1,
+        });
         if (result.challengerMoves !== undefined) {
           setChallengerMoves(result.challengerMoves);
         }
@@ -267,12 +292,12 @@ function App() {
               <CategoryToggle
                 categories={CATEGORIES}
                 activeCategory={activeCategory}
-                onChange={(cat) => { setActiveCategory(cat); setChallengerMoves(null); setShowRevealConfirm(false); }}
+                onChange={handleCategoryChange}
               />
               <ModeToggle
                 activeMode={activeMode}
                 dateLabel={toggleDateLabel}
-                onChange={setActiveMode}
+                onChange={handleModeChange}
               />
             </div>
 
@@ -287,7 +312,7 @@ function App() {
                 <DifficultyDropdown
                   difficulty={difficulty}
                   locked={gameStatus === 'PLAYING' && moves > 0}
-                  onChange={setDifficulty}
+                  onChange={handleDifficultyChange}
                 />
                 <div className="h-4 w-px bg-graphite" />
                 <div className="relative">
@@ -314,12 +339,12 @@ function App() {
               <CategoryToggle
                 categories={CATEGORIES}
                 activeCategory={activeCategory}
-                onChange={(cat) => { setActiveCategory(cat); setChallengerMoves(null); setShowRevealConfirm(false); }}
+                onChange={handleCategoryChange}
               />
               <ModeToggle
                 activeMode={activeMode}
                 dateLabel={toggleDateLabel}
-                onChange={setActiveMode}
+                onChange={handleModeChange}
               />
             </div>
 
@@ -378,7 +403,7 @@ function App() {
             </span>
             {gameStatus === 'PLAYING' && !showRevealConfirm && (
               <button
-                onClick={() => setShowRevealConfirm(true)}
+                onClick={() => { trackGameEvent('reveal_answer_initiated', { category: activeCategory, mode: activeMode, guess_count: guesses.length, moves }); setShowRevealConfirm(true); }}
                 className="mt-2 md:mt-0 border border-charcoal px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation min-h-[36px]"
               >
                 Reveal Answer

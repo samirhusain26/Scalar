@@ -325,6 +325,15 @@ export const useGameStore = create<ScalarState>()(
                         gameStatus: newStatus,
                     };
 
+                    trackGameEvent('guess_submitted', {
+                        category: activeCategory,
+                        mode: activeMode,
+                        difficulty: state.difficulty,
+                        guess_number: newMoves,
+                        entity_id: guess.id,
+                        is_correct: newStatus === 'SOLVED',
+                    });
+
                     set(writeSlot(state, activeMode, activeCategory, updatedSlot));
 
                     if (newStatus === 'SOLVED') {
