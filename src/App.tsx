@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { Share2 } from 'lucide-react';
+import { Grid3X3, Map, Share2 } from 'lucide-react';
+import { VisualizationModal } from './components/VisualizationModal';
 import { GameGrid } from './components/GameGrid';
 import { GameInput, type GameInputHandle } from './components/GameInput';
 import { GameOverModal } from './components/GameOverModal';
@@ -158,6 +159,7 @@ function App() {
   });
   const [showHtpPulse, setShowHtpPulse] = useState(() => !localStorage.getItem(HTP_STORAGE_KEY));
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [showVisualization, setShowVisualization] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [showShare, setShowShare] = useState(true);
   const [showRevealConfirm, setShowRevealConfirm] = useState(false);
@@ -328,6 +330,15 @@ function App() {
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-thermal-orange rounded-full animate-pulse pointer-events-none" />
                   )}
                 </div>
+                <div className="h-4 w-px bg-graphite" />
+                <button
+                  onClick={() => setShowVisualization(true)}
+                  className="w-7 h-7 border border-charcoal flex items-center justify-center text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation shrink-0"
+                  title={activeCategory === 'countries' ? 'World Map' : 'Periodic Table'}
+                  aria-label={activeCategory === 'countries' ? 'World Map' : 'Periodic Table'}
+                >
+                  {activeCategory === 'countries' ? <Map size={14} /> : <Grid3X3 size={14} />}
+                </button>
               </div>
             </div>
           </div>
@@ -353,7 +364,7 @@ function App() {
               <GameInput />
             </div>
 
-            {/* Right: Scoreboard + Difficulty + HTP */}
+            {/* Right: Scoreboard + Difficulty + HTP + Visualization */}
             <div className="flex items-center gap-3 shrink-0">
               <Scoreboard />
               <div className="h-4 w-px bg-graphite" />
@@ -376,6 +387,15 @@ function App() {
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-thermal-orange rounded-full animate-pulse pointer-events-none" />
                 )}
               </div>
+              <div className="h-4 w-px bg-graphite" />
+              <button
+                onClick={() => setShowVisualization(true)}
+                className="w-7 h-7 border border-charcoal flex items-center justify-center text-charcoal hover:bg-charcoal hover:text-paper-white transition-colors touch-manipulation shrink-0"
+                title={activeCategory === 'countries' ? 'World Map' : 'Periodic Table'}
+                aria-label={activeCategory === 'countries' ? 'World Map' : 'Periodic Table'}
+              >
+                {activeCategory === 'countries' ? <Map size={14} /> : <Grid3X3 size={14} />}
+              </button>
             </div>
           </div>
         </header>
@@ -477,6 +497,15 @@ function App() {
           />
 
           <PWAInstallModal />
+
+          <VisualizationModal
+            isOpen={showVisualization}
+            onClose={() => setShowVisualization(false)}
+            activeCategory={activeCategory}
+            guesses={guesses}
+            targetEntity={targetEntity}
+            gameStatus={gameStatus}
+          />
         </main>
 
         {/* Footer */}
