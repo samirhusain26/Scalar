@@ -35,6 +35,34 @@ export interface Release {
 
 export const RELEASES: Release[] = [
     {
+        version: 'v1.3',
+        date: '2026-03-24',
+        sections: [
+            {
+                label: 'New Features',
+                items: [
+                    {
+                        text: 'World Map — tap the map icon to see all your guessed countries highlighted on an interactive world map',
+                        tag: 'new',
+                    },
+                    {
+                        text: 'Periodic Table — tap the grid icon to see your guessed elements highlighted across the full periodic table',
+                        tag: 'new',
+                    },
+                ],
+            },
+            {
+                label: 'Improvements',
+                items: [
+                    {
+                        text: 'Both views support pinch-to-zoom, drag to pan, and scroll-wheel zoom — fully optimised for mobile',
+                        tag: 'improvement',
+                    },
+                ],
+            },
+        ],
+    },
+    {
         version: 'v1.2',
         date: '2026-03-13',
         sections: [

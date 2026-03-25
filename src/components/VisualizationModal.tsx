@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Tv, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
 import type { Entity, GuessResult, GameStatus } from '../types';
 import { WorldMapView } from './WorldMapView';
@@ -15,6 +15,9 @@ interface VisualizationModalProps {
     gameStatus: GameStatus;
 }
 
+// Tracks which categories have been confirmed this session (resets on page refresh)
+const sessionConfirmed = new Set<string>();
+
 export function VisualizationModal({
     isOpen,
     onClose,
@@ -23,14 +26,24 @@ export function VisualizationModal({
     targetEntity,
     gameStatus,
 }: VisualizationModalProps) {
-    const [adWatched, setAdWatched] = useState(false);
+    const [confirmed, setConfirmed] = useState(false);
 
-    // Reset ad state every time the modal is opened so each visit requires watching
+    // Re-sync whenever the modal opens or the category changes
     useEffect(() => {
-        if (!isOpen) setAdWatched(false);
-    }, [isOpen]);
+        setConfirmed(sessionConfirmed.has(activeCategory));
+    }, [isOpen, activeCategory]);
 
     const title = activeCategory === 'countries' ? 'World Map' : 'Periodic Table';
+    const description = activeCategory === 'countries'
+        ? 'Opens an interactive world map with your guessed countries highlighted. Scroll or pinch to zoom, drag to pan.'
+        : 'Opens an interactive periodic table with your guessed elements highlighted. Scroll or pinch to zoom, drag to pan.';
+
+    const handleConfirm = () => {
+        sessionConfirmed.add(activeCategory);
+        setConfirmed(true);
+    };
+
+    const showConfirmation = isOpen && !confirmed;
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -41,7 +54,7 @@ export function VisualizationModal({
                         "fixed z-50 focus:outline-none",
                         "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
                         "w-[95vw] max-w-4xl",
-                        "flex flex-col max-h-[90vh]",
+                        "flex flex-col max-h-[90dvh]",
                         "border border-charcoal bg-paper-white shadow-hard",
                         "data-[state=open]:animate-in data-[state=closed]:animate-out",
                         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -70,40 +83,21 @@ export function VisualizationModal({
                             : 'The periodic table showing your guessed elements highlighted.'}
                     </Dialog.Description>
 
-                    {/* Scrollable body */}
-                    <div className="overflow-y-auto flex-1 p-4">
-                        {!adWatched ? (
-                            /* ── Ad placeholder ─────────────────────────────────────── */
-                            <div className="flex flex-col items-center gap-4">
-                                <p className="text-xs font-mono text-charcoal/50 uppercase tracking-widest">
-                                    Watch a short ad to unlock the {title.toLowerCase()}
+                    {/* Body */}
+                    <div className="overflow-y-auto flex-1 p-4 md:p-6">
+                        {showConfirmation ? (
+                            <div className="flex flex-col items-center gap-6 py-4">
+                                <p className="text-sm font-mono text-charcoal/70 text-center max-w-sm leading-relaxed">
+                                    {description}
                                 </p>
-
-                                {/* Ad slot */}
-                                <div
-                                    className="w-full max-w-sm border-2 border-dashed border-graphite bg-graphite/20 flex flex-col items-center justify-center gap-2 text-charcoal/40 font-mono"
-                                    style={{ aspectRatio: '16/9' }}
-                                >
-                                    <Tv size={32} strokeWidth={1} />
-                                    <span className="text-xs uppercase tracking-widest">Ad Placeholder</span>
-                                    <span className="text-[10px]">Rewarded video will appear here</span>
-                                </div>
-
-                                {/* Unlock button — replace onClick with real ad SDK trigger later */}
                                 <button
-                                    onClick={() => setAdWatched(true)}
+                                    onClick={handleConfirm}
                                     className="w-full max-w-sm bg-charcoal text-paper-white py-3 font-mono font-bold text-sm uppercase tracking-widest hover:bg-paper-white hover:text-charcoal border border-charcoal transition-colors touch-manipulation focus:outline-none"
                                 >
-                                    Watch Ad to Unlock
+                                    Open {title}
                                 </button>
-
-                                <p className="text-[10px] font-mono text-charcoal/30">
-                                    {/* Replace this note once real ads are wired up */}
-                                    (Ad integration pending — clicking unlocks immediately for now)
-                                </p>
                             </div>
                         ) : (
-                            /* ── Visualization ──────────────────────────────────────── */
                             activeCategory === 'countries' ? (
                                 <WorldMapView
                                     guesses={guesses}

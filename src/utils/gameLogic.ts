@@ -151,6 +151,21 @@ function handleHigherLower(
         };
     }
 
+    // ALPHA_POSITION: absolute letter distance instead of percentage ratio.
+    // Percentage math breaks for early letters (G=7: 25% ≈ ±1 step; T=20: 25% ≈ ±5 steps).
+    // Fixed bands: distance 1 → HOT, distance 2 → NEAR, 3+ → MISS.
+    if (field.displayFormat === 'ALPHA_POSITION') {
+        const absDiff = Math.abs(tNum - gNum);
+        const status: FeedbackStatus = absDiff === 1 ? 'HOT' : absDiff === 2 ? 'NEAR' : 'MISS';
+        return {
+            direction,
+            status,
+            value: gNum,
+            displayValue: numberToLetter(gNum),
+            percentageDiff: absDiff,
+        };
+    }
+
     // Symmetric ratio: max(|a|,|b|) / min(|a|,|b|) - 1, so 10x off reads the same in both directions.
     // e.g. guess=10k target=1M → ratio=100 → 9900%, not capped at 99% like target-denominator math.
     const larger = Math.max(Math.abs(tNum), Math.abs(gNum));
@@ -183,8 +198,6 @@ function handleHigherLower(
         displayValue = `${arrow} ${sign}${relPct}%`;
     } else if (field.displayFormat === 'CURRENCY') {
         displayValue = `${arrow} $${formatNumber(gNum)}`;
-    } else if (field.displayFormat === 'ALPHA_POSITION') {
-        displayValue = numberToLetter(gNum);
     } else {
         const isYearField = /year|discovered/i.test(field.displayLabel);
         if (isYearField && gNum === 0) {
