@@ -185,7 +185,7 @@ export function GameOverModal({
 
                     {/* Sticky header */}
                     <div className="shrink-0 relative">
-                        <Dialog.Title className="w-full text-2xl font-black uppercase tracking-wider py-3 px-4 border-b border-charcoal bg-charcoal text-paper-white font-serif-display text-center">
+                        <Dialog.Title className="w-full text-lg font-black uppercase tracking-wider py-2 px-4 border-b border-charcoal bg-charcoal text-paper-white font-serif-display text-center">
                             Puzzle Complete
                         </Dialog.Title>
                         <Dialog.Close className="absolute right-3 top-1/2 -translate-y-1/2 z-50 p-2 text-paper-white hover:text-paper-white/70 transition-colors" aria-label="Close">
@@ -197,8 +197,8 @@ export function GameOverModal({
                         Puzzle completion summary
                     </Dialog.Description>
 
-                    {/* Scrollable body */}
-                    <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center gap-4">
+                    {/* Body: card has fixed max-height so footer always shows */}
+                    <div className="flex flex-col px-3 pt-2 pb-2 gap-2">
 
                         {/* Daily badge */}
                         {activeMode === 'daily' && (
@@ -209,32 +209,32 @@ export function GameOverModal({
                             </div>
                         )}
 
-                        {/* Target Entity */}
-                        {activeCategory === 'elements' ? (
-                            <ElementCellCard
-                                entity={targetEntity}
-                                schema={gameData.schemaConfig[activeCategory] || []}
-                            />
-                        ) : activeCategory === 'countries' ? (
-                            <CountryDetailCard entity={targetEntity} />
-                        ) : (
-                            <div className="flex flex-col items-center gap-2">
-                                {typeof targetEntity.image === 'string' && targetEntity.image && (
-                                    <img
-                                        src={targetEntity.image}
-                                        alt={targetEntity.name}
-                                        className="w-16 h-16 object-contain border border-charcoal/20"
-                                    />
-                                )}
-                                <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
-                            </div>
-                        )}
+                        {/* Entity card — capped height, scrolls internally */}
+                        <div className="max-h-[30vh] overflow-y-auto w-full">
+                            {activeCategory === 'elements' ? (
+                                <ElementCellCard
+                                    entity={targetEntity}
+                                    schema={gameData.schemaConfig[activeCategory] || []}
+                                />
+                            ) : activeCategory === 'countries' ? (
+                                <CountryDetailCard entity={targetEntity} />
+                            ) : (
+                                <div className="flex flex-col items-center gap-2">
+                                    {typeof targetEntity.image === 'string' && targetEntity.image && (
+                                        <img
+                                            src={targetEntity.image}
+                                            alt={targetEntity.name}
+                                            className="w-16 h-16 object-contain border border-charcoal/20"
+                                        />
+                                    )}
+                                    <span className="text-2xl font-black uppercase tracking-wide">{targetEntity.name}</span>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Total Moves */}
-                        <div className="w-full font-mono border border-charcoal/20 py-3 text-center">
-                            <div className="text-3xl font-black">
-                                {moves} <span className="text-lg font-bold">Moves</span>
-                            </div>
+                        <div className="font-mono text-sm font-bold text-charcoal/70 tracking-wide text-center">
+                            <span className="text-charcoal font-black text-lg">{moves}</span> Moves
                         </div>
 
                         {/* Daily streak */}
@@ -249,12 +249,12 @@ export function GameOverModal({
                     </div>
 
                     {/* Sticky footer buttons */}
-                    <div className="shrink-0 flex flex-col gap-3 p-4 border-t border-charcoal/20">
+                    <div className="shrink-0 flex flex-col gap-2 px-3 pt-2 pb-3 border-t border-charcoal/20">
                         {/* Share row: text share (primary) + image share (secondary, narrow) */}
                         <div className="flex gap-2">
                             <button
                                 onClick={handleShareText}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
                             >
                                 <Share2 size={14} />
                                 <span>{textCopied ? 'Copied!' : 'Share Result'}</span>
@@ -263,7 +263,7 @@ export function GameOverModal({
                                 onClick={handleShare}
                                 disabled={shareState === 'busy' || shareState === 'done'}
                                 title="Share image"
-                                className="flex items-center justify-center gap-1.5 px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center gap-1.5 px-4 py-2 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {shareState === 'busy' || (!blobReady && shareState === 'idle')
                                     ? <Loader2 size={14} className="animate-spin" />
@@ -273,18 +273,16 @@ export function GameOverModal({
                         </div>
 
                         {activeMode === 'daily' ? (
-                            /* Daily mode: funnel user to Free Play */
                             <button
                                 onClick={onSwitchToFreePlay}
-                                className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
+                                className="w-full px-4 py-2 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
                             >
                                 Try Free Play →
                             </button>
                         ) : (
-                            /* Freeplay mode: standard Play Again */
                             <button
                                 onClick={onReset}
-                                className="w-full px-4 py-3 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
+                                className="w-full px-4 py-2 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
                             >
                                 Play Again
                             </button>

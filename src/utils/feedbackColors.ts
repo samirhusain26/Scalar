@@ -4,18 +4,6 @@ import type { Feedback, SchemaField } from '../types';
 // Feedback Color Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Distance-based coloring for the GEO_DISTANCE cell (Distance from Target).
- * Green for close, amber for medium, yellow for far, gray for very far.
- */
-function getGeoDistanceCellClass(distanceKm: number | undefined): string {
-    if (distanceKm === undefined) return 'bg-white text-charcoal';
-    if (distanceKm < 1000) return 'bg-thermal-green text-white';   // green (includes 0km)
-    if (distanceKm < 3000) return 'bg-geo-warm';                   // amber
-    if (distanceKm < 5000) return 'bg-geo-yellow';                 // yellow
-    return 'bg-white text-charcoal';                               // white (cold)
-}
-
 function getCategoryMatchClass(categoryMatch: boolean | undefined): string {
     if (categoryMatch === true) return 'bg-cat-match';
     return 'bg-white text-charcoal';
@@ -31,9 +19,12 @@ function getStandardStatusClass(status: string | undefined): string {
 export function getCellColor(cellFeedback: Feedback | undefined, field: SchemaField): string {
     if (!cellFeedback) return 'bg-white text-charcoal';
 
-    // GEO_DISTANCE (Distance from Target cell) — own gradient with green for close
+    // GEO_DISTANCE — 3-tier: green (exact), gold (hot <1000km), amber-dashed (near <3000km), white (miss)
     if (field.logicType === 'GEO_DISTANCE') {
-        return getGeoDistanceCellClass(cellFeedback.distanceKm);
+        if (cellFeedback.status === 'EXACT') return 'bg-thermal-green text-white';
+        if (cellFeedback.status === 'HOT') return 'bg-cat-match';
+        if (cellFeedback.status === 'NEAR') return 'bg-amber-100 text-charcoal border border-dashed border-amber-400';
+        return 'bg-white text-charcoal';
     }
 
     // DISTANCE_GRADIENT (Continent, Subregion, Hemisphere) — green for exact text match, white otherwise

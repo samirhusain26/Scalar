@@ -199,9 +199,32 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Geist Mono', monospace;
+    overflow-x: hidden;
   }
 
   button, [role="button"] {
     touch-action: manipulation;
   }
+}
+
+/* ── Leaflet tooltip — thermal e-paper style ──────────────────────────── */
+.leaflet-tooltip-scalar {
+  background: #18181B;
+  color: #FAFAF9;
+  border: none;
+  border-radius: 0;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  padding: 3px 7px;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.leaflet-tooltip-scalar.leaflet-tooltip-top::before {
+  border-top-color: #18181B;
+}
+
+/* Reset default Leaflet attribution styles to be less prominent */
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  opacity: 0.5;
 }

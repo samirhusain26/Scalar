@@ -257,7 +257,7 @@ function App() {
   }, [gameStatus]);
 
   return (
-    <div className="min-h-screen bg-paper-white relative">
+    <div className="min-h-screen bg-paper-white relative overflow-x-hidden">
       <VennBackground />
 
       {/* Main container */}
@@ -307,8 +307,7 @@ function App() {
             <GameInput ref={mobileInputRef} onFocusChange={setIsInputFocused} />
 
             {/* Row 4: Score + Difficulty + How to Play — always visible */}
-            <div className="relative overflow-visible">
-              <div className="flex items-center gap-3">
+            <div className="w-full flex items-center justify-center gap-2">
                 <Scoreboard />
                 <div className="h-4 w-px bg-graphite" />
                 <DifficultyDropdown
@@ -339,7 +338,6 @@ function App() {
                 >
                   {activeCategory === 'countries' ? <Map size={14} /> : <Grid3X3 size={14} />}
                 </button>
-              </div>
             </div>
           </div>
 

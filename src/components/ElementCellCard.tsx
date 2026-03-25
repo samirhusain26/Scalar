@@ -72,10 +72,10 @@ export function ElementCellCard({ entity, schema, variant = 'default' }: Element
     return (
         <div className="w-full max-w-[340px] mx-auto border-2 border-charcoal bg-paper-white">
             {/* Periodic Table Square */}
-            <div className="relative px-4 pt-3 pb-2">
+            <div className="relative px-3 pt-2 pb-1">
                 {/* Top row: Atomic # (left) and Mass (right) */}
                 <div className="flex justify-between items-start">
-                    <span className="font-mono text-lg font-black text-charcoal leading-none">
+                    <span className="font-mono text-sm font-black text-charcoal leading-none">
                         {atomicNumber}
                     </span>
                     <span className="font-mono text-[11px] text-charcoal/50 leading-none">
@@ -84,7 +84,7 @@ export function ElementCellCard({ entity, schema, variant = 'default' }: Element
                 </div>
 
                 {/* Center: Symbol (links to Wikipedia) */}
-                <div className="relative text-center py-1">
+                <div className="relative text-center py-0.5">
                     {isModal && (
                         <div
                             className="absolute inset-0 pointer-events-none"
@@ -98,21 +98,21 @@ export function ElementCellCard({ entity, schema, variant = 'default' }: Element
                         className="hover:opacity-70 transition-opacity"
                         title={`${name} on Wikipedia`}
                     >
-                        <span className={cn("font-mono font-black text-charcoal leading-none tracking-tight", isModal ? "text-8xl" : "text-7xl")}>
+                        <span className={cn("font-mono font-black text-charcoal leading-none tracking-tight", isModal ? "text-5xl" : "text-4xl")}>
                             {symbol}
                         </span>
                     </a>
                 </div>
 
                 {/* Bottom: Element Name */}
-                <div className="text-center pb-1">
-                    <span className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-charcoal">
+                <div className="text-center">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-charcoal">
                         {name}
                     </span>
                 </div>
 
                 {/* Subtitle: Family · Block · Phase */}
-                <div className="text-center mt-1">
+                <div className="text-center mt-0.5">
                     <span className="font-mono text-[10px] text-charcoal/50 tracking-wide">
                         {[family, block, phase].filter(Boolean).join(' · ')}
                     </span>

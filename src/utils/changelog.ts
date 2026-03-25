@@ -58,6 +58,22 @@ export const RELEASES: Release[] = [
                         text: 'Both views support pinch-to-zoom, drag to pan, and scroll-wheel zoom — fully optimised for mobile',
                         tag: 'improvement',
                     },
+                    {
+                        text: 'World Map upgraded to tile-based rendering — smoother navigation and a more familiar map style',
+                        tag: 'improvement',
+                    },
+                    {
+                        text: 'Periodic Table stays readable on phones — minimum zoom keeps cells legible with horizontal panning',
+                        tag: 'improvement',
+                    },
+                    {
+                        text: 'Win screen compacted — share and play-again buttons always reachable without scrolling',
+                        tag: 'improvement',
+                    },
+                    {
+                        text: 'Distance feedback colours now match the colour legend — Hot (gold) and Near (amber) are consistent throughout',
+                        tag: 'improvement',
+                    },
                 ],
             },
         ],

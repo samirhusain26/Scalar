@@ -54,7 +54,11 @@ export function PeriodicTableView({ guesses, targetEntity, gameStatus }: Periodi
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
-        const s = Math.min(1, el.clientWidth / NATURAL_WIDTH);
+        const widthFit = el.clientWidth / NATURAL_WIDTH;
+        // On mobile, enforce a minimum scale so cells are large enough to read.
+        // This intentionally overflows width — user pans horizontally.
+        const minScale = el.clientWidth < 600 ? 0.7 : 0;
+        const s = Math.min(1, Math.max(widthFit, minScale));
         setFitScale(s);
         setZoom({ scale: s, tx: 0, ty: 0 });
         setContainerHeight(Math.ceil(NATURAL_HEIGHT * s));
@@ -73,11 +77,6 @@ export function PeriodicTableView({ guesses, targetEntity, gameStatus }: Periodi
         const el = containerRef.current;
         if (el) zoomAt(1.5, el.clientWidth / 2, el.clientHeight / 2);
     };
-    const zoomOut   = () => {
-        const el = containerRef.current;
-        if (el) zoomAt(1 / 1.5, el.clientWidth / 2, el.clientHeight / 2);
-    };
-
     // Non-passive wheel + touchmove
     useEffect(() => {
         const el = containerRef.current;
@@ -268,24 +267,15 @@ export function PeriodicTableView({ guesses, targetEntity, gameStatus }: Periodi
                     style={{ zIndex: 20 }}
                 >
                     <button
-                        onClick={zoomOut}
-                        disabled={zoom.scale <= MIN_SCALE}
-                        className="px-2 py-1 text-[13px] text-charcoal hover:bg-graphite disabled:opacity-30 disabled:cursor-default select-none"
-                        aria-label="Zoom out"
-                    >−</button>
-                    <span className="px-1.5 text-[10px] text-charcoal/50 border-x border-graphite select-none min-w-[36px] text-center">
-                        {Math.round(zoom.scale * 100)}%
-                    </span>
-                    <button
                         onClick={zoomIn}
                         disabled={zoom.scale >= MAX_SCALE}
-                        className="px-2 py-1 text-[13px] text-charcoal hover:bg-graphite disabled:opacity-30 disabled:cursor-default select-none"
+                        className="px-2 py-1.5 text-[13px] text-charcoal hover:bg-graphite disabled:opacity-30 disabled:cursor-default select-none"
                         aria-label="Zoom in"
                     >+</button>
                     {isZoomed && (
                         <button
                             onClick={resetZoom}
-                            className="px-2 py-1 text-[11px] text-charcoal hover:bg-graphite border-l border-graphite select-none"
+                            className="px-2 py-1.5 text-[11px] text-charcoal hover:bg-graphite border-l border-graphite select-none"
                             aria-label="Reset zoom"
                         >↺</button>
                     )}
@@ -293,26 +283,17 @@ export function PeriodicTableView({ guesses, targetEntity, gameStatus }: Periodi
             </div>
 
             {/* Legend — outside zoom container */}
-            <div className="mt-3 px-1">
-                <div className="flex flex-nowrap gap-3 overflow-x-auto pb-1 text-[10px] font-mono text-charcoal/70">
-                    {Object.entries(FAMILY_BG).map(([family, color]) => (
-                        <span key={family} className="flex items-center gap-1 shrink-0">
-                            <span style={{ width: 10, height: 10, backgroundColor: color, border: '1px solid #E2E8F0', display: 'inline-block', flexShrink: 0 }} />
-                            {family}
-                        </span>
-                    ))}
-                    <span className="flex items-center gap-1 shrink-0">
-                        <span style={{ width: 10, height: 10, backgroundColor: '#18181B', display: 'inline-block', flexShrink: 0 }} />
-                        Guessed
+            <div className="mt-2 px-1 flex gap-3 shrink-0 text-[10px] font-mono text-charcoal/70">
+                <span className="flex items-center gap-1">
+                    <span style={{ width: 10, height: 10, backgroundColor: '#18181B', display: 'inline-block', flexShrink: 0 }} />
+                    Guessed
+                </span>
+                {targetVisible && (
+                    <span className="flex items-center gap-1">
+                        <span style={{ width: 10, height: 10, backgroundColor: '#22C55E', display: 'inline-block', flexShrink: 0 }} />
+                        Answer
                     </span>
-                    {targetVisible && (
-                        <span className="flex items-center gap-1 shrink-0">
-                            <span style={{ width: 10, height: 10, backgroundColor: '#22C55E', display: 'inline-block', flexShrink: 0 }} />
-                            Answer
-                        </span>
-                    )}
-                </div>
-                <p className="mt-1 text-[10px] font-mono text-charcoal/40 text-right">scroll/pinch to zoom · drag to pan</p>
+                )}
             </div>
         </div>
     );

@@ -84,7 +84,7 @@ export function CountryDetailCard({ entity, variant = 'default' }: CountryDetail
         <div className={cn("w-full bg-paper-white", isModal ? "border-2 border-charcoal" : "border border-charcoal")}>
 
             {/* ── Passport Header ─────────────────────────────── */}
-            <div className="px-4 pt-4 pb-3 border-b border-charcoal">
+            <div className="px-3 pt-3 pb-2 border-b border-charcoal">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         {/* Flag + Country name */}
@@ -93,13 +93,13 @@ export function CountryDetailCard({ entity, variant = 'default' }: CountryDetail
                                 href={`https://en.wikipedia.org/wiki/${encodeURIComponent(name)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={cn("leading-none select-none hover:opacity-70 transition-opacity", isModal ? "text-5xl" : "text-4xl")}
+                                className={cn("leading-none select-none hover:opacity-70 transition-opacity", isModal ? "text-3xl" : "text-3xl")}
                                 title={`${name} on Wikipedia`}
                             >
                                 {getCountryFlag(isoCode)}
                             </a>
                         </div>
-                        <div className="font-serif-display text-2xl font-light text-charcoal leading-tight truncate">
+                        <div className="font-serif-display text-lg font-light text-charcoal leading-tight truncate">
                             {isModal && <span className="mr-1.5 opacity-40">◎</span>}
                             {name}
                         </div>
@@ -124,7 +124,7 @@ export function CountryDetailCard({ entity, variant = 'default' }: CountryDetail
             {/* ── Data Grid ───────────────────────────────────── */}
             <div className="grid grid-cols-3 gap-px bg-charcoal">
                 {DATA_FIELDS.map((field) => (
-                    <div key={field.key} className={cn("bg-paper-white px-2", isModal ? "py-2" : "py-1.5")}>
+                    <div key={field.key} className={cn("bg-paper-white px-2", isModal ? "py-1.5" : "py-1")}>
                         <div className="text-[9px] uppercase opacity-50 tracking-wider leading-tight font-mono truncate">
                             {field.label}
                         </div>

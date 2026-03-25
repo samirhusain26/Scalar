@@ -54,25 +54,25 @@ export function VisualizationModal({
                         "fixed z-50 focus:outline-none",
                         "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
                         "w-[95vw] max-w-4xl",
-                        "flex flex-col max-h-[90dvh]",
+                        "flex flex-col max-h-[85dvh]",
                         "border border-charcoal bg-paper-white shadow-hard",
                         "data-[state=open]:animate-in data-[state=closed]:animate-out",
                         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
                         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
                     )}
                 >
-                    {/* Sticky header */}
-                    <div className="sticky top-0 z-10 bg-charcoal text-paper-white shrink-0">
-                        <div className="flex items-center justify-between px-6 py-4">
-                            <Dialog.Title className="font-serif-display font-black text-2xl uppercase tracking-wider">
+                    {/* Slim header banner */}
+                    <div className="sticky top-0 z-10 bg-paper-white border-b border-graphite shrink-0">
+                        <div className="flex items-center justify-between px-3 py-2">
+                            <Dialog.Title className="font-mono text-[11px] uppercase tracking-widest text-charcoal/60">
                                 {title}
                             </Dialog.Title>
                             <Dialog.Close
                                 onClick={onClose}
-                                className="text-paper-white/70 hover:text-paper-white transition-colors touch-manipulation p-1 focus:outline-none"
+                                className="text-charcoal/50 hover:text-charcoal transition-colors touch-manipulation p-1 focus:outline-none"
                                 aria-label="Close"
                             >
-                                <X size={20} />
+                                <X size={16} />
                             </Dialog.Close>
                         </div>
                     </div>
@@ -84,7 +84,7 @@ export function VisualizationModal({
                     </Dialog.Description>
 
                     {/* Body */}
-                    <div className="overflow-y-auto flex-1 p-4 md:p-6">
+                    <div className="overflow-y-auto flex-1 p-2 md:p-4">
                         {showConfirmation ? (
                             <div className="flex flex-col items-center gap-6 py-4">
                                 <p className="text-sm font-mono text-charcoal/70 text-center max-w-sm leading-relaxed">

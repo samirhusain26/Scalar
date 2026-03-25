@@ -163,6 +163,7 @@ function handleHigherLower(
             value: gNum,
             displayValue: numberToLetter(gNum),
             percentageDiff: absDiff,
+            categoryMatch: status === 'HOT',
         };
     }
 

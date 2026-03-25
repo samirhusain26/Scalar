@@ -1,6 +1,6 @@
 const legend = [
   { color: 'bg-thermal-green', label: 'Exact' },
-  { color: 'bg-thermal-orange', label: 'Hot' },
+  { color: 'bg-cat-match', label: 'Hot' },
   { color: 'bg-amber-100 border border-dashed border-amber-400', label: 'Near' },
   { color: 'bg-white border border-charcoal/20', label: 'Miss' },
 ];
