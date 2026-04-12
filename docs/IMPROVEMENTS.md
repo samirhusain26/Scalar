@@ -16,6 +16,10 @@ Phases are ordered by complexity and dependency. Each phase is independently shi
 - **Category-Specific Share Messages** (Phase 1): `CATEGORY_ICONS` (🌍/⚗️) in `dailyUtils.ts`; `generateShareText()` uses category label + icon.
 - **Input Refocus After Guess** (Phase 1): `GameInput.tsx` refocuses and scrolls to top after submission while PLAYING.
 - **PWA Install Modal** (Phase 8): `PWAInstallModal.tsx` — intercepts `beforeinstallprompt`, shows on 2nd/3rd visit, platform-specific instructions (iOS vs Android).
+- **Difficulty Modes** (Phase 4): Novice, Scholar, and Prodigy modes with scaling feedback specificity and visualization costs.
+- **Simplified Hint System** (Phase 4): Uniform +1 move cost per hint across all difficulty levels.
+- **Visualization Cost Scaling** (Phase 4): Difficulty-based move costs for World Map and Periodic Table (Novice: 0, Scholar: +3, Prodigy: +10).
+- **Category Toggle Icons** (Phase 1): 🌍 for Countries, ⚗️ for Elements added to the selector.
 
 ---
 
@@ -29,7 +33,6 @@ Small, self-contained improvements with no architecture changes. Each item is 1�
 - **Input suggestion highlighting**: Bold/highlight the matched substring within each suggestion pill (e.g., typing "bra" shows **Bra**zil). Improves scan speed.
 
 ### Category Selector
-- **Add icons to category toggle**: Globe (🌍) for Countries, Atom (⚗️) for Elements. (Icons are already in `dailyUtils.ts` as `CATEGORY_ICONS` — reuse there.)
 - **Dropdown fallback for scale**: When there are more than 4 categories, switch the `CategoryToggle` from a segmented button group to a styled `<select>` or dropdown. Prevents the header from overflowing.
 
 ### Mobile UX
@@ -78,30 +81,12 @@ All data stored in `localStorage`. No backend required.
 
 ---
 
-## Phase 4 — Difficulty Modes & Settings
+## Phase 4 — Settings & Refinement
 
 ### Settings Modal
 - Create a `SettingsModal` (gear icon in header) as a Radix Dialog.
 - Houses: Difficulty selector, Dark Mode toggle, Reset Local Data (danger button).
 - Dark mode: add `[data-theme="dark"]` overrides in `index.css` (`--paper-white: #18181B; --charcoal: #FAFAF9`). Toggle via `localStorage` preference + `prefers-color-scheme` auto-detection.
-
-### Difficulty State
-- Add `difficulty: 'NOVICE' | 'SCHOLAR' | 'GRANDMASTER'` to `GameState` in `gameStore.ts`.
-- Persisted in `localStorage` with game state. Changing difficulty triggers a game reset.
-
-### Novice Mode
-- Widen HOT distance threshold: < 2,000 km (vs. current 1,000 km).
-- Widen HOT numeric threshold: broader percentage range.
-- Start game with 1 random attribute already revealed (free, no credit cost).
-- Increase starting Hint Credits to 5.
-
-### Scholar Mode (Default)
-- Existing thresholds and 3 Hint Credits. No changes.
-
-### Grandmaster Mode
-- Starting Hint Credits: 0.
-- Hint move cost: 5 moves (vs. current 3).
-- Strict validation: prevent submitting a guess that contradicts a previously EXACT feedback (e.g., if Continent=EXACT Asia, can't guess a European country).
 
 ---
 
@@ -152,15 +137,10 @@ After each guess, show a small aggregate row below the guess count: how many cel
 - Track unlocked entities per category in `localStorage` (`scalar-collection`).
 - Show progress: "Countries: 15 / 196 Collected" per category.
 
-### Map Visualization (Countries)
-- Integrate `react-simple-maps` to show a world map during gameplay.
-- Highlight guessed countries with their feedback color (green/orange/amber/white).
-- Display alongside or below the guess grid.
-
 ### Intel Dossier / Fun Facts
 - Add a `fact_text` column to enriched CSVs for each category (one interesting sentence per entity).
 - Add an "Intel" button (folder icon) that reveals a styled slide-out card with the fun fact.
-- Costs 1 credit or +3 moves (same as existing hint system).
+- Costs +1 move (same as hint system).
 
 ### Receipt Printer Animation
 - Animate the `GameOverModal` body: results slide in from the top like a thermal receipt printing.
@@ -239,4 +219,4 @@ Not a committed phase — revisit when the web product is stable. Capacitor wrap
 - Sign up for Google AdMob.
 - Install AdMob Capacitor plugin.
 - Create `AdManager` utility.
-- Wire "Watch Ad for a Free Hint" option into `MajorHintModal` (alongside or replacing the credit system on native).
+- Wire "Watch Ad for a Free Hint" option into `MajorHintModal` (alongside or replacing the move cost system on native).

@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import posthog from 'posthog-js'
 import Clarity from '@microsoft/clarity'
 import './index.css'
@@ -18,6 +19,8 @@ posthog.init('phc_LxLdZ202oT4cxWm9i2Vc32d8reEGzPxexALdl6uwQPj', {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 )

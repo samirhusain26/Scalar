@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Share2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toPng } from 'html-to-image';
@@ -40,7 +41,6 @@ interface GameOverModalProps {
     dateString: string;
     shareCardRef: React.RefObject<HTMLDivElement | null>;
     onReset: () => void;
-    onSwitchToFreePlay: () => void;
     /** Called when the user closes the modal via X / overlay in daily mode. */
     onDismissDaily: () => void;
 }
@@ -55,9 +55,9 @@ export function GameOverModal({
     dateString,
     shareCardRef,
     onReset,
-    onSwitchToFreePlay,
     onDismissDaily,
 }: GameOverModalProps) {
+    const navigate = useNavigate();
 
     const [blobReady, setBlobReady] = useState(false);
     const [shareState, setShareState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
@@ -274,18 +274,26 @@ export function GameOverModal({
 
                         {activeMode === 'daily' ? (
                             <button
-                                onClick={onSwitchToFreePlay}
+                                onClick={() => navigate('/continuum')}
                                 className="w-full px-4 py-2 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
                             >
-                                Try Free Play →
+                                Play Continuum →
                             </button>
                         ) : (
-                            <button
-                                onClick={onReset}
-                                className="w-full px-4 py-2 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
-                            >
-                                Play Again
-                            </button>
+                            <>
+                                <button
+                                    onClick={onReset}
+                                    className="w-full px-4 py-2 border border-charcoal font-bold hover:bg-charcoal hover:text-paper-white transition-colors uppercase text-sm tracking-wide"
+                                >
+                                    Play Again
+                                </button>
+                                <button
+                                    onClick={() => navigate('/continuum')}
+                                    className="text-center text-[10px] font-bold uppercase tracking-widest text-charcoal/40 hover:text-charcoal/70 transition-colors underline underline-offset-2"
+                                >
+                                    Try Continuum →
+                                </button>
+                            </>
                         )}
 
                         <a

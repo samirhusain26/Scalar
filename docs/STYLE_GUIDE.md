@@ -202,6 +202,7 @@ Each button: px-3 py-1.5 text-xs font-bold uppercase tracking-wide font-mono
 Active:   bg-charcoal text-paper-white
 Inactive: bg-transparent text-charcoal hover:bg-charcoal/10
 Divider between buttons: border-r border-charcoal
+Icons: 🌍 for Countries, ⚗️ for Elements
 ```
 
 ---
@@ -215,10 +216,10 @@ Divider between buttons: border-r border-charcoal
 **Desktop (md+) — single row:**
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│ [Countries | Elements]   [____Type your guess..._____]   Moves 3 │ ■■■ │ [?] │
+│ [🌍 Countries | ⚗️ Elements]   [____Type your guess..._____]   Moves 3 │ [?] │
 └──────────────── solid 2px charcoal border ───────────────────────┘
 ```
-- **Left:** `CategoryToggle` segmented button group (`shrink-0`)
+- **Left:** `CategoryToggle` segmented button group (`shrink-0`) with icons
 - **Center:** GameInput (`w-48 md:w-72 lg:w-80`, absolutely positioned)
 - **Right:** Scoreboard + graphite divider + `?` How to Play button (`w-7 h-7 border border-charcoal`)
 - Bottom border: `border-b-2 border-charcoal` (solid, not gradient)
@@ -226,9 +227,9 @@ Divider between buttons: border-r border-charcoal
 **Mobile (< md) — stacked centered rows:**
 ```
 ┌──────────────────────┐
-│ [Countries | Elements]│  ← Row 1: CategoryToggle (hides on input focus)
+│ [🌍 Countries | ⚗️ Elements]│  ← Row 1: CategoryToggle (hides on input focus)
 │  [_Type guess..._]   │  ← Row 2: input
-│  Moves 3 │ ■■■ │ [?] │  ← Row 3: score + ? button (hides on input focus)
+│  Moves 3 │ [?]       │  ← Row 3: score + ? button (hides on input focus)
 └── venn gradient line ─┘
 ```
 - Bottom border: `border-b-venn` gradient
@@ -266,15 +267,11 @@ Positioned above the header, centered:
 Inline with header, right-aligned:
 
 ```
-Moves 3 │ ■ ■ ■
+Moves 3
 ```
 
 - "Moves" label: `text-xs uppercase text-charcoal/50`
 - Moves value: `text-base tabular-nums`
-- Divider: `h-4 w-px bg-graphite`
-- Credit squares: 3 × `w-2.5 h-2.5 border border-charcoal` (no "Hints" label)
-  - Filled (credit available): `bg-charcoal`
-  - Empty (credit used): `bg-transparent`
 
 ### Color Legend
 
@@ -330,7 +327,7 @@ A data card representing a single guess. No rounded corners, no soft shadows.
 │ BRAZIL                           #03 │  ← Header
 ├──────────────────────────────────────┤
 │ LOCATION (HEMISPHERE | CONTINENT | REGION)   👁 │
-│ Southern • Americas • South America          │  ← merged row
+│ Northern • Asia • Eastern Asia          │  ← merged row
 ├─────────────────┬────────────────────┤
 │ AREA            │ POPULATION     👁  │  ← Eye icon on ALL cells
 │ 8.5M  ↑ ~5×    │ 213M   ↓ ~2×      │  ← split: value left, arrow+tier right
@@ -609,8 +606,8 @@ Passport / data card aesthetic for the countries category win state:
 │                                          │
 │  SCORING & HINTS                         │
 │  ─────────────────────────               │
-│  [move costs table: +1/+0/+3/—]          │
-│  [credit squares + Eye icon description] │
+│  [move costs table: +1/+1/MapCost]       │
+│  [Eye icon description]                  │
 │                                          │
 │  [          Got It          ]            │  ← inline at end of content
 └──────────────────────────────────────────┘
@@ -632,10 +629,10 @@ Passport / data card aesthetic for the countries category win state:
 │  REVEAL EXACT VALUE?             │  ← Fraunces serif, font-black uppercase
 │                                  │
 │  Reveal the exact value for      │
-│  Population? This will use       │
-│  1 free hint credit (3 left).    │  ← or "+3 moves" if no credits
+│  Population? This will cost      │
+│  +1 move.                        │
 │                                  │
-│  [ Cancel ]  [ Reveal (Free) ]   │  ← or "Reveal (+3 moves)"
+│  [ Cancel ]  [ Reveal (+1 move) ]│
 └──────────────────────────────────┘
 ```
 
@@ -773,5 +770,39 @@ All icons from **Lucide React**, rendered small with monochrome charcoal:
 11. **Category-specific win/forfeit cards** — Elements gets `ElementCellCard` (periodic table aesthetic); Countries gets `CountryDetailCard` (passport aesthetic). Used in both GameOverModal and RevealAnswerModal.
 12. **Proximity tier strip** — HowToPlayModal renders tiers as a horizontal scrollable strip (~10% → ~100×) with a dark-to-light gradient conveying "closer to further".
 13. **Color legend always visible** — `ColorLegend` strip above the game grid; `opacity-70`, `border-b border-graphite`.
-14. **Segmented category toggle** — `CategoryToggle` with charcoal-filled active state replaces `<select>` dropdown.
+14. **Segmented category toggle** — `CategoryToggle` with icons and charcoal-filled active state replaces `<select>` dropdown.
 15. **Eye icon tooltip** — Desktop only: "Reveal" text badge appears above Eye icon on hover (`absolute bottom-full` tooltip).
+
+---
+
+## Continuum — Design Addenda
+
+Continuum shares the full Scalar design system with the following differences:
+
+### Typography
+- **No Fraunces serif** — Continuum uses `font-mono` (Geist Mono) exclusively. There is no serif display heading. This reinforces the "scientific instrument / calibration readout" sub-aesthetic vs Scalar's "scientific journal" aesthetic.
+- **Lowercase wordmark** — `ContinuumLogo` is lowercase `continuum` (not uppercase). The only lowercase logo in the suite.
+
+### Logo (`ContinuumLogo.tsx`)
+- `font-mono font-bold` wordmark, lowercase, `tracking-[0.08em]`
+- A single teal (`#14B8A6`) decimal point inserted at a random position between letters on every mount
+- Superscript label: `daily · calibration` (`text-[8px] text-charcoal/25 tracking-[0.25em]`)
+- Subscript axis rule: `rank · place · repeat` flanked by `h-px bg-charcoal/12` lines
+
+### Layout
+- **Viewport-locked** — `h-dvh` (mobile) / `h-[calc(100dvh-3.5rem)]` (desktop). Does not scroll.
+- **Split panel** — 60% left (timeline), 40% right (incoming card). Both within `max-w-sm md:max-w-md mx-auto`.
+- **Mobile primary** — hamburger navigation, full-width layout. Desktop constrained to phone-width column.
+
+### Drop Gaps
+- Boundary gaps (top/bottom): `h-8`, bordered pill label always visible ("▲ highest" / "▼ lowest")
+- Middle gaps: `h-5`, `·` dot
+- Active gap: `h-12`, teal `h-0.5` rule, teal bordered pill
+
+### Error State
+- Incorrectly placed cards: `border-l-2 border-l-red-500` (permanent, visible after auto-correction)
+- All other placed cards: plain, no special border or tag
+
+### Drag Ghost
+- Fixed-position clone: `bg-charcoal text-paper-white`, `shadow-[3px_3px_0px_0px_#F97316]`
+- Follows pointer via `left/top` CSS on a `z-50 pointer-events-none` wrapper

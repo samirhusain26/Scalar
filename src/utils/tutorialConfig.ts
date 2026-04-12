@@ -30,7 +30,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
         targetSelector: 'game-header',
         tooltipPosition: 'bottom',
         title: 'Your Controls',
-        body: 'Switch categories on the left, type a guess in the center input and press Enter to submit, and track your moves and hint credits on the right.',
+        body: 'Switch categories on the left, type a guess in the center input and press Enter to submit, and track your moves on the right.',
     },
     {
         id: 'legend',

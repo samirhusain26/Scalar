@@ -110,6 +110,10 @@
   border-image: linear-gradient(90deg, transparent, #14B8A660, #EAB30850, #F472B660, transparent) 1;
 }
 
+@utility safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 @keyframes subtle-glow {
   0%, 100% { box-shadow: 0 0 8px rgba(234, 179, 8, 0.3); }
   50% { box-shadow: 0 0 16px rgba(234, 179, 8, 0.5); }
@@ -132,6 +136,41 @@
 
 .animate-card-enter {
   animation: card-enter 0.25s ease-out forwards;
+}
+
+/**
+ * Diagonal stripe pattern for incorrectly-placed cards on the LOST reveal screen.
+ * Subtle charcoal lines on paper-white — "folded" / flagged-wrong visual.
+ */
+@utility bg-folded-pattern {
+  background-color: #FAFAF9;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0px,
+    transparent 5px,
+    rgba(24, 24, 27, 0.055) 5px,
+    rgba(24, 24, 27, 0.055) 9px
+  );
+}
+
+/**
+ * E-ink error flicker — rapid full-invert pulses mimicking an e-ink display
+ * refresh when a card is placed in the wrong position.
+ * Uses step-start so each transition is a hard instant flip (no gradients).
+ */
+@keyframes eink-error {
+  0%   { filter: invert(0); }
+  14%  { filter: invert(1); }
+  28%  { filter: invert(0); }
+  42%  { filter: invert(1); }
+  57%  { filter: invert(0); }
+  71%  { filter: invert(1); }
+  85%  { filter: invert(0); }
+  100% { filter: invert(0); }
+}
+
+.animate-eink-error {
+  animation: eink-error 0.42s step-start forwards;
 }
 
 @keyframes card-body-expand {

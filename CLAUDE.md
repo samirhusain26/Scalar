@@ -1,28 +1,38 @@
-# Scalar - Project Context
+# Scalar — Project Context
 
 > **Maintenance rule**: When making significant changes (new files, new dependencies, architecture changes, new features), update this file to reflect those changes before committing.
 
 ## What Is This Project?
-Scalar is a client-side deductive logic guessing game (similar to Wordle but with numerical attributes). Players guess entities (countries, chemical elements) and receive feedback via multiple logic systems — directional arrows, proximity tiers, geographic distance, category matching, and set intersection — to deduce the target. Features a "Total Moves" scoring system where players try to minimize their move count.
+
+This repo contains **two games** sharing a single React app, design system, and data pipeline:
+
+- **Scalar** (`/`) — Deductive logic guessing game (Wordle-style with numerical attributes). Guess countries or elements; receive structured feedback to narrow down the target. Goal: fewest total moves.
+- **Continuum** (`/continuum`) — Daily calibration game. Three anchor cards set the scale. Drag incoming cards to the correct position in a ranked timeline. Goal: most correct placements before losing 3 lives.
+
+Both games share: Tailwind v4 design system, `gameData.json`, Zustand stores, VennBackground, footer links, and the GameNav bottom bar (desktop).
 
 ## Repository Layout
 ```
 Scalar/
 ├── CLAUDE.md                        # THIS FILE
-├── GAMEPLAY.md                      # Detailed gameplay logic & scoring documentation
-├── STYLE_GUIDE.md                   # Visual design system & component specifications
+├── GAMEPLAY.md                      # Scalar gameplay logic & scoring
+├── CONTINUUM.md                     # Continuum design, gameplay & features
+├── STYLE_GUIDE.md                   # Shared visual design system
 ├── fetch_data.py                    # Python: CSV files -> gameData.json
 ├── data/                            # Source CSVs (schema + entity data per category)
 └── src/
     ├── main.tsx                     # Entry point
-    ├── App.tsx                      # Root component: header, category/mode selectors, grid, input, modals
+    ├── App.tsx                      # Router: / → ScalarGame, /continuum → ContinuumGame
     ├── index.css                    # Tailwind v4 config + CSS custom properties + custom utilities
     ├── types.ts                     # All shared types
     ├── assets/data/
     │   ├── gameData.json            # Auto-generated game data (via fetch_data.py)
     │   └── countries-110m.json      # World TopoJSON for map visualization
+    ├── pages/
+    │   └── ScalarGame.tsx           # Scalar page: header, grid, input, modals
     ├── store/
-    │   └── gameStore.ts             # Zustand store: slot-based architecture, localStorage persistence (version 15)
+    │   ├── gameStore.ts             # Scalar: Zustand, slot-based, localStorage (version 15)
+    │   └── continuumStore.ts        # Continuum: Zustand, NOT persisted
     ├── utils/
     │   ├── gameLogic.ts             # Pure functions: getFeedback, checkWinCondition
     │   ├── feedbackColors.ts        # Color helpers: getCellColor, getStandardStatusClass, etc.
@@ -36,10 +46,16 @@ Scalar/
     │   ├── tutorialConfig.ts        # 6-step tutorial config
     │   ├── analytics.ts             # Vercel Analytics event wrapper
     │   ├── cn.ts                    # clsx + tailwind-merge
-    │   └── countryCodeMap.ts        # M49 → ISO Alpha-3 mapping
+    │   ├── countryCodeMap.ts        # M49 → ISO Alpha-3 mapping
+    │   └── continuumConfig.ts       # CONTINUUM_METRICS allowlist per category
     └── components/
         ├── ui/                      # Shadcn/UI primitives
-        ├── CategoryToggle.tsx       # Category selection (countries/elements)
+        ├── GameNav.tsx              # Desktop bottom nav bar (Scalar ↔ Continuum)
+        ├── ScalarLogo.tsx           # Shared SVG Venn logo (no text baked in)
+        ├── VennBackground.tsx       # Shared animated Venn background (both games)
+        ├── ContinuumGame.tsx        # Continuum full UI (layout, drag-drop, LOST screen)
+        ├── ContinuumLogo.tsx        # Continuum wordmark with random decimal point
+        ├── CategoryToggle.tsx       # Category selection (🌍 Countries / ⚗️ Elements)
         ├── ModeToggle.tsx           # Daily/freeplay toggle
         ├── DifficultyDropdown.tsx   # Novice/Scholar/Prodigy selector
         ├── ColorLegend.tsx          # Exact/Hot/Near/Miss legend strip
@@ -52,13 +68,13 @@ Scalar/
         ├── WhatsNewModal.tsx        # Changelog modal for returning users
         ├── RevealAnswerModal.tsx    # Forfeit/reveal modal
         ├── TutorialOverlay.tsx      # First-time spotlight tutorial
-        ├── Scoreboard.tsx           # Moves count + credit squares
+        ├── Scoreboard.tsx           # Moves count
         ├── ShareCard.tsx            # Hidden off-screen card for html-to-image capture
         ├── CountryDetailCard.tsx    # Passport-style country card (win/reveal)
         ├── ElementCellCard.tsx      # Periodic table cell card (win/reveal)
         ├── WorldMapView.tsx         # d3-geo SVG world map
         ├── PeriodicTableView.tsx    # CSS Grid periodic table
-        └── VisualizationModal.tsx   # Map/table modal with ad placeholder gate
+        └── VisualizationModal.tsx   # Map/table modal with difficulty-based move cost
 ```
 
 ## Tech Stack
@@ -120,7 +136,7 @@ python fetch_data.py  # CSV files -> gameData.json
 
 **Persisted state**: `activeCategory`, `activeMode`, `difficulty` (global), `daily` slots, `freeplay` slots, `dailyMeta` (streak tracking)
 
-**Flat projection** (synced via `syncFlat()`): `targetEntity`, `guesses`, `gameStatus`, `moves`, `credits`, `majorHintAttributes`
+**Flat projection** (synced via `syncFlat()`): `targetEntity`, `guesses`, `gameStatus`, `moves`, `majorHintAttributes`
 
 **Key actions**: `setActiveMode`, `setActiveCategory`, `setDifficulty`, `initializeApp`, `submitGuess`, `revealMajorHint`, `revealAnswer`, `resetGame`, `startChallengeGame`
 
@@ -141,13 +157,13 @@ Dispatch pattern based on `logicType`: `getFeedback(target, guess, schema)` iter
 
 ## Scoring & Difficulty
 
-**Scoring**: +1 move per guess. Hints: free if credits > 0 (consumes 1), else +3 moves. Forfeit: moves unchanged.
+**Scoring**: +1 move per guess. Hints: +1 move per revealed attribute. World Map / Periodic Table: Free (Novice), +3 moves (Scholar), +10 moves (Prodigy). Forfeit: moves unchanged.
 
-| Difficulty | Credits | Suggestions | Hidden Columns |
-|-----------|---------|-------------|----------------|
-| Novice | 5 | 12 | none |
-| Scholar (default) | 3 | 6 | none |
-| Prodigy | 0 | 0 | countries: govt_type, borders, first_letter, timezones; elements: AtomicNumber, StandardState |
+| Difficulty | Suggestions | Hidden Columns |
+|-----------|-------------|----------------|
+| Novice | 12 | none |
+| Scholar (default) | 6 | none |
+| Prodigy | 0 | countries: govt_type, borders, first_letter, timezones; elements: AtomicNumber, StandardState |
 
 Locked once `moves > 0`. Config in `difficultyConfig.ts`.
 
@@ -181,6 +197,16 @@ Locked once `moves > 0`. Config in `difficultyConfig.ts`.
 - **Puzzle numbering**: Epoch = 2026-02-25, Puzzle #1 = 2026-02-26
 - **Challenge URLs**: `encodeChallenge(cat, id, moves?)` → Base64 `{c, i, m?}` JSON. `m` optional for challenger score.
 - `credentials.json` is gitignored (legacy Google Sheets access)
+
+## Continuum — Key Gotchas
+
+- **Not persisted** — `continuumStore` has no localStorage. Every page load is a fresh game.
+- **Daily only** — no freeplay, no manual category/attribute selection. `startDailyGame()` picks both via PRNG from `CONTINUUM_METRICS`.
+- **Display is reversed** — `placedCards` is ascending in the store; UI renders `[...placedCards].reverse()` (highest at top). Gap index translation: `store_index = placedCards.length - visual_gap_index`.
+- **`IDLE` is transient** — component's `useEffect` immediately calls `startDailyGame()` when `status === 'IDLE'`, including after reset.
+- **No REF styling** — anchor cards look identical to correctly placed cards. Only incorrectly placed cards get a red left border.
+- **Haptics** — `navigator.vibrate` works on Android only; iOS silently ignores it.
+- **Adding a new Continuum metric** — add to `CONTINUUM_METRICS` in `continuumConfig.ts`. Must be purely numeric, >65% value uniqueness, >70% data coverage.
 
 ## Common Task Patterns
 

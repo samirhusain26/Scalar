@@ -41,7 +41,7 @@
 
 **Scalar** is a deductive logic game inspired by Wordle, but instead of words, players guess **entities** (countries, chemical elements) based on a rich feedback loop of attribute comparisons. Each guess reveals feedback via five logic systems — higher/lower arrows, proximity tiers, geographic distance gradients, category matching, and set intersection — enabling players to narrow down the target through logical deduction.
 
-The game uses a **Total Moves scoring system** — every guess costs +1 move, and players start with 3 free hint credits. Once credits are spent, hints cost additional moves. The goal is to solve the puzzle in as few total moves as possible.
+The game uses a **Total Moves scoring system** — every guess costs +1 move, and revealing an attribute via a hint also costs +1 move. Visualizations (World Map or Periodic Table) have a move cost that scales with difficulty: free on Novice, +3 moves on Scholar, and +10 moves on Prodigy. The goal is to solve the puzzle in as few total moves as possible.
 
 The UI features a responsive card-based layout with a high-contrast **"Thermal E-Paper / Scientific Journal"** aesthetic — charcoal ink on paper-white canvas, sharp corners, monospaced typography, and thermal feedback colors (green, orange, amber, white).
 
@@ -55,15 +55,16 @@ A hidden target entity is selected at random from the active category. Identify 
 
 ### How to Play
 
-1. **Select a category** — Countries or Elements. Each has its own attribute schema with unique feedback logic.
+1. **Select a category** — 🌍 Countries or ⚗️ Elements. Each has its own attribute schema with unique feedback logic.
 2. **Submit a guess** — Type in the input field. An autocomplete dropdown surfaces up to 8 matching entities. Arrow keys to navigate, Enter to confirm. Each guess costs **+1 move**.
 3. **Read the feedback** — A new card appears in the grid with color-coded feedback per attribute:
    - **Arrows** (↑/↓) and proximity tier text for numeric fields
    - **Thermal colors** — green for exact, orange for hot, amber for near, white for miss
    - **Distance** shows geographic distance in km (Countries only)
-4. **Use hints strategically** — Tap the Eye icon on any attribute to reveal the exact target value (free with credits, else +3 moves).
-5. **Solve** — When every attribute is an exact match, the puzzle is complete. Your final move count is your score.
-6. **Give up** — Click "Reveal Answer" to see the target entity and all its attributes. This ends the game as a forfeit.
+4. **Use hints strategically** — Tap the Eye icon on any attribute to reveal the exact target value. Each hint costs **+1 move**.
+5. **Use visualizations** — Open the World Map or Periodic Table from the header to see all guesses and hints placed in context. The cost depends on difficulty (Novice: 0, Scholar: +3, Prodigy: +10 moves).
+6. **Solve** — When every attribute is an exact match, the puzzle is complete. Your final move count is your score.
+7. **Give up** — Click "Reveal Answer" to see the target entity and all its attributes. This ends the game as a forfeit.
 
 ### Feedback System
 
@@ -87,7 +88,7 @@ Each attribute is evaluated by its **logic type** and returns feedback with **st
 - Used for: Population, Area, Atomic #, Group, Period, Timezones, Borders, 1st Letter
 
 **GEO_DISTANCE** — Haversine great-circle distance between geographic coordinates.
-- Status tiers: EXACT (0 km), HOT (<1,000 km), NEAR (<3,000 km), MISS (≥3,000 km)
+- Status tiers: EXACT (0 km), HOT (<1,000 km), NEAR (<3000 km), MISS (≥3,000 km)
 - Cell color also encodes distance: green (<1000km) → amber (<3000km) → yellow (<5000km) → white
 - Used for: Distance column in Countries (virtual computed field between capitals)
 
@@ -170,8 +171,8 @@ Guess chemical elements. Feedback includes atomic properties and classification 
 - **Eye icon** appears on every attribute cell while the game is PLAYING (top-right corner, opacity-40)
 - Tap to reveal the **exact target value** for that attribute
 - A confirmation dialog shows the cost before applying
-- **Cost:** Free if hint credits are available (consumes 1 credit), otherwise **+3 moves**
-- The Location cell (merged Continent/Subregion/Hemisphere) reveals all 3 attributes at once for a single credit/cost
+- **Cost:** Exactly **+1 move** per attribute revealed
+- The Location cell (merged Continent/Subregion/Hemisphere) reveals all 3 attributes at once for +1 move
 - Once revealed, an inverted badge (charcoal background, white text, checkmark) shows the target value on that cell
 
 ### Scoring
@@ -181,15 +182,9 @@ Scalar uses a **Total Moves** scoring system — lower is better:
 | Action | Move Cost |
 |--------|-----------|
 | Submit a guess | +1 |
-| Reveal a hint (Eye icon) | Free (with credit) or +3 |
+| Reveal a hint (Eye icon) | +1 |
+| Use visualization (World Map / Periodic Table) | Novice: 0 / Scholar: +3 / Prodigy: +10 |
 | Reveal answer (forfeit) | Game ends as REVEALED |
-
-#### Free Hint Credits
-- Players start each game with **3 free hint credits**
-- Credits are consumed one at a time when using the Eye icon hint
-- Once spent, hints cost **+3 moves** each
-- Credits are displayed in the header as 3 filled/empty squares
-- Credits reset to 3 on new game or category change
 
 ### Winning, Forfeiting & Sharing
 
@@ -212,11 +207,11 @@ Scalar uses a **Total Moves** scoring system — lower is better:
 
 - **Five feedback logic types** — Higher/Lower, Exact Match, Category Match, Geographic Distance, and Set Intersection
 - **Total Moves scoring** — balance information gathering against move count
-- **3 free hint credits** per game — reveal any attribute at no move cost
 - **Eye icon hints** — tap any attribute to reveal the exact target value (mobile: always visible; desktop: shown on hover with tooltip)
+- **Difficulty-based visualization costs** — World Map and Periodic Table access costs moves on higher difficulties
 - **Guess card collapse/expand** — older cards auto-collapse to a colored summary strip to reduce clutter
 - **Color legend** — persistent Exact/Hot/Near/Miss swatch strip always visible above the grid
-- **Segmented category toggle** — charcoal-filled active state, no dropdown
+- **Segmented category toggle** — includes icons (🌍/⚗️), charcoal-filled active state
 - **Category-specific win/forfeit cards** — periodic table cell (Elements) or passport card (Countries)
 - **Card-based responsive layout** — 1 col (mobile), 2 col (tablet), 3 col (desktop)
 - **Geographic distance** — Countries uses Haversine distance with 4-tier color gradient
@@ -257,8 +252,10 @@ Scalar uses a **Total Moves** scoring system — lower is better:
 Scalar/
 ├── CLAUDE.md                        # Project context for AI assistants
 ├── README.md                        # This file
-├── GAMEPLAY.md                      # Detailed gameplay logic & scoring
-├── STYLE_GUIDE.md                   # Visual design system & component specs
+├── docs/                            # Documentation
+│   ├── GAMEPLAY.md                  # Detailed gameplay logic & scoring
+│   ├── STYLE_GUIDE.md               # Visual design system & component specs
+│   └── ...
 ├── fetch_data.py                    # Python: CSV -> gameData.json
 ├── package.json
 ├── data/
@@ -274,7 +271,7 @@ Scalar/
     ├── assets/data/
     │   └── gameData.json            # Auto-generated by fetch_data.py
     ├── store/
-    │   └── gameStore.ts             # Zustand store (version 13, localStorage)
+    │   └── gameStore.ts             # Zustand store (version 15, localStorage)
     ├── utils/
     │   ├── gameLogic.ts             # Feedback engine + game utilities
     │   ├── feedbackColors.ts        # Cell color logic
@@ -296,7 +293,7 @@ Scalar/
         ├── HowToPlayModal.tsx       # Instructions (auto-opens first visit)
         ├── MajorHintModal.tsx       # Hint cost confirmation
         ├── PrivacyPolicyModal.tsx   # Privacy policy
-        ├── Scoreboard.tsx           # Moves + hint credit squares display
+        ├── Scoreboard.tsx           # Moves display
         ├── ScalarLogo.tsx           # Venn diagram SVG logo
         ├── VennBackground.tsx       # Animated decorative background
         ├── CountryDetailCard.tsx    # Passport-style country card (win/forfeit modals)
@@ -356,7 +353,7 @@ type GameStatus = 'PLAYING' | 'SOLVED' | 'REVEALED';
 
 ### State Management
 
-The game uses **Zustand** with localStorage persistence (`src/store/gameStore.ts`, version 13):
+The game uses **Zustand** with localStorage persistence (`src/store/gameStore.ts`, version 15):
 
 ```typescript
 interface GameState {
@@ -365,7 +362,6 @@ interface GameState {
     guesses: GuessResult[];
     gameStatus: GameStatus;
     moves: number;
-    credits: number;
     majorHintAttributes: string[];
 
     setActiveCategory(category: string): void;
@@ -379,10 +375,10 @@ interface GameState {
 
 **Key behaviors:**
 - All display columns are **visible by default** — no hidden-column UI mechanic
-- Category changes trigger a full reset: new target, cleared guesses, moves 0, credits 3
-- `revealMajorHint` is the **only** hint action — uses 1 credit (0 moves) if available, else +3 moves
-- `revealAnswer()` sets moves to the entity count of the active category (not ∞)
-- Store persisted to localStorage key `scalar-game-storage`, version 13 (version bump clears stale state)
+- Category changes trigger a full reset: new target, cleared guesses, moves 0
+- `revealMajorHint` is the **only** hint action — always costs +1 move
+- `revealAnswer()` does not modify moves
+- Store persisted to localStorage key `scalar-game-storage`, version 15
 
 ### Game Logic — Feedback Engine
 
@@ -426,9 +422,9 @@ App
 ├── VennBackground               # Fixed animated SVG orbs
 ├── ScalarLogo                   # Venn diagram SVG (inside title area)
 ├── Sticky Header
-│   ├── CategoryToggle           # Segmented button group (left)
+│   ├── CategoryToggle           # Segmented button group (🌍 Countries / ⚗️ Elements)
 │   ├── GameInput                # Autocomplete + tag cloud dropdown (center)
-│   ├── Scoreboard               # Moves + 3 credit squares (right)
+│   ├── Scoreboard               # Moves display (right)
 │   └── "?" How to Play button   # With orange pulse dot for new visitors
 ├── Main
 │   ├── ColorLegend              # Persistent Exact/Hot/Near/Miss swatch strip

@@ -224,8 +224,7 @@ function InstructionsView() {
                         </div>
                         {[
                             { cost: '+1', action: 'Submit a guess' },
-                            { cost: '+0', action: 'Reveal a hint (using a free credit)' },
-                            { cost: '+3', action: 'Reveal a hint (no credits left)' },
+                            { cost: '+1', action: 'Reveal a hint (eye icon on any attribute)' },
                             { cost: '—', action: 'Reveal Answer forfeits the game' },
                         ].map(({ cost, action }) => (
                             <div key={action} className="flex items-center gap-4 px-3 py-2 border-b border-charcoal/10 last:border-0">
@@ -234,18 +233,9 @@ function InstructionsView() {
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-start gap-3 px-3 py-2.5 border border-charcoal/20">
-                        <div className="flex items-center gap-1 shrink-0 pt-0.5">
-                            {[0, 1, 2].map(i => (
-                                <div key={i} className="w-3 h-3 bg-charcoal border border-charcoal" />
-                            ))}
-                        </div>
-                        <p className="text-xs font-mono text-charcoal leading-relaxed">
-                            <strong>3 free hint credits</strong> per game. Tap the{' '}
-                            <Eye className="inline w-3 h-3 mx-0.5" /> eye icon on any
-                            cell to reveal the exact target value. Credits reset on new game.
-                        </p>
-                    </div>
+                    <p className="text-xs font-mono text-charcoal/70 leading-relaxed px-1">
+                        Tap the <Eye className="inline w-3 h-3 mx-0.5" /> eye icon on any attribute cell to reveal the exact target value. Each hint costs <strong>+1 move</strong>.
+                    </p>
                 </div>
             </section>
         </div>

@@ -17,26 +17,24 @@ import {
 } from '../utils/gameLogic';
 import { trackGameEvent } from '../utils/analytics';
 import { getLocalDateString, getDailyEntity } from '../utils/dailyUtils';
-import { DIFFICULTY_CONFIG, DEFAULT_DIFFICULTY } from '../utils/difficultyConfig';
+import { DEFAULT_DIFFICULTY } from '../utils/difficultyConfig';
 import gameDataRaw from '../assets/data/gameData.json';
 
 const gameData = gameDataRaw as unknown as GameData;
 
 // Bump this when schema/state shape changes to clear stale localStorage.
-const STORE_VERSION = 15;
+const STORE_VERSION = 16;
 
 const DEFAULT_CATEGORY = 'countries';
-const HINT_MOVE_COST = 3;
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
-function makeDefaultSlot(entity: Entity, difficulty: Difficulty = DEFAULT_DIFFICULTY): GameSlot {
+function makeDefaultSlot(entity: Entity, _difficulty: Difficulty = DEFAULT_DIFFICULTY): GameSlot {
     return {
         targetEntity: entity,
         guesses: [],
         gameStatus: 'PLAYING',
         moves: 0,
-        credits: DIFFICULTY_CONFIG[difficulty].credits,
         majorHintAttributes: [],
     };
 }
@@ -47,7 +45,6 @@ function syncFlat(slot: GameSlot): {
     guesses: GuessResult[];
     gameStatus: GameStatus;
     moves: number;
-    credits: number;
     majorHintAttributes: string[];
 } {
     return {
@@ -55,7 +52,6 @@ function syncFlat(slot: GameSlot): {
         guesses: slot.guesses,
         gameStatus: slot.gameStatus,
         moves: slot.moves,
-        credits: slot.credits,
         majorHintAttributes: slot.majorHintAttributes,
     };
 }
@@ -133,7 +129,6 @@ interface ScalarState {
     guesses: GuessResult[];
     gameStatus: GameStatus;
     moves: number;
-    credits: number;
     majorHintAttributes: string[];
 
     // Actions
@@ -143,6 +138,7 @@ interface ScalarState {
     initializeApp: () => void;
     submitGuess: (guess: Entity) => void;
     revealMajorHint: (attributeIds: string | string[]) => void;
+    addMoves: (n: number) => void;
     revealAnswer: () => void;
     resetGame: () => void;
     startChallengeGame: (category: string, entity: Entity) => void;
@@ -248,7 +244,7 @@ export const useGameStore = create<ScalarState>()(
                     if (state.gameStatus === 'PLAYING' && state.moves > 0) return;
                     if (difficulty === state.difficulty) return;
 
-                    // If freeplay with no guesses yet, reinitialize slot with new credits
+                    // If freeplay with no guesses yet, reinitialize slot with new difficulty settings
                     if (state.activeMode === 'freeplay' && state.gameStatus === 'PLAYING' && state.moves === 0) {
                         const newSlot = makeDefaultSlot(state.targetEntity, difficulty);
                         set({
@@ -340,18 +336,18 @@ export const useGameStore = create<ScalarState>()(
                         if (activeMode === 'daily') {
                             _updateDailyStreak(activeCategory, getLocalDateString());
                         }
-                        const { credits, majorHintAttributes, difficulty } = get();
+                        const { majorHintAttributes } = get();
                         trackGameEvent('game_completed', {
                             category: activeCategory,
                             moves: newMoves,
-                            used_hints: credits < DIFFICULTY_CONFIG[difficulty].credits || majorHintAttributes.length > 0,
+                            used_hints: majorHintAttributes.length > 0,
                         });
                     }
                 },
 
                 revealMajorHint: (attributeIds: string | string[]) => {
                     const state = get();
-                    const { activeMode, activeCategory, majorHintAttributes, moves, credits } = state;
+                    const { activeMode, activeCategory, majorHintAttributes, moves } = state;
 
                     if (state.gameStatus !== 'PLAYING') return;
 
@@ -359,24 +355,23 @@ export const useGameStore = create<ScalarState>()(
                     const newIds = ids.filter(id => !majorHintAttributes.includes(id));
                     if (newIds.length === 0) return;
 
-                    const allHintAttrs = [...majorHintAttributes, ...newIds];
                     const existingSlot = state[activeMode][activeCategory];
+                    const updatedSlot: GameSlot = {
+                        ...existingSlot,
+                        majorHintAttributes: [...majorHintAttributes, ...newIds],
+                        moves: moves + 1,
+                    };
 
-                    let updatedSlot: GameSlot;
-                    if (credits > 0) {
-                        updatedSlot = {
-                            ...existingSlot,
-                            majorHintAttributes: allHintAttrs,
-                            credits: credits - 1,
-                        };
-                    } else {
-                        updatedSlot = {
-                            ...existingSlot,
-                            majorHintAttributes: allHintAttrs,
-                            moves: moves + HINT_MOVE_COST,
-                        };
-                    }
+                    set(writeSlot(state, activeMode, activeCategory, updatedSlot));
+                },
 
+                addMoves: (n: number) => {
+                    const state = get();
+                    const { activeMode, activeCategory, moves } = state;
+                    if (state.gameStatus !== 'PLAYING' || n <= 0) return;
+
+                    const existingSlot = state[activeMode][activeCategory];
+                    const updatedSlot: GameSlot = { ...existingSlot, moves: moves + n };
                     set(writeSlot(state, activeMode, activeCategory, updatedSlot));
                 },
 

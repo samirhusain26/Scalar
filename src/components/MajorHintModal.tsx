@@ -4,13 +4,11 @@ import { cn } from '../utils/cn';
 interface MajorHintModalProps {
     isOpen: boolean;
     attributeLabel: string;
-    credits: number;
     onConfirm: () => void;
     onCancel: () => void;
 }
 
-export function MajorHintModal({ isOpen, attributeLabel, credits, onConfirm, onCancel }: MajorHintModalProps) {
-    const isFree = credits > 0;
+export function MajorHintModal({ isOpen, attributeLabel, onConfirm, onCancel }: MajorHintModalProps) {
     return (
         <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onCancel()}>
             <Dialog.Portal>
@@ -27,10 +25,7 @@ export function MajorHintModal({ isOpen, attributeLabel, credits, onConfirm, onC
                         Reveal Exact Value?
                     </Dialog.Title>
                     <Dialog.Description className="font-mono text-sm text-charcoal/70 mb-6">
-                        {isFree
-                            ? <>Reveal the exact value for <strong>{attributeLabel}</strong>? This will use <strong>1 free hint credit</strong> ({credits} remaining).</>
-                            : <>Revealing the exact value for <strong>{attributeLabel}</strong> will add <strong>+3 moves</strong> to your score.</>
-                        }
+                        Revealing the exact value for <strong>{attributeLabel}</strong> will add <strong>+1 move</strong> to your score.
                     </Dialog.Description>
                     <div className="flex gap-3">
                         <button
@@ -43,7 +38,7 @@ export function MajorHintModal({ isOpen, attributeLabel, credits, onConfirm, onC
                             onClick={onConfirm}
                             className="flex-1 px-4 py-2.5 bg-charcoal text-paper-white font-bold font-mono text-sm uppercase border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors"
                         >
-                            {isFree ? 'Reveal (Free)' : 'Reveal (+3)'}
+                            Reveal (+1)
                         </button>
                     </div>
                 </Dialog.Content>

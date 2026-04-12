@@ -13,6 +13,9 @@ interface VisualizationModalProps {
     guesses: GuessResult[];
     targetEntity: Entity;
     gameStatus: GameStatus;
+    /** Move cost to charge when the viz is first opened this session (0 = free). */
+    vizMoveCost: number;
+    onChargeCost: (n: number) => void;
 }
 
 // Tracks which categories have been confirmed this session (resets on page refresh)
@@ -25,6 +28,8 @@ export function VisualizationModal({
     guesses,
     targetEntity,
     gameStatus,
+    vizMoveCost,
+    onChargeCost,
 }: VisualizationModalProps) {
     const [confirmed, setConfirmed] = useState(false);
 
@@ -34,6 +39,9 @@ export function VisualizationModal({
     }, [isOpen, activeCategory]);
 
     const title = activeCategory === 'countries' ? 'World Map' : 'Periodic Table';
+
+    const isPlaying = gameStatus === 'PLAYING';
+    const costLabel = isPlaying && vizMoveCost > 0 ? `+${vizMoveCost} moves` : 'Free';
     const description = activeCategory === 'countries'
         ? 'Opens an interactive world map with your guessed countries highlighted. Scroll or pinch to zoom, drag to pan.'
         : 'Opens an interactive periodic table with your guessed elements highlighted. Scroll or pinch to zoom, drag to pan.';
@@ -41,6 +49,9 @@ export function VisualizationModal({
     const handleConfirm = () => {
         sessionConfirmed.add(activeCategory);
         setConfirmed(true);
+        if (isPlaying && vizMoveCost > 0) {
+            onChargeCost(vizMoveCost);
+        }
     };
 
     const showConfirmation = isOpen && !confirmed;
@@ -90,11 +101,16 @@ export function VisualizationModal({
                                 <p className="text-sm font-mono text-charcoal/70 text-center max-w-sm leading-relaxed">
                                     {description}
                                 </p>
+                                {isPlaying && vizMoveCost > 0 && (
+                                    <p className="text-base font-mono font-bold text-charcoal text-center max-w-sm">
+                                        Opening will add <strong>+{vizMoveCost} moves</strong> to your score.
+                                    </p>
+                                )}
                                 <button
                                     onClick={handleConfirm}
                                     className="w-full max-w-sm bg-charcoal text-paper-white py-3 font-mono font-bold text-sm uppercase tracking-widest hover:bg-paper-white hover:text-charcoal border border-charcoal transition-colors touch-manipulation focus:outline-none"
                                 >
-                                    Open {title}
+                                    Open {title}{isPlaying && vizMoveCost > 0 ? ` (${costLabel})` : ''}
                                 </button>
                             </div>
                         ) : (

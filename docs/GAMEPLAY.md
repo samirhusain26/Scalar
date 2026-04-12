@@ -2,7 +2,7 @@
 
 ## Overview
 
-Scalar is a deductive logic guessing game. A secret target entity is chosen at random from a category (countries or chemical elements). The player submits guesses and receives structured feedback on each attribute, using that feedback to narrow down the answer. The goal is to identify the target in as few **total moves** as possible.
+Scalar is a deductive logic guessing game. A secret target entity is chosen at random from a category (🌍 Countries or ⚗️ Elements). The player submits guesses and receives structured feedback on each attribute, using that feedback to narrow down the answer. The goal is to identify the target in as few **total moves** as possible.
 
 ---
 
@@ -23,7 +23,9 @@ Player is PLAYING
   |       |
   |       +---> Not all EXACT ---> Continue PLAYING
   |
-  +---> Use Hints (Eye icon, costs moves or credits)
+  +---> Use Hints (Eye icon, costs +1 move)
+  |
+  +---> Use Visualizations (Map/Table, costs moves based on difficulty)
   |
   +---> Reveal Answer (forfeit) ---> REVEALED (no score)
 ```
@@ -39,16 +41,9 @@ The player's score is their **total move count** — lower is better.
 | Action | Move Cost |
 |--------|-----------|
 | Submit a guess | +1 |
-| Reveal exact value (Eye icon hint, with free credit) | 0 |
-| Reveal exact value (Eye icon hint, no credits left) | +3 |
-| Reveal answer (forfeit) | Game ends as REVEALED — moves set to entity count |
-
-### Free Hint Credits
-
-- Each game starts with **3 free hint credits**
-- Credits are consumed (one at a time) when using the Eye icon hint
-- Credits reset to 3 on new game or category change
-- Displayed in the header Scoreboard as 3 filled/empty squares
+| Reveal exact value (Eye icon hint) | +1 |
+| Open World Map / Periodic Table | Novice: 0 / Scholar: +3 / Prodigy: +10 |
+| Reveal answer (forfeit) | Game ends as REVEALED |
 
 ---
 
@@ -220,10 +215,10 @@ For the virtual Distance field in Countries:
 
 For Continent, Subregion, and Hemisphere in Countries — binary coloring based on string match:
 
-| Condition | Color |
-|-----------|-------|
-| Exact text match | Green `#22C55E` |
-| No match | White |
+| Condition | Color | Class | Text |
+|-----------|-------|-------|------|
+| Exact text match | Green `#22C55E` | `bg-thermal-green` | White |
+| No match | White | `bg-white` | Charcoal |
 
 ### Category Match Colors (`uiColorLogic: 'CATEGORY_MATCH'`)
 
@@ -256,19 +251,10 @@ Available on **all cells** while the game is PLAYING. Triggered via the Eye icon
 - **Mobile**: Eye icon always visible (opacity-50).
 - **Desktop**: Eye icon hidden until cell hover; shows "Reveal" tooltip on hover.
 - Reveals the **exact target value** for that attribute as an inverted badge (charcoal background, paper-white text, checkmark icon)
-- **Cost:** Free if credits are available (consumes 1 credit, 0 moves), otherwise **+3 moves**
+- **Cost:** Exactly **+1 move** per revealed attribute
 - A confirmation dialog (MajorHintModal) shows the cost and attribute name before applying
-- The merged Location cell (Continent/Subregion/Hemisphere) reveals all 3 attributes at once for a single credit/cost
+- The merged Location cell (Continent/Subregion/Hemisphere) reveals all 3 attributes at once for a single +1 move cost
 - Once revealed, the badge persists across all guess cards for that attribute
-
-### Folded Attributes (Expandable Section)
-
-Some schema fields can be marked as `isFolded: true`, placing them in a collapsible "More clues" section at the bottom of each guess card.
-
-- Expanding the section is free — it's a UI affordance only
-- Each card manages its own expanded/collapsed state independently
-- Revealing the target value for a folded attribute uses the same Eye icon / credit / move cost system
-- **Currently: neither active category (countries, elements) has folded fields** — the "More clues" section does not appear in the current game
 
 ---
 
@@ -300,7 +286,7 @@ A chevron icon on the right side indicates the card is expandable.
 ## UI / Navigation
 
 ### Category Toggle
-Category selection uses a segmented toggle button (not a dropdown). The active category is shown with an inverted (charcoal-filled) style. Switching category resets the game.
+Category selection uses a segmented toggle button (not a dropdown). The active category is shown with an inverted (charcoal-filled) style. Includes icons: 🌍 for Countries and ⚗️ for Elements. Switching category resets the game.
 
 ### Color Legend
 A persistent **Color Legend** strip is displayed above the guess grid at all times. It shows the four thermal feedback colors (Exact / Hot / Near / Miss) for quick reference.
@@ -355,42 +341,3 @@ Guess chemical elements (from the periodic table). Active attributes (all visibl
 - **Block**: s, p, d, or f block
 - **Radioactive**: Yes/No — exact match
 - **Symbol matches name?**: Whether the chemical symbol is a direct abbreviation of the element name
-
----
-
-## Example Turn: Countries
-
-1. **Category:** Countries. Target is secretly "Japan".
-2. **Player guesses:** "Brazil"
-3. **Feedback received:**
-   - Location: "Northern • Asia • Eastern Asia" (target) vs "Southern • Americas • South America" (guess) — all parts MISS (white bg, gray text)
-   - Distance: 17,362 km — MISS (white bg), far
-   - Area: 8.5M ↓ ~5× — MISS (different area bucket, white bg) — target (377k km²) is much smaller
-   - Population: 213M ↑ ~2× — MISS (different population bucket) — target (125M) is somewhat less
-   - Landlocked?: No — EXACT (green)
-   - Govt. Type: "Federal Republic" vs target "Constitutional Monarchy" — MISS
-   - Borders: 10 ↓ ~2× — MISS — Japan has 0 borders (island nation)
-   - Timezones: 4 ↑ ~2× — MISS — Japan has 1
-   - 1st Letter: J (10) vs B (2) → J is later in alphabet → ↑, different range
-4. **Player uses this feedback**: Target is in Asia (not Americas), Northern hemisphere, smaller area, fewer people, no land borders, 1 timezone, letter J
-5. **Player guesses "China"** → gets HOT on some attributes, narrows further
-6. **Eventually**: All fields show EXACT (green) — puzzle solved!
-
----
-
-## Example Turn: Elements
-
-1. **Category:** Elements. Target is secretly "Gold" (Au, #79).
-2. **Player guesses:** "Iron" (Fe, #26)
-3. **Feedback received:**
-   - Atomic #: 26 ↑ ~2× — HOT (target 79 is in same group-block? depends on linked category) — arrow ↑ tells you to guess higher
-   - Group: 8 ↑ — target group 11, different GroupBlock → MISS
-   - Period: 4 ↑ — target period 6 → MISS (different period)
-   - Phase (STP): Solid — EXACT (green) — Gold is also Solid
-   - Element Family: Transition Metal — EXACT (green) — both Transition Metals
-   - Block: d-block — EXACT (green) — both d-block
-   - Radioactive: No — EXACT (green) — Gold is not radioactive
-   - Symbol matches name?: No — EXACT — both Fe and Au don't match their full names
-4. **Player knows**: Target is a d-block Transition Metal, Solid, not radioactive, symbol doesn't match name, higher atomic number (↑ from 26), higher period (↑ from 4), different group
-5. **Player narrows** to late transition metals in period 5-6, eventually guesses Gold
-6. **All EXACT** — puzzle solved!

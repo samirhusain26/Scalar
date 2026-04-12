@@ -35,6 +35,34 @@ export interface Release {
 
 export const RELEASES: Release[] = [
     {
+        version: 'v1.4',
+        date: '2026-04-11',
+        sections: [
+            {
+                label: 'New Features',
+                items: [
+                    {
+                        text: 'Category icons — 🌍 and ⚗️ now appear on the category toggle so you always know what you\'re playing',
+                        tag: 'new',
+                    },
+                ],
+            },
+            {
+                label: 'Improvements',
+                items: [
+                    {
+                        text: 'Hints simplified — revealing an attribute now always costs +1 move. No more free credit system.',
+                        tag: 'improvement',
+                    },
+                    {
+                        text: 'Map & Periodic Table move cost scales with difficulty — free on Novice, +3 on Scholar, +10 on Prodigy',
+                        tag: 'improvement',
+                    },
+                ],
+            },
+        ],
+    },
+    {
         version: 'v1.3',
         date: '2026-03-24',
         sections: [

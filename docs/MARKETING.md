@@ -31,7 +31,7 @@ The name "Scalar" refers to the numerical/scalar nature of the clues — arrows,
 
 ## Core Loop (How It Plays)
 
-1. **Pick a category** — Countries or Elements
+1. **Pick a category** — 🌍 Countries or ⚗️ Elements
 2. **Type a guess** — autocomplete dropdown narrows your choices as you type
 3. **Read the feedback card** — a card appears showing every attribute of your guess, color-coded by proximity to the target:
    - 🟩 **Green (Exact)** — perfect match on this attribute
@@ -39,8 +39,9 @@ The name "Scalar" refers to the numerical/scalar nature of the clues — arrows,
    - 🟨 **Amber (Near)** — outside the ballpark but not far (dashed border)
    - ⬜ **White (Miss)** — no match
 4. **Use arrows and tiers** — numeric fields show ↑/↓ and a proximity tier (~25%, ~2×, ~5×)
-5. **Use hint credits** — tap the eye icon on any attribute to reveal the exact target value. First 3 hints are free; after that, each hint costs +3 moves
-6. **Solve it** — when every attribute shows green, you win. Your score is your total move count — lower is better.
+5. **Use hints strategically** — tap the eye icon on any attribute to reveal the exact target value. Each hint costs **+1 move**.
+6. **Use visualizations** — open the World Map or Periodic Table from the header to see all your data in context. Access costs moves based on difficulty (Novice: 0, Scholar: +3, Prodigy: +10 moves).
+7. **Solve it** — when every attribute shows green, you win. Your score is your total move count — lower is better.
 
 ---
 
@@ -84,10 +85,10 @@ Guess any of 118 chemical elements from the periodic table. Each guess reveals:
 | Action | Cost |
 |--------|------|
 | Submit a guess | +1 move |
-| Use a hint (Eye icon) — with free credits | 0 moves (uses 1 credit) |
-| Use a hint — after credits run out | +3 moves |
+| Use a hint (Eye icon) | +1 move |
+| Use visualization (Map/Table) | Novice: 0 / Scholar: +3 / Prodigy: +10 |
 
-You start each game with **3 free hint credits**, shown as filled squares in the header. There's no penalty for using them wisely. Once spent, hints become expensive — so the interesting decision is whether to burn a credit or keep guessing.
+Every hint and visualization access carries a move cost, so the interesting decision is whether to pay for information or keep guessing.
 
 An expert player might solve Countries in 4-6 guesses. A casual player might take 10-15 guesses and a couple of hints.
 
@@ -103,7 +104,8 @@ An expert player might solve Countries in 4-6 guesses. A casual player might tak
 - **Direction arrows** — ↑ means the target is bigger/later/higher; ↓ means smaller/earlier/lower
 - **Geographic distance** — Countries tells you the exact km between capitals, with a 4-color gradient (green < 1,000km → amber < 3,000km → yellow < 5,000km → white = far)
 - **First letter** — A-Z position for country names with left/right arrows; great for early narrowing
-- **Eye-icon hints** — reveal any single attribute exactly, with a credit/cost system adding a strategic layer
+- **Eye-icon hints** — reveal any single attribute exactly for +1 move
+- **Difficulty-based move costs** — map and table access carries a move cost on higher difficulty levels
 - **Autocomplete input** — start typing; up to 8 suggestions appear; keyboard or tap to select
 - **Card collapse** — older guess cards auto-collapse into a color-square summary strip to keep the board clean
 
@@ -139,7 +141,7 @@ An expert player might solve Countries in 4-6 guesses. A casual player might tak
 | Daily challenge | ✅ Daily + unlimited free play | ✅ Once per day | ✅ | ✅ | ❌ |
 | Emoji grid share | ✅ (daily + free play) | ✅ | ❌ | ❌ | ❌ |
 | Challenge sharing | ✅ Score-embedded link | ❌ | ✅ Score | ❌ | ✅ |
-| Free hint system | ✅ 3 credits + cost | ❌ | ❌ | N/A | ❌ |
+| Hint system | ✅ +1 move per hint | ❌ | ❌ | N/A | ❌ |
 | Streak tracking | ✅ Per category | ✅ | ❌ | ❌ | ❌ |
 | No account needed | ✅ | ✅ | ✅ | ✅ | ✅ |
 
@@ -148,7 +150,7 @@ An expert player might solve Countries in 4-6 guesses. A casual player might tak
 2. **Quantitative proximity** — you know *how wrong* you are (~25% off vs. ~10×), not just wrong/right
 3. **Geographic distance** — km distance between capitals is a killer feature for Countries that map-based games handle differently
 4. **Daily challenge + unlimited free play** — one shared daily puzzle per category (with streak tracking) and unlimited free play, no trade-off required
-5. **Strategic hint system** — free credits + move-cost tradeoff creates genuine decisions
+5. **Strategic move costs** — every hint and visualization carries a move cost, rewarding logical, efficient play
 6. **Two categories with different mental models** — geography vs. chemistry, one game app
 
 ---
@@ -162,7 +164,7 @@ An expert player might solve Countries in 4-6 guesses. A casual player might tak
 - **Trivia enthusiasts** — Sporcle, QuizUp, pub quiz players
 
 ### Secondary
-- **Strategy game fans** — the scoring system and hint cost tradeoff rewards efficient play
+- **Strategy game fans** — the scoring system and move cost tradeoff rewards efficient play
 - **Educators** — could be used as a teaching tool for world geography or chemistry
 - **Competitive puzzle solvers** — the challenge link system supports head-to-head comparison
 
@@ -204,7 +206,7 @@ An expert player might solve Countries in 4-6 guesses. A casual player might tak
 
 1. **Start with Countries** — more intuitive attributes (km distance is instantly readable, "landlocked?" is concrete)
 2. **First guess: guess a large, central country** — something like France, Brazil, India, or China. Maximizes information across all attributes
-3. **Use free hints strategically** — "1st Letter" reveals a key piece of info early, narrowing ~200 countries to ~8
+3. **Use hints strategically** — "1st Letter" reveals a key piece of info early, narrowing ~200 countries to ~8
 4. **Watch the km distance drop** — the geographic distance with its color gradient is the most satisfying clue to watch collapse toward green
 
 ---
@@ -215,8 +217,8 @@ An expert player might solve Countries in 4-6 guesses. A casual player might tak
 - **118** chemical elements in the Elements category
 - **11** visible attributes per guess in Countries
 - **8** visible attributes per guess in Elements
-- **3** free hint credits per game
-- **+3 moves** per hint after credits are spent
+- **+1 move** per hint
+- **+0 / +3 / +10 moves** for visualizations (by difficulty)
 - **~4-6 moves** for an expert Countries solve
 - **~3-5 moves** for an expert Elements solve (smaller search space)
 - **0** accounts required, 0 ads, 0 cookies
@@ -280,8 +282,8 @@ is chosen at random. You guess, and each guess gives you a detailed feedback car
 Feedback is color-coded: green (exact), orange (hot/ballpark), amber (near), white (miss).
 Direction arrows tell you which way to adjust. Proximity tiers tell you by how much.
 
-There's no guess limit — your score is total moves (lower is better). 3 free hint
-credits per game; hints cost +3 moves after that.
+There's no guess limit — your score is total moves (lower is better). Every hint and
+visualization access carries a move cost, so efficiency is key.
 
 Daily challenge (one puzzle per day per category, with streak tracking) + unlimited
 free play. No account, no ads. [link]

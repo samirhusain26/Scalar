@@ -21,7 +21,6 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
     const targetEntity = useGameStore(state => state.targetEntity);
     const gameStatus = useGameStore(state => state.gameStatus);
     const activeMode = useGameStore(state => state.activeMode);
-    const credits = useGameStore(state => state.credits);
     const difficulty = useGameStore(state => state.difficulty);
     const revealMajorHint = useGameStore(state => state.revealMajorHint);
 
@@ -81,13 +80,10 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
 
     const handleConfirmMajorHint = () => {
         if (pendingMajorHint) {
-            const attributeKey = Array.isArray(pendingMajorHint) ? 'location' : pendingMajorHint;
             trackGameEvent('hint_confirmed', {
                 category: activeCategory,
                 mode: activeMode,
-                attribute_key: attributeKey,
-                cost_type: credits > 0 ? 'free' : 'moves',
-                credits_before: credits,
+                attribute_key: Array.isArray(pendingMajorHint) ? 'location' : pendingMajorHint,
             });
             revealMajorHint(pendingMajorHint);
             setPendingMajorHint(null);
@@ -100,7 +96,6 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
                 category: activeCategory,
                 mode: activeMode,
                 attribute_key: Array.isArray(pendingMajorHint) ? 'location' : pendingMajorHint,
-                cost_type: credits > 0 ? 'free' : 'moves',
             });
         }
         setPendingMajorHint(null);
@@ -120,7 +115,7 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
                     onClick={guesses.length === 0 ? onEmptyStateClick : undefined}
                 >
                     {/* Animated prompt with bouncing arrow — all screen sizes */}
-                    <div className="flex flex-col items-center justify-center min-h-[200px] md:min-h-[300px] select-none pointer-events-none">
+                    <div className="w-full flex flex-col items-center justify-center min-h-[200px] md:min-h-[300px] select-none pointer-events-none">
                         <div className="animate-bounce-up flex flex-col items-center gap-2 mb-6">
                             <svg
                                 width="24" height="40" viewBox="0 0 24 40"
@@ -176,7 +171,6 @@ export function GameGrid({ onEmptyStateClick }: GameGridProps) {
                         ? 'Location'
                         : (displayFields.find(f => f.attributeKey === pendingMajorHint)?.displayLabel || pendingMajorHint))
                     : ''}
-                credits={credits}
                 onConfirm={handleConfirmMajorHint}
                 onCancel={handleCancelMajorHint}
             />

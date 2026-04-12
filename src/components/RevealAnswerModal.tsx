@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '../utils/cn';
@@ -14,7 +15,6 @@ interface RevealAnswerModalProps {
     schema: CategorySchema;
     activeMode: GameMode;
     onNewGame: () => void;
-    onSwitchToFreePlay: () => void;
     /** Called when the user closes the modal via X / overlay in daily mode. */
     onDismissDaily: () => void;
 }
@@ -25,9 +25,9 @@ export function RevealAnswerModal({
     schema,
     activeMode,
     onNewGame,
-    onSwitchToFreePlay,
     onDismissDaily,
 }: RevealAnswerModalProps) {
+    const navigate = useNavigate();
     const activeCategory = useGameStore(state => state.activeCategory);
     const hasFiredRef = useRef(false);
 
@@ -105,18 +105,26 @@ export function RevealAnswerModal({
                     <div className="p-4 border-t border-charcoal shrink-0 flex flex-col gap-2">
                         {activeMode === 'daily' ? (
                             <button
-                                onClick={onSwitchToFreePlay}
+                                onClick={() => navigate('/continuum')}
                                 className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
                             >
-                                Try Free Play →
+                                Play Continuum →
                             </button>
                         ) : (
-                            <button
-                                onClick={onNewGame}
-                                className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
-                            >
-                                New Game
-                            </button>
+                            <>
+                                <button
+                                    onClick={onNewGame}
+                                    className="w-full px-4 py-3 bg-charcoal text-paper-white font-bold border border-charcoal hover:bg-paper-white hover:text-charcoal transition-colors uppercase text-sm tracking-wide"
+                                >
+                                    Play Again
+                                </button>
+                                <button
+                                    onClick={() => navigate('/continuum')}
+                                    className="text-center text-[10px] font-bold uppercase tracking-widest text-charcoal/40 hover:text-charcoal/70 transition-colors underline underline-offset-2"
+                                >
+                                    Try Continuum →
+                                </button>
+                            </>
                         )}
                     </div>
                 </Dialog.Content>

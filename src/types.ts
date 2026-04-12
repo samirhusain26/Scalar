@@ -96,7 +96,6 @@ export interface GameSlot {
     guesses: GuessResult[];
     gameStatus: GameStatus;
     moves: number;
-    credits: number;
     majorHintAttributes: string[];
     /** YYYY-MM-DD; only set on daily slots, used to detect day rollovers. */
     dailyDate?: string;

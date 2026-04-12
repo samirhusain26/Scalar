@@ -16,7 +16,7 @@ Adding a new category requires **3 files** and **1 registry edit**. No React/Typ
 | 4 | `fetch_data.py` (edit) | Register the new category in `CATEGORY_MAP` |
 | 5 | `python fetch_data.py` | Regenerate `src/assets/data/gameData.json` |
 
-After step 5, `npm run dev` will show the new category in the dropdown. No component code changes needed.
+After step 5, `npm run dev` will show the new category in the selector. No component code changes needed.
 
 ---
 
@@ -418,7 +418,7 @@ CATEGORY_MAP = {
 ```
 
 The key (e.g., `"music"`) becomes the category ID used throughout the app. It appears in:
-- The category dropdown selector in the UI
+- The category selector in the UI
 - The localStorage state
 - Challenge URLs
 - Analytics events
@@ -453,7 +453,7 @@ Then run the dev server:
 npm run dev
 ```
 
-The new category should appear in the dropdown. Play a few rounds to verify feedback colors, direction arrows, hints, and folded sections all work correctly.
+The new category should appear in the selector. Play a few rounds to verify feedback colors, direction arrows, hints, and folded sections all work correctly.
 
 ---
 
@@ -492,7 +492,7 @@ Use this checklist to verify everything is wired up correctly:
 - [ ] `fetch_data.py` has the new category in `CATEGORY_MAP`
 - [ ] `python fetch_data.py` runs without errors
 - [ ] Output shows correct field count and entity count
-- [ ] `npm run dev` shows the new category in the dropdown
+- [ ] `npm run dev` shows the new category in the selector
 - [ ] `npm run build` succeeds (no TypeScript errors)
 
 ### Gameplay Verification
@@ -501,7 +501,7 @@ Use this checklist to verify everything is wired up correctly:
 - [ ] HIGHER_LOWER fields show direction arrows (↑/↓)
 - [ ] Linked category columns produce gold HOT status when in same bucket
 - [ ] Folded "More clues" section expands/collapses
-- [ ] Eye icon hints reveal correct target values
+- [ ] Eye icon hints reveal correct target values (+1 move cost)
 - [ ] Win condition triggers when all attributes match
 - [ ] Game Over modal shares correctly
 
@@ -659,7 +659,7 @@ npm run dev
 | No gold (HOT) feedback on HIGHER_LOWER fields | Verify `linked_category_col` in schema points to a valid hidden column, and that column has range values in the enriched CSV |
 | Fields showing in wrong order | Schema CSV row order = display order. Reorder rows in the schema config. |
 | Folded fields not appearing | Check `is_folded=True` in schema and that the field has a visible `display_format` (not HIDDEN) |
-| Category not in dropdown | Verify the key in `CATEGORY_MAP` and that `fetch_data.py` ran without errors |
+| Category not in selector | Verify the key in `CATEGORY_MAP` and that `fetch_data.py` ran without errors |
 | Build fails after adding category | Run `npm run build` — likely a data issue in `gameData.json` (invalid JSON, missing fields) |
 | All feedback showing as MISS | Check that `data_type` matches actual values. E.g., `INT` for integers, not `STRING`. |
 | Direction arrows missing | Only `HIGHER_LOWER` logic type shows direction arrows. Check `logic_type` in schema. |
@@ -678,6 +678,6 @@ The following parts of the codebase are **fully data-driven** and require zero m
 - **GameGrid.tsx**: Uses `getDisplayColumns()` from schema — adapts to any field set
 - **GameInput.tsx**: Uses `getSuggestions()` which works with any entity list
 - **GameOverModal.tsx**: Shares results generically
-- **Scoreboard.tsx**: Displays moves/credits generically
+- **Scoreboard.tsx**: Displays moves generically
 
 The only category-specific rendering in `GuessCard.tsx` is triggered by specific `attribute_key` values (listed in "Hardcoded Key-Specific Behaviors" above), not by category name. Your new category will work perfectly without touching any TypeScript.
