@@ -8,7 +8,7 @@ import type { Entity, GameData, SchemaField } from '../types';
 import gameDataRaw from '../assets/data/gameData.json';
 import { cn } from '../utils/cn';
 import { formatNumber } from '../utils/formatters';
-import { CATEGORY_ICONS } from '../utils/dailyUtils';
+import { CATEGORY_ICONS, generateContinuumShareText } from '../utils/dailyUtils';
 import { CONTINUUM_METRICS } from '../utils/continuumConfig';
 import { CONTINUUM_TUTORIAL_STEPS } from '../utils/continuumTutorialConfig';
 import { VennBackground } from './VennBackground';
@@ -703,8 +703,8 @@ function ContinuumGameOverModal({
     return 'correct';
   };
 
-  const catIcon = CATEGORY_ICONS[category] ?? '🎮';
-  const shareText = `📊 Continuum ${catIcon} — ${score} placed today!\nCan you beat it? → scalargame.com/continuum`;
+  const dateString = useContinuumStore(s => s.dateString);
+  const shareText = generateContinuumShareText(dateString, category, score);
 
   const handleShare = async () => {
     try {

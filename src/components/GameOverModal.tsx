@@ -8,8 +8,7 @@ import { useGameStore } from '../store/gameStore';
 import { ElementCellCard } from './ElementCellCard';
 import { CountryDetailCard } from './CountryDetailCard';
 import { trackGameEvent } from '../utils/analytics';
-import { CATEGORY_ICONS, formatDateLabel, getPuzzleNumber, generateShareText } from '../utils/dailyUtils';
-import { encodeChallenge } from '../utils/challengeUtils';
+import { generateShareText } from '../utils/dailyUtils';
 import gameDataRaw from '../assets/data/gameData.json';
 import type {
     Entity,
@@ -94,21 +93,11 @@ export function GameOverModal({
         promise.then(() => setBlobReady(true)).catch(() => setBlobReady(false));
     }, [isOpen, shareCardRef]);
 
-    const buildShareText = () => {
-        const icon = CATEGORY_ICONS[activeCategory] ?? '🎮';
-        const catName = activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1);
-        const header = activeMode === 'daily'
-            ? `SCALAR Daily #${getPuzzleNumber(dateString)} (${formatDateLabel(dateString)}) • ${icon} ${catName} • ${moves} Moves`
-            : `SCALAR • ${icon} ${catName} • ${moves} Moves`;
-        const url = activeMode === 'daily'
-            ? 'https://scalargame.com'
-            : `${window.location.origin}${window.location.pathname}?challenge=${encodeChallenge(activeCategory, targetEntity.id, moves)}`;
-        return `${header}\n${url}`;
-    };
+    const buildShareText = () =>
+        generateShareText(activeMode, dateString, activeCategory, moves, targetEntity.id);
 
     const handleShareText = async () => {
-        const schema = gameData.schemaConfig[activeCategory] || [];
-        const text = generateShareText(activeMode, dateString, activeCategory, moves, guesses, schema, targetEntity.id);
+        const text = generateShareText(activeMode, dateString, activeCategory, moves, targetEntity.id);
         try {
             if (supportsShare) {
                 await navigator.share({ title: 'Scalar', text });
@@ -165,7 +154,6 @@ export function GameOverModal({
         }
     };
 
-    const guesses = useGameStore(state => state.guesses);
     const streak = dailyMeta?.currentStreak ?? 0;
     const maxStreak = dailyMeta?.maxStreak ?? 0;
 

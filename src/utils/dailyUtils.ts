@@ -1,6 +1,5 @@
-import type { Entity, Feedback, GameMode, GuessResult, SchemaField } from '../types';
+import type { Entity, Feedback, GameMode } from '../types';
 import { encodeChallenge } from './challengeUtils';
-import { getDisplayColumns } from './schemaParser';
 
 /** Returns YYYY-MM-DD in the user's local timezone (Swedish locale = ISO 8601 format). */
 export function getLocalDateString(): string {
@@ -96,92 +95,45 @@ export function getLocationStatus(feedback: Record<string, Feedback>): 'EXACT' |
     return 'MISS';
 }
 
-function getStatusEmoji(status: string | undefined): string {
-    switch (status) {
-        case 'EXACT': return '🟩';
-        case 'HOT':   return '🟧';
-        case 'NEAR':  return '🟨';
-        default:      return '⬜';
-    }
-}
-
 /**
- * Computes the single consolidated emoji for the merged Location cell.
- * All 3 EXACT → 🟩 (green). 1–2 EXACT → 🟨 (partial). 0 EXACT → ⬜ (miss).
- */
-function getLocationEmoji(feedback: Record<string, Feedback>): string {
-    const exactCount = LOCATION_KEYS.filter(key => feedback[key]?.status === 'EXACT').length;
-    if (exactCount === 3) return '🟩';
-    if (exactCount > 0)   return '🟨';
-    return '⬜';
-}
-
-/**
- * Generates Wordle-style share text for both daily and free play modes.
+ * Generates share text for Scalar daily and free play modes.
  *
- * Daily:    "SCALAR Daily #26 (Feb 26, 2026) • 🌍 Countries • 7 Moves"
+ * Daily:    "SCALAR Daily (2/26) • 🌍 Countries • 7 Moves"
  * Freeplay: "SCALAR • 🌍 Countries • 5 Moves"
- *
- * Followed by an emoji grid (one row per guess, one square per visible field).
- * For the countries category, the 3 location fields (Hemisphere, Continent,
- * Subregion) are consolidated into a single emoji — matching the merged
- * "Location" cell in GuessCard — so the grid fits on narrow mobile screens
- * without wrapping (11 cols → 9 cols).
- *
- * If the user took more than 6 guesses, only the first 3 rows, '...', and the
- * last row are shown.
- *
- * URL appended at the end:
- *   - Daily mode   → base domain only (no challenge hash; avoids spoiling the puzzle)
- *   - Freeplay mode → full challenge link with encoded entity + moves
  */
 export function generateShareText(
     mode: GameMode,
     dateString: string,
     category: string,
     moves: number,
-    guesses: GuessResult[],
-    schema: SchemaField[],
     entityId: string,
 ): string {
-    const displayFields = getDisplayColumns(schema).filter(
-        f => !f.isFolded && f.logicType !== 'TARGET' && f.logicType !== 'NONE',
-    );
-
     const icon = CATEGORY_ICONS[category] ?? '🎮';
     const catName = category.charAt(0).toUpperCase() + category.slice(1);
 
     const header = mode === 'daily'
-        ? `SCALAR Daily #${getPuzzleNumber(dateString)} (${formatDateLabel(dateString)}) • ${icon} ${catName} • ${moves} Moves`
+        ? `SCALAR Daily (${formatDateLabel(dateString)}) • ${icon} ${catName} • ${moves} Moves`
         : `SCALAR • ${icon} ${catName} • ${moves} Moves`;
-
-    const allRows = guesses.map(({ feedback }) => {
-        const emojis: string[] = [];
-        let locationInserted = false;
-        for (const f of displayFields) {
-            if (LOCATION_KEY_SET.has(f.attributeKey)) {
-                if (!locationInserted) {
-                    emojis.push(getLocationEmoji(feedback));
-                    locationInserted = true;
-                }
-                // Skip the remaining location fields — merged into one emoji above
-            } else {
-                emojis.push(getStatusEmoji(feedback[f.attributeKey]?.status));
-            }
-        }
-        return emojis.join('');
-    });
-
-    let gridRows: string[];
-    if (allRows.length > 6) {
-        gridRows = [...allRows.slice(0, 3), '...', allRows[allRows.length - 1]];
-    } else {
-        gridRows = allRows;
-    }
 
     const url = mode === 'daily'
         ? 'https://scalargame.com'
-        : `${window.location.origin}${window.location.pathname}?challenge=${encodeChallenge(category, entityId, moves)}`;
+        : `https://scalargame.com/?challenge=${encodeChallenge(category, entityId, moves)}`;
 
-    return [header, ...gridRows, url].join('\n');
+    return [header, url].join('\n');
+}
+
+/**
+ * Generates share text for Continuum daily mode.
+ *
+ * Format: "CONTINUUM Daily (2/26) • 🌍 Countries • 12 Placed"
+ */
+export function generateContinuumShareText(
+    dateString: string,
+    category: string,
+    score: number,
+): string {
+    const icon = CATEGORY_ICONS[category] ?? '🎮';
+    const catName = category.charAt(0).toUpperCase() + category.slice(1);
+    const header = `CONTINUUM Daily (${formatDateLabel(dateString)}) • ${icon} ${catName} • ${score} Placed`;
+    return [header, 'https://scalargame.com/continuum'].join('\n');
 }

@@ -39,3 +39,9 @@ lerna-debug.log*
 # Unused frameworks (cleanup from old scaffold)
 .turbo
 .next
+
+# MCP / tooling artifacts
+.claude/
+.playwright-mcp/
+sqlite_mcp_server.db
+*.db

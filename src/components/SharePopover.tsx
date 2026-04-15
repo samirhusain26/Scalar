@@ -61,8 +61,6 @@ export function SharePopover({
     dateString,
     activeCategory,
     moves,
-    guesses,
-    schema,
     entityId,
 }: SharePopoverProps) {
     const [isOpen, setIsOpen] = useState(false);
@@ -215,7 +213,7 @@ export function SharePopover({
     // ── Share Text (WhatsApp / SMS) ─────────────────────────────────────────
     const handleShareText = async () => {
         const text = generateShareText(
-            activeMode, dateString, activeCategory, moves, guesses, schema, entityId,
+            activeMode, dateString, activeCategory, moves, entityId,
         );
         setTextState('busy');
         try {
